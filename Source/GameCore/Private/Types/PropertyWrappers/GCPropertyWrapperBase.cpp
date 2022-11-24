@@ -50,5 +50,5 @@ void FGCPropertyWrapperBase::MarkNetDirty()
 	}
 #endif // !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
 
-	MARK_PROPERTY_DIRTY(PropertyOwner, SelfPropertyPointer);
+	MARK_PROPERTY_DIRTY(PropertyOwner.Get(), SelfPropertyPointer);
 }
