@@ -1,8 +1,7 @@
 # GameCore
-Current engine version: 5.0.2
-
 Core plugin used accross games.
 
+Current engine version: 5.1.0
 
 
 ## BFL_CollisionQueries.h
