@@ -84,7 +84,7 @@ FStrengthHitResult* UGCBlueprintFunctionLibrary_StrengthCollisionQueries::Penetr
 				continue;
 			}
 
-			if (ImpenetrableHit && &HitResults[i] == ImpenetrableHit)
+			if (ImpenetrableHit && (&HitResults[i] == ImpenetrableHit))
 			{
 				// Stop - don't calculate penetration nerfing on impenetrable hit
 				OutResult.StrengthSceneCastInfo.StopLocation = AddedStrengthHit.Location;

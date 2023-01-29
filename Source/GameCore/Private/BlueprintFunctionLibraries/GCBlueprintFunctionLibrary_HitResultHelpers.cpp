@@ -38,11 +38,13 @@ void UGCBlueprintFunctionLibrary_HitResultHelpers::AdjustTraceDataBySlidingTrace
 
 	// Set new trace points
 	{
-		const float TraceStartAdjustmentDistance = InTimeAtNewTraceStart * OriginalTraceLength;
+		const float TimeAtOldTraceStart = 0;
+		const float TraceStartAdjustmentDistance = (InTimeAtNewTraceStart - TimeAtOldTraceStart) * OriginalTraceLength;
 		const FVector ForwardsTraceDirection = (InOutHit.TraceEnd - InOutHit.TraceStart).GetSafeNormal();
 		InOutHit.TraceStart = InOutHit.TraceStart + (ForwardsTraceDirection * TraceStartAdjustmentDistance);
 
-		const float TraceEndAdjustmentDistance = (1 - InTimeAtNewTraceEnd) * OriginalTraceLength;
+		const float TimeAtOldTraceEnd = 1;
+		const float TraceEndAdjustmentDistance = (TimeAtOldTraceEnd - InTimeAtNewTraceEnd) * OriginalTraceLength;
 		const FVector BackwardsTraceDirection = -ForwardsTraceDirection;
 		InOutHit.TraceEnd = InOutHit.TraceEnd + (BackwardsTraceDirection * TraceEndAdjustmentDistance);
 	}
