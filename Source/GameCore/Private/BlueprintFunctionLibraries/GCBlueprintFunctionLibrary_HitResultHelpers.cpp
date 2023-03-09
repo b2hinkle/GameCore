@@ -38,22 +38,25 @@ void UGCBlueprintFunctionLibrary_HitResultHelpers::AdjustTraceDataBySlidingTrace
 
 	// Set new trace points
 	{
-		const float TraceStartAdjustment = InTimeAtNewTraceStart * OriginalTraceLength;
+		const float TimeAtOldTraceStart = 0;
+		const float TraceStartAdjustmentDistance = (InTimeAtNewTraceStart - TimeAtOldTraceStart) * OriginalTraceLength;
 		const FVector ForwardsTraceDirection = (InOutHit.TraceEnd - InOutHit.TraceStart).GetSafeNormal();
-		InOutHit.TraceStart = InOutHit.TraceStart + (ForwardsTraceDirection * TraceStartAdjustment);
+		InOutHit.TraceStart = InOutHit.TraceStart + (ForwardsTraceDirection * TraceStartAdjustmentDistance);
 
-		const float TraceEndAdjustment = (1 - InTimeAtNewTraceEnd) * OriginalTraceLength;
+		const float TimeAtOldTraceEnd = 1;
+		const float TraceEndAdjustmentDistance = (TimeAtOldTraceEnd - InTimeAtNewTraceEnd) * OriginalTraceLength;
 		const FVector BackwardsTraceDirection = -ForwardsTraceDirection;
-		InOutHit.TraceEnd = InOutHit.TraceEnd + (BackwardsTraceDirection * TraceEndAdjustment);
+		InOutHit.TraceEnd = InOutHit.TraceEnd + (BackwardsTraceDirection * TraceEndAdjustmentDistance);
 	}
 
-	const float TotalTimeMultiplier = (InTimeAtNewTraceEnd - InTimeAtNewTraceStart);
-	const float NewTraceLength = FMath::Abs(OriginalTraceLength * TotalTimeMultiplier);
+	// Subtract both multipliers to get the the multiplier that brings old trace length to the new trace length
+	const float OldTraceLengthToNewTraceLengthMultiplier = (InTimeAtNewTraceEnd - InTimeAtNewTraceStart);
+	const float NewTraceLength = FMath::Abs(OriginalTraceLength * OldTraceLengthToNewTraceLengthMultiplier );
 
 	// Update trace-related data
 	{
 		InOutHit.Time -= InTimeAtNewTraceStart; // move our hit time with the new start time
-		InOutHit.Time /= TotalTimeMultiplier;   // then adjust it with the total multiplier
+		InOutHit.Time /= OldTraceLengthToNewTraceLengthMultiplier ; // then adjust it with the length multiplier
 
 		InOutHit.Distance = NewTraceLength * InOutHit.Time;
 	}

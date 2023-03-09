@@ -84,7 +84,7 @@ FStrengthHitResult* UGCBlueprintFunctionLibrary_StrengthCollisionQueries::Penetr
 				continue;
 			}
 
-			if (ImpenetrableHit && &HitResults[i] == ImpenetrableHit)
+			if (ImpenetrableHit && (&HitResults[i] == ImpenetrableHit))
 			{
 				// Stop - don't calculate penetration nerfing on impenetrable hit
 				OutResult.StrengthSceneCastInfo.StopLocation = AddedStrengthHit.Location;
@@ -279,12 +279,19 @@ void UGCBlueprintFunctionLibrary_StrengthCollisionQueries::RicochetingPenetratio
 }
 //  END Custom query
 
-float UGCBlueprintFunctionLibrary_StrengthCollisionQueries::NerfStrengthPerCm(float& InOutStrength, const float InDistanceToTravel, const float InNerfPerCm)
+float UGCBlueprintFunctionLibrary_StrengthCollisionQueries::NerfStrengthPerCm(float& InOutStrength, const float InCentimetersToTravel, const float InNerfPerCm)
 {
-	const float StrengthToTakeAway = (InNerfPerCm * InDistanceToTravel);
-	const float TraveledThroughRatio = (InOutStrength / StrengthToTakeAway);
-	const float TraveledThroughDistance = (TraveledThroughRatio * InDistanceToTravel);
+	const float StrengthToTakeAway = (InCentimetersToTravel * InNerfPerCm);
+	const float OldStrength = InOutStrength;
 	InOutStrength -= StrengthToTakeAway;
 
+	if (InOutStrength >= 0) // if we had enough strength to make it through the InCentimetersToTravel distance
+	{
+		return InCentimetersToTravel;
+	}
+
+	// We've been stopped midway through the InCentimetersToTravel distance
+	const float TraveledThroughRatio = (OldStrength / StrengthToTakeAway);
+	const float TraveledThroughDistance = (TraveledThroughRatio * InCentimetersToTravel);
 	return TraveledThroughDistance;
 }

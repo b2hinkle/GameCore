@@ -15,7 +15,8 @@ public class GameCore : ModuleRules
 		PrivateDependencyModuleNames.AddRange(
 			new string[]
 			{
-				"NetCore" // for push model
+				"NetCore", // for push model
+				"Projects"
 			}
 		);
 	}

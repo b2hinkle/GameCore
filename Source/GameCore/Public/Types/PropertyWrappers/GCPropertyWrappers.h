@@ -14,7 +14,7 @@ struct GAMECORE_API FGCFloatPropertyWrapper : public FGCPropertyWrapperBase
 {
 	GENERATED_BODY()
 
-	GC_PROPERTY_WRAPPER_BODY(FGCFloatPropertyWrapper, float, 0.f);
+	GC_PROPERTY_WRAPPER_CHILD_BODY(FGCFloatPropertyWrapper, float, 0.f);
 
 	virtual FString ToString() const override { return FString::SanitizeFloat(Value); }
 
@@ -40,7 +40,7 @@ struct GAMECORE_API FGCInt32PropertyWrapper : public FGCPropertyWrapperBase
 {
 	GENERATED_BODY()
 
-	GC_PROPERTY_WRAPPER_BODY(FGCInt32PropertyWrapper, int32, 0);
+	GC_PROPERTY_WRAPPER_CHILD_BODY(FGCInt32PropertyWrapper, int32, 0);
 
 	virtual FString ToString() const override { return FString::FromInt(Value); }
 
