@@ -6,8 +6,9 @@
 
 
 FGCPropertyWrapperBase::FGCPropertyWrapperBase()
-	: SelfPropertyPointer(nullptr)
-	, Outer(nullptr)
+	: Outer(nullptr)
+	, SelfPropertyPointer(nullptr)
+	, ValueProperty(nullptr)
 {
 }
 FGCPropertyWrapperBase::FGCPropertyWrapperBase(UObject* InOuter, const FName& InPropertyName, const UScriptStruct* InChildScriptStruct)

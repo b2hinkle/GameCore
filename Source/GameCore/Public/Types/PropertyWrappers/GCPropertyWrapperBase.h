@@ -31,8 +31,10 @@ struct GAMECORE_API FGCPropertyWrapperBase
 public:
 	FGCPropertyWrapperBase();
 	virtual ~FGCPropertyWrapperBase() { }
+
 protected:
 	FGCPropertyWrapperBase(UObject* InOuter, const FName& InPropertyName, const UScriptStruct* InChildScriptStruct); // initialization is intended only for child structs
+
 public:
 	/** Marks the property dirty */
 	void MarkNetDirty();
@@ -163,19 +165,19 @@ virtual bool NetSerialize(FArchive& Ar, UPackageMap* Map, bool& bOutSuccess) ove
 
 // BEGIN Property wrapper on change helpers
 template <class TPropertyWrapperType, class TPropertyWrapperValueType>
-static void GCPropertyWrapperOnChangeMarkNetDirty(TPropertyWrapperType& InPropertyWrapper, const TPropertyWrapperValueType& InOldValue, const TPropertyWrapperValueType& InNewValue)
+void GCPropertyWrapperOnChangeMarkNetDirty(TPropertyWrapperType& InPropertyWrapper, const TPropertyWrapperValueType& InOldValue, const TPropertyWrapperValueType& InNewValue)
 {
 	InPropertyWrapper.MarkNetDirty();
 }
 
 template <class TPropertyWrapperType, class TPropertyWrapperValueType>
-static void GCPropertyWrapperOnChangePrintString(TPropertyWrapperType& InPropertyWrapper, const TPropertyWrapperValueType& InOldValue, const TPropertyWrapperValueType& InNewValue)
+void GCPropertyWrapperOnChangePrintString(TPropertyWrapperType& InPropertyWrapper, const TPropertyWrapperValueType& InOldValue, const TPropertyWrapperValueType& InNewValue)
 {
 	UKismetSystemLibrary::PrintString(InPropertyWrapper.GetOuter(), InPropertyWrapper.GetDebugString(), true, false);
 }
 
 template <class TPropertyWrapperType, class TPropertyWrapperValueType>
-static void GCPropertyWrapperOnChangeLog(TPropertyWrapperType& InPropertyWrapper, const TPropertyWrapperValueType& InOldValue, const TPropertyWrapperValueType& InNewValue)
+void GCPropertyWrapperOnChangeLog(TPropertyWrapperType& InPropertyWrapper, const TPropertyWrapperValueType& InOldValue, const TPropertyWrapperValueType& InNewValue)
 {
 	UE_LOG(LogGCPropertyWrapper, Log, InPropertyWrapper.GetDebugString());
 }
