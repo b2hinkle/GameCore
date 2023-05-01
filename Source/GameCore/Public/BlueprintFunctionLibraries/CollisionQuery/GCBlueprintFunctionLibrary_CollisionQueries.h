@@ -29,6 +29,8 @@ struct GAMECORE_API FExitAwareHitResult : public FHitResult
 	uint8 bIsExitHit : 1;
 };
 
+DECLARE_DELEGATE_RetVal_OneParam(bool, FIsHitImpenetrableDelegate, FHitResult)
+
 /**
  *	- Exit hit scene casting -
  *	Exit hits are useful in cases where you need the other side of the geometry that was hit. We achieve this by performing a second scene cast in the opposite direction. This can get expensive as your query length is effectively doubling. To mitigate this, a built-in optimization is provided to minimize the backward query length down to its shortest guaranteed working length.
@@ -44,7 +46,7 @@ class GAMECORE_API UGCBlueprintFunctionLibrary_CollisionQueries : public UBluepr
 
 public:
 	static const float SceneCastStartWallAvoidancePadding;
-	static const TFunctionRef<bool(const FHitResult&)>& DefaultIsHitImpenetrable;
+	static const FIsHitImpenetrableDelegate DefaultIsHitImpenetrable;
 
 	/**
 	 * FCollisionShape scene cast.
@@ -70,7 +72,7 @@ public:
 
 	//  BEGIN Custom query
 	/**
-	 *  Scene cast that penetrates everything except for what the caller says in IsHitImpenetrable() TFunction
+	 *  Scene cast that penetrates everything except for what the caller says in IsHitImpenetrable Delegate
 	 *  
 	 *  The engine's way of handling collisions is good, but is limiting in some situations. We want to run a scene cast where
 	 *  blocking hits don't actually block it, creating a sort of "penetration" feature. The reason we can't just use
@@ -88,15 +90,15 @@ public:
 	 *  @param  InCollisionShape             Generic collision shape for sweeps/traces (FCollisionShape::LineShape for a line trace)
 	 *  @param  InCollisionQueryParams       Additional parameters used for the scene cast
 	 *  @param  InCollisionResponseParams    List of this scene cast's responses to certain collision channels
-	 *  @param  IsHitImpenetrable            TFunction where caller indicates whether provided HitResult should stop us. Since we penetrate blocking hits, caller might want to define when to stop.
+	 *  @param  IsHitImpenetrable            Delegate where caller indicates whether provided HitResult should stop us. Since we penetrate blocking hits, caller might want to define when to stop.
 	 *  @return The impenetrable hit if we hit one
 	 */
 	static FHitResult* PenetrationSceneCast(const UWorld* InWorld, TArray<FHitResult>& OutHits, const FVector& InStart, const FVector& InEnd, const FQuat& InRotation, const ECollisionChannel InTraceChannel, const FCollisionShape& InCollisionShape, const FCollisionQueryParams& InCollisionQueryParams = FCollisionQueryParams::DefaultQueryParam, const FCollisionResponseParams& InCollisionResponseParams = FCollisionResponseParams::DefaultResponseParam,
-		const TFunctionRef<bool(const FHitResult&)>& IsHitImpenetrable = DefaultIsHitImpenetrable);
+        FIsHitImpenetrableDelegate IsHitImpenetrable = DefaultIsHitImpenetrable);
 	static FHitResult* PenetrationLineTrace(const UWorld* InWorld, TArray<FHitResult>& OutHits, const FVector& InTraceStart, const FVector& InTraceEnd, const ECollisionChannel InTraceChannel, const FCollisionQueryParams& InCollisionQueryParams = FCollisionQueryParams::DefaultQueryParam, const FCollisionResponseParams& InCollisionResponseParams = FCollisionResponseParams::DefaultResponseParam,
-		const TFunctionRef<bool(const FHitResult&)>& IsHitImpenetrable = DefaultIsHitImpenetrable);
+		FIsHitImpenetrableDelegate IsHitImpenetrable = DefaultIsHitImpenetrable);
 	static FHitResult* PenetrationSweep(const UWorld* InWorld, TArray<FHitResult>& OutHits, const FVector& InSweepStart, const FVector& InSweepEnd, const FQuat& InRotation, const ECollisionChannel InTraceChannel, const FCollisionShape& InCollisionShape, const FCollisionQueryParams& InCollisionQueryParams = FCollisionQueryParams::DefaultQueryParam, const FCollisionResponseParams& InCollisionResponseParams = FCollisionResponseParams::DefaultResponseParam,
-		const TFunctionRef<bool(const FHitResult&)>& IsHitImpenetrable = DefaultIsHitImpenetrable);
+		FIsHitImpenetrableDelegate IsHitImpenetrable = DefaultIsHitImpenetrable);
 	//  END Custom query
 
 
@@ -104,20 +106,20 @@ public:
 	//  BEGIN Custom query
 	/**
 	 * Scene cast that also gives us the exit hits using SceneCastMultiWithExitHits() while also providing penetrating functionality
-	 * 
-	 * @param  IsHitImpenetrable         TFunction where caller indicates whether provided HitResult should stop us. Since we penetrate blocking hits, caller might want to define when to stop.
+	 *
+	 * @param  IsHitImpenetrable         Delegate where caller indicates whether provided HitResult should stop us. Since we penetrate blocking hits, caller might want to define when to stop.
 	 * @return The impenetrable hit if we hit one (will always be an entrance hit)
 	 */
 	static FExitAwareHitResult* PenetrationSceneCastWithExitHits(const UWorld* InWorld, TArray<FExitAwareHitResult>& OutHits, const FVector& InStart, const FVector& InEnd, const FQuat& InRotation, const ECollisionChannel InTraceChannel, const FCollisionShape& InCollisionShape, const FCollisionQueryParams& InCollisionQueryParams = FCollisionQueryParams::DefaultQueryParam, const FCollisionResponseParams& InCollisionResponseParams = FCollisionResponseParams::DefaultResponseParam,
-		const TFunctionRef<bool(const FHitResult&)>& IsHitImpenetrable = DefaultIsHitImpenetrable,
+		FIsHitImpenetrableDelegate IsHitImpenetrable = DefaultIsHitImpenetrable,
 		const bool bOptimizeBackwardsSceneCastLength = false,
 		const bool bDrawDebugForBackwardsStart = false);
 	static FExitAwareHitResult* PenetrationLineTraceWithExitHits(const UWorld* InWorld, TArray<FExitAwareHitResult>& OutHits, const FVector& InTraceStart, const FVector& InTraceEnd, const ECollisionChannel InTraceChannel, const FCollisionQueryParams& InCollisionQueryParams = FCollisionQueryParams::DefaultQueryParam, const FCollisionResponseParams& InCollisionResponseParams = FCollisionResponseParams::DefaultResponseParam,
-		const TFunctionRef<bool(const FHitResult&)>& IsHitImpenetrable = DefaultIsHitImpenetrable,
+		FIsHitImpenetrableDelegate IsHitImpenetrable = DefaultIsHitImpenetrable,
 		const bool bOptimizeBackwardsSceneCastLength = false,
 		const bool bDrawDebugForBackwardsStart = false);
 	static FExitAwareHitResult* PenetrationSweepWithExitHits(const UWorld* InWorld, TArray<FExitAwareHitResult>& OutHits, const FVector& InSweepStart, const FVector& InSweepEnd, const FQuat& InRotation, const ECollisionChannel InTraceChannel, const FCollisionShape& InCollisionShape, const FCollisionQueryParams& InCollisionQueryParams = FCollisionQueryParams::DefaultQueryParam, const FCollisionResponseParams& InCollisionResponseParams = FCollisionResponseParams::DefaultResponseParam,
-		const TFunctionRef<bool(const FHitResult&)>& IsHitImpenetrable = DefaultIsHitImpenetrable,
+		FIsHitImpenetrableDelegate IsHitImpenetrable = DefaultIsHitImpenetrable,
 		const bool bOptimizeBackwardsSceneCastLength = false,
 		const bool bDrawDebugForBackwardsStart = false);
 	//  END Custom query

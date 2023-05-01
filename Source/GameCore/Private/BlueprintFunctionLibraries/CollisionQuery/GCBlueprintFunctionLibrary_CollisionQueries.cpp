@@ -12,7 +12,7 @@
 
 
 const float UGCBlueprintFunctionLibrary_CollisionQueries::SceneCastStartWallAvoidancePadding = .01f; // good number for bumping a scene cast start location away from the surface of geometry
-const TFunctionRef<bool(const FHitResult&)>& UGCBlueprintFunctionLibrary_CollisionQueries::DefaultIsHitImpenetrable = [](const FHitResult&) { return false; };
+const FIsHitImpenetrableDelegate UGCBlueprintFunctionLibrary_CollisionQueries::DefaultIsHitImpenetrable = FIsHitImpenetrableDelegate::CreateLambda([](const FHitResult&) { return false; });
 
 
 
@@ -83,8 +83,14 @@ bool UGCBlueprintFunctionLibrary_CollisionQueries::SweepMultiWithExitHits(const 
 
 //  BEGIN Custom query
 FHitResult* UGCBlueprintFunctionLibrary_CollisionQueries::PenetrationSceneCast(const UWorld* InWorld, TArray<FHitResult>& OutHits, const FVector& InStart, const FVector& InEnd, const FQuat& InRotation, const ECollisionChannel InTraceChannel, const FCollisionShape& InCollisionShape, const FCollisionQueryParams& InCollisionQueryParams, const FCollisionResponseParams& InCollisionResponseParams,
-	const TFunctionRef<bool(const FHitResult&)>& IsHitImpenetrable)
+	FIsHitImpenetrableDelegate IsHitImpenetrable)
 {
+	if (IsHitImpenetrable.IsBound() == false)
+	{
+		check(0)
+		return nullptr;
+	}
+
 	// Use ECR_Overlap to have this scene cast overlap through blocking hits. Our CollisionResponseParams overrides blocking responses to overlap.
 	FCollisionResponseParams CollisionResponseParams = InCollisionResponseParams;
 	CollisionResponseParams.CollisionResponse.ReplaceChannels(ECollisionResponse::ECR_Block, ECollisionResponse::ECR_Overlap);
@@ -104,7 +110,7 @@ FHitResult* UGCBlueprintFunctionLibrary_CollisionQueries::PenetrationSceneCast(c
 	// Stop at any impenetrable hits
 	for (int32 i = 0; i < OutHits.Num(); ++i)
 	{
-		if (IsHitImpenetrable(OutHits[i]))
+		if (IsHitImpenetrable.Execute(OutHits[i]))
 		{
 			// Remove the rest if there are any
 			if (OutHits.IsValidIndex(i + 1))
@@ -120,13 +126,13 @@ FHitResult* UGCBlueprintFunctionLibrary_CollisionQueries::PenetrationSceneCast(c
 	return nullptr;
 }
 FHitResult* UGCBlueprintFunctionLibrary_CollisionQueries::PenetrationLineTrace(const UWorld* InWorld, TArray<FHitResult>& OutHits, const FVector& InTraceStart, const FVector& InTraceEnd, const ECollisionChannel InTraceChannel, const FCollisionQueryParams& InCollisionQueryParams, const FCollisionResponseParams& InCollisionResponseParams,
-	const TFunctionRef<bool(const FHitResult&)>& IsHitImpenetrable)
+	FIsHitImpenetrableDelegate IsHitImpenetrable)
 {
 	FCollisionShape LineShape = FCollisionShape(); // default constructor makes a line shape for us. I would want to use their FCollisionShape::LineShape but the engine doesn't seem to expose it for modules
 	return PenetrationSceneCast(InWorld, OutHits, InTraceStart, InTraceEnd, FQuat::Identity, InTraceChannel, LineShape, InCollisionQueryParams, InCollisionResponseParams, IsHitImpenetrable);
 }
 FHitResult* UGCBlueprintFunctionLibrary_CollisionQueries::PenetrationSweep(const UWorld* InWorld, TArray<FHitResult>& OutHits, const FVector& InSweepStart, const FVector& InSweepEnd, const FQuat& InRotation, const ECollisionChannel InTraceChannel, const FCollisionShape& InCollisionShape, const FCollisionQueryParams& InCollisionQueryParams, const FCollisionResponseParams& InCollisionResponseParams,
-	const TFunctionRef<bool(const FHitResult&)>& IsHitImpenetrable)
+	FIsHitImpenetrableDelegate IsHitImpenetrable)
 {
 	UE_CLOG(InCollisionShape.IsLine(), LogGCCollisionQueries, Warning, TEXT("%s() was used with a FCollisionShape::LineShape. Use the linetrace version if you want a line traces."), ANSI_TO_TCHAR(__FUNCTION__));
 	return PenetrationSceneCast(InWorld, OutHits, InSweepStart, InSweepEnd, InRotation, InTraceChannel, InCollisionShape, InCollisionQueryParams, InCollisionResponseParams, IsHitImpenetrable);
@@ -136,7 +142,7 @@ FHitResult* UGCBlueprintFunctionLibrary_CollisionQueries::PenetrationSweep(const
 
 //  BEGIN Custom query
 FExitAwareHitResult* UGCBlueprintFunctionLibrary_CollisionQueries::PenetrationSceneCastWithExitHits(const UWorld* InWorld, TArray<FExitAwareHitResult>& OutHits, const FVector& InStart, const FVector& InEnd, const FQuat& InRotation, const ECollisionChannel InTraceChannel, const FCollisionShape& InCollisionShape, const FCollisionQueryParams& InCollisionQueryParams, const FCollisionResponseParams& InCollisionResponseParams,
-	const TFunctionRef<bool(const FHitResult&)>& IsHitImpenetrable,
+	FIsHitImpenetrableDelegate IsHitImpenetrable,
 	const bool bOptimizeBackwardsSceneCastLength,
 	const bool bDrawDebugForBackwardsStart)
 {
@@ -176,7 +182,7 @@ FExitAwareHitResult* UGCBlueprintFunctionLibrary_CollisionQueries::PenetrationSc
 	return &OutHits.Last();
 }
 FExitAwareHitResult* UGCBlueprintFunctionLibrary_CollisionQueries::PenetrationLineTraceWithExitHits(const UWorld* InWorld, TArray<FExitAwareHitResult>& OutHits, const FVector& InTraceStart, const FVector& InTraceEnd, const ECollisionChannel InTraceChannel, const FCollisionQueryParams& InCollisionQueryParams, const FCollisionResponseParams& InCollisionResponseParams,
-	const TFunctionRef<bool(const FHitResult&)>& IsHitImpenetrable,
+	FIsHitImpenetrableDelegate IsHitImpenetrable,
 	const bool bOptimizeBackwardsSceneCastLength,
 	const bool bDrawDebugForBackwardsStart)
 {
@@ -184,7 +190,7 @@ FExitAwareHitResult* UGCBlueprintFunctionLibrary_CollisionQueries::PenetrationLi
 	return PenetrationSceneCastWithExitHits(InWorld, OutHits, InTraceStart, InTraceEnd, FQuat::Identity, InTraceChannel, LineShape, InCollisionQueryParams, InCollisionResponseParams, IsHitImpenetrable, bOptimizeBackwardsSceneCastLength, bDrawDebugForBackwardsStart);
 }
 FExitAwareHitResult* UGCBlueprintFunctionLibrary_CollisionQueries::PenetrationSweepWithExitHits(const UWorld* InWorld, TArray<FExitAwareHitResult>& OutHits, const FVector& InSweepStart, const FVector& InSweepEnd, const FQuat& InRotation, const ECollisionChannel InTraceChannel, const FCollisionShape& InCollisionShape, const FCollisionQueryParams& InCollisionQueryParams, const FCollisionResponseParams& InCollisionResponseParams,
-	const TFunctionRef<bool(const FHitResult&)>& IsHitImpenetrable,
+	FIsHitImpenetrableDelegate IsHitImpenetrable,
 	const bool bOptimizeBackwardsSceneCastLength,
 	const bool bDrawDebugForBackwardsStart)
 {
