@@ -13,8 +13,8 @@
  */
 template
 <
-	typename TCurrentType,
-	template <typename> typename TPredicate,
+	class TCurrentType,
+	template <class> class TPredicate,
 	bool bCurrentTypePassesPredicate = false
 >
 struct TGCGetSuperByPredicate;
@@ -24,8 +24,8 @@ struct TGCGetSuperByPredicate;
  */
 template
 <
-	typename TCurrentType,
-	template <typename> typename TPredicate
+	class TCurrentType,
+	template <class> class TPredicate
 >
 struct TGCGetSuperByPredicate<TCurrentType, TPredicate, false>
 {
@@ -49,8 +49,8 @@ public:
  */
 template
 <
-	typename TCurrentType,
-	template <typename> typename TPredicate
+	class TCurrentType,
+	template <class> class TPredicate
 >
 struct TGCGetSuperByPredicate<TCurrentType, TPredicate, true>
 {
