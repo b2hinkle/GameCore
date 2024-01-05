@@ -12,7 +12,7 @@
 
 
 const float UGCBlueprintFunctionLibrary_CollisionQueries::SceneCastStartWallAvoidancePadding = .01f; // good number for bumping a scene cast start location away from the surface of geometry
-const FIsHitImpenetrableDelegate UGCBlueprintFunctionLibrary_CollisionQueries::DefaultIsHitImpenetrable = FIsHitImpenetrableDelegate::CreateLambda([](const FHitResult&) { return false; });
+const FIsHitImpenetrableDelegate UGCBlueprintFunctionLibrary_CollisionQueries::DefaultIsHitImpenetrable = FIsHitImpenetrableDelegate::CreateStatic([](const FHitResult&) { return false; });
 
 
 

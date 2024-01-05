@@ -29,7 +29,7 @@ struct GAMECORE_API FExitAwareHitResult : public FHitResult
 	uint8 bIsExitHit : 1;
 };
 
-DECLARE_DELEGATE_RetVal_OneParam(bool, FIsHitImpenetrableDelegate, FHitResult)
+DECLARE_DELEGATE_RetVal_OneParam(bool, FIsHitImpenetrableDelegate, const FHitResult&)
 
 /**
  *	- Exit hit scene casting -

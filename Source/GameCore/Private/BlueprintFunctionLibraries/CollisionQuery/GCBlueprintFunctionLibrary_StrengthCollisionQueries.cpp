@@ -8,9 +8,9 @@
 
 
 
-const FGetPerCmPenetrationNerfDelegate UGCBlueprintFunctionLibrary_StrengthCollisionQueries::DefaultGetPerCmPenetrationNerf = FGetPerCmPenetrationNerfDelegate::CreateLambda([](const FHitResult&) { return 0.f; });
-const FGetRicochetNerfDelegate UGCBlueprintFunctionLibrary_StrengthCollisionQueries::DefaultGetRicochetNerf = FGetRicochetNerfDelegate::CreateLambda([](const FHitResult&) { return 0.f; });
-const FIsHitRicochetableDelegate UGCBlueprintFunctionLibrary_StrengthCollisionQueries::DefaultIsHitRicochetable = FIsHitRicochetableDelegate::CreateLambda([](const FHitResult&) { return false; });
+const FGetPerCmPenetrationNerfDelegate UGCBlueprintFunctionLibrary_StrengthCollisionQueries::DefaultGetPerCmPenetrationNerf = FGetPerCmPenetrationNerfDelegate::CreateStatic([](const FHitResult&) { return 0.f; });
+const FGetRicochetNerfDelegate UGCBlueprintFunctionLibrary_StrengthCollisionQueries::DefaultGetRicochetNerf = FGetRicochetNerfDelegate::CreateStatic([](const FHitResult&) { return 0.f; });
+const FIsHitRicochetableDelegate UGCBlueprintFunctionLibrary_StrengthCollisionQueries::DefaultIsHitRicochetable = FIsHitRicochetableDelegate::CreateStatic([](const FHitResult&) { return false; });
 
 //  BEGIN Custom query
 FStrengthHitResult* UGCBlueprintFunctionLibrary_StrengthCollisionQueries::PenetrationSceneCastWithExitHitsUsingStrength(const float InInitialStrength, TArray<float>& InOutPerCmNerfStack, const UWorld* InWorld, FPenetrationSceneCastWithExitHitsUsingStrengthResult& OutResult, const FVector& InStart, const FVector& InEnd, const FQuat& InRotation, const ECollisionChannel InTraceChannel, const FCollisionShape& InCollisionShape, const FCollisionQueryParams& InCollisionQueryParams, const FCollisionResponseParams& InCollisionResponseParams,

@@ -132,9 +132,9 @@ struct GAMECORE_API FRicochetingPenetrationSceneCastWithExitHitsUsingStrengthRes
 };
 
 
-DECLARE_DELEGATE_RetVal_OneParam(float, FGetPerCmPenetrationNerfDelegate, FHitResult)
-DECLARE_DELEGATE_RetVal_OneParam(float, FGetRicochetNerfDelegate, FHitResult)
-DECLARE_DELEGATE_RetVal_OneParam(bool, FIsHitRicochetableDelegate, FHitResult)
+DECLARE_DELEGATE_RetVal_OneParam(float, FGetPerCmPenetrationNerfDelegate, const FHitResult&)
+DECLARE_DELEGATE_RetVal_OneParam(float, FGetRicochetNerfDelegate, const FHitResult&)
+DECLARE_DELEGATE_RetVal_OneParam(bool, FIsHitRicochetableDelegate, const FHitResult&)
 
 /**
  *	A collection of specialized scene casts that rely on strength to keep it traveling. These are given an initial strength and lose strength from provided strength nerfs. The scene cast is stopped the moment its strength runs out.
