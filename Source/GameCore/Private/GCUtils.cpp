@@ -42,12 +42,12 @@ const TCHAR* LexToString(ENetRole inNetRole)
 
 FString GCUtils::GetUObjectNameSafe(const UObject* inUObject)
 {
-    return inUObject ? inUObject->GetName() : TEXT("NULL");
+    return inUObject ? inUObject->GetName() : CStringNull;
 }
 
 FString GCUtils::GetUObjectFullNameSafe(const UObject* inUObject, const UObject* StopOuter, EObjectFullNameFlags Flags)
 {
-    return inUObject ? inUObject->GetFullName(StopOuter, Flags) : TEXT("NULL");
+    return inUObject ? inUObject->GetFullName(StopOuter, Flags) : CStringNull;
 }
 
 const TCHAR* GCUtils::BoolToCString(const bool inBool)
@@ -55,12 +55,24 @@ const TCHAR* GCUtils::BoolToCString(const bool inBool)
     return inBool ? TEXT("True") : TEXT("False");
 }
 
-const TCHAR* GCUtils::GetWorldNetMode(const UWorld* inWorld)
+const TCHAR* GCUtils::GetWorldNetModeCString(const UObject* inWorldContextObject)
 {
-    if (!inWorld)
+    if (!inWorldContextObject)
     {
-        return TEXT("Null World");
+        return TEXT("Null ") GC_CSTRINGIZE(inWorldContextObject);
     }
 
-    return LexToString(inWorld->GetNetMode());
+    const UWorld* world = GetWorldSafe(inWorldContextObject);
+
+    if (!world)
+    {
+        return TEXT("Null") GC_CSTRINGIZE(world);
+    }
+
+    return LexToString(world->GetNetMode());
+}
+
+UWorld* GCUtils::GetWorldSafe(const UObject* inObject)
+{
+    return inObject ? inObject->GetWorld() : nullptr;
 }
