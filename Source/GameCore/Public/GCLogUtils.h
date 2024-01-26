@@ -6,4 +6,5 @@
 
 namespace GCLogUtils
 {
+    inline constexpr const TCHAR* CStringNull = TEXT("NULL");
 }
