@@ -13,7 +13,11 @@
 
 #define GC_CLOG(condition, categoryName, verbosity, format, ...) UE_CLOG(condition, categoryName, verbosity, TEXT("[%s] ") format, ANSI_TO_TCHAR(__func__), ##__VA_ARGS__)
 
-namespace GCLogUtils
+namespace GCUtils
 {
     inline constexpr const TCHAR* CStringNull = TEXT("NULL");
+
+    FString GetUObjectNameSafe(const UObject* inUObject);
+
+    FString GetUObjectFullNameSafe(const UObject* inUObject, const UObject* StopOuter=NULL, EObjectFullNameFlags Flags = EObjectFullNameFlags::None);
 }
