@@ -7,4 +7,8 @@
 namespace GCLogUtils
 {
     inline constexpr const TCHAR* CStringNull = TEXT("NULL");
+
+    FString GetUObjectNameSafe(const UObject* inUObject);
+
+    FString GetUObjectFullNameSafe(const UObject* inUObject, const UObject* StopOuter=NULL, EObjectFullNameFlags Flags = EObjectFullNameFlags::None);
 }
