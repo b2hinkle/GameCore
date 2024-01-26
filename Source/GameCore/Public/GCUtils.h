@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 
-namespace GCLogUtils
+namespace GCUtils
 {
     inline constexpr const TCHAR* CStringNull = TEXT("NULL");
 
