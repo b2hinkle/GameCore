@@ -15,7 +15,7 @@
 
 namespace GCUtils
 {
-    inline constexpr const TCHAR* CStringNull = TEXT("NULL");
+    GAMECORE_API inline constexpr const TCHAR* CStringNull = TEXT("NULL");
 
     FString GetUObjectNameSafe(const UObject* inUObject);
 
