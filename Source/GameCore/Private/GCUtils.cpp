@@ -9,5 +9,5 @@ FString GCUtils::GetUObjectNameSafe(const UObject* inUObject)
 
 FString GCUtils::GetUObjectFullNameSafe(const UObject* inUObject, const UObject* StopOuter, EObjectFullNameFlags Flags)
 {
-    return inUObject ? inUObject->GetFullName() : TEXT("NULL");
+    return inUObject ? inUObject->GetFullName(StopOuter, Flags) : TEXT("NULL");
 }
