@@ -49,4 +49,47 @@ namespace GCUtils
     GAMECORE_API const TCHAR* GetWorldNetModeCString(const UObject* inWorldContextObject);
 
     GAMECORE_API UWorld* GetWorldSafe(const UObject* inObject);
+
+    // Begin "GetTyped" Utils.
+
+    /**
+     * Traverse the UObject outer chain then the AActor owner chain to return the
+     * first thing that implements the interface.
+     */
+    GAMECORE_API UObject* GetInterfaceTypedOuterOrOwnerActor(const UObject* inObject, TSubclassOf<UInterface> inTargetClass);
+
+    /**
+     * Traverse the UObject outer chain to return the first AActor that we find.
+     *
+     * Result of using this on an actor component is consistent with UActorComponent::GetOwner().
+     */
+    GAMECORE_API AActor* GetOuterActor(const UObject* inObject);
+
+    // Begin "GetTyped" OWNER For OBJECT Utils.
+    GAMECORE_API AActor* GetTypedOwnerActorForObject(const UObject* inObject, TSubclassOf<AActor> inTargetClass);
+
+    GAMECORE_API AActor* GetInterfaceTypedOwnerActorForObject(const UObject* inObject, TSubclassOf<UInterface> inTargetClass);
+    // End "GetTyped" OWNER For OBJECT Utils.
+
+    // Begin "GetTyped" OUTER Utils.
+    GAMECORE_API UObject* GetTypedOuter(const UObject* inObject, UClass* inTargetClass);
+
+    GAMECORE_API UObject* GetTypedOuterIncludingSelf(UObject* inObject, UClass* inTargetClass);
+
+    GAMECORE_API UObject* GetInterfaceTypedOuter(const UObject* inObject, TSubclassOf<UInterface> inTargetClass);
+
+    GAMECORE_API UObject* GetInterfaceTypedOuterIncludingSelf(UObject* inObject, TSubclassOf<UInterface> inTargetClass);
+    // End "GetTyped" OUTER Utils.
+
+    // Begin "GetTyped" OWNER Utils.
+    GAMECORE_API AActor* GetTypedOwnerActor(const AActor* inActor, TSubclassOf<AActor> inTargetClass);
+
+    GAMECORE_API AActor* GetTypedOwnerActorIncludingSelf(AActor* inActor, TSubclassOf<AActor> inTargetClass);
+
+    GAMECORE_API AActor* GetInterfaceTypedOwnerActor(const AActor* inActor, TSubclassOf<UInterface> inTargetClass);
+
+    GAMECORE_API AActor* GetInterfaceTypedOwnerActorIncludingSelf(AActor* inActor, TSubclassOf<UInterface> inTargetClass);
+    // End "GetTyped" OWNER Utils.
+
+    // End "GetTyped" Utils.
 }
