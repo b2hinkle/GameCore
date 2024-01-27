@@ -77,35 +77,65 @@ UWorld* GCUtils::GetWorldSafe(const UObject* inObject)
     return inObject ? inObject->GetWorld() : nullptr;
 }
 
-UObject* GCUtils::GetInterfaceTypedOuterOrOwnerActor(const UObject* inObject, TSubclassOf<UInterface> inTargetClass)
+UObject* GCUtils::TraverseSelfToOutersToOwnerActorsBreakable(UObject* inObject, const TFunctionRef<bool(UObject&)>& inShouldBreakPredicate)
 {
-    if (!inObject)
-    {
-        return nullptr;
-    }
+    UObject* objectBrokenOn = nullptr;
 
-    for (UObject* outer = inObject->GetOuter(); outer; outer = outer->GetOuter())
-    {
-        AActor* actor = Cast<AActor>(outer);
-        if (actor)
+    TraverseSelfToOutersBreakable(inObject,
+        [&inShouldBreakPredicate, &objectBrokenOn](UObject& outer) -> bool
         {
-            // We've reached an actor in the outer chain. Stop traversing outers and
-            // switch to traversing the actor owner chain.
-            for (AActor* owner = actor; owner; owner = owner->GetOwner())
+            if (AActor* actor = Cast<AActor>(&outer))
             {
-                check(owner->GetClass());
-                if (owner->GetClass()->ImplementsInterface(inTargetClass))
-                {
-                    return owner;
-                }
+                // We've reached an actor in the outer chain. Stop traversing outers and
+                // switch to traversing the actor owner chain.
+                TraverseSelfToOwnerActorsBreakable(actor,
+                    [&inShouldBreakPredicate, &objectBrokenOn](AActor& owner) -> bool
+                    {
+                        if (inShouldBreakPredicate(owner))
+                        {
+                            objectBrokenOn = &owner;
+                            return true;
+                        }
+
+                        return false;
+                    });
+
+                // Don't continue with traversing the outer chain.
+                return true;
             }
 
-            // Don't continue with traversing the outer chain.
-            return nullptr;
-        }
+            if (inShouldBreakPredicate(outer))
+            {
+                objectBrokenOn = &outer;
+                return true;
+            }
 
-        check(outer->GetClass());
-        if (outer->GetClass()->ImplementsInterface(inTargetClass))
+            return false;
+        });
+
+    return objectBrokenOn;
+}
+
+UObject* GCUtils::TraverseOutersToOwnerActorsBreakable(const UObject* inObject, const TFunctionRef<bool(UObject&)>& inShouldBreakPredicate)
+{
+    if (!inObject)
+    {
+        return nullptr;
+    }
+
+    if (const AActor* actor = Cast<AActor>(inObject))
+    {
+        return TraverseSelfToOutersToOwnerActorsBreakable(actor->GetOwner(), inShouldBreakPredicate);
+    }
+
+    return TraverseSelfToOutersToOwnerActorsBreakable(inObject->GetOuter(), inShouldBreakPredicate);
+}
+
+UObject* GCUtils::TraverseSelfToOutersBreakable(UObject* inObject, const TFunctionRef<bool(UObject&)>& inShouldBreakPredicate)
+{
+    for (UObject* outer = inObject; outer; outer = outer->GetOuter())
+    {
+        if (inShouldBreakPredicate(*outer))
         {
             return outer;
         }
@@ -114,110 +144,21 @@ UObject* GCUtils::GetInterfaceTypedOuterOrOwnerActor(const UObject* inObject, TS
     return nullptr;
 }
 
-AActor* GCUtils::GetOuterActor(const UObject* inObject)
+UObject* GCUtils::TraverseOutersBreakable(const UObject* inObject, const TFunctionRef<bool(UObject&)>& inShouldBreakPredicate)
 {
     if (!inObject)
     {
         return nullptr;
     }
 
-    return inObject->GetTypedOuter<AActor>();
+    return TraverseSelfToOutersBreakable(inObject->GetOuter(), inShouldBreakPredicate);
 }
 
-AActor* GCUtils::GetTypedOwnerActorForObject(const UObject* inObject, TSubclassOf<AActor> inTargetClass)
+AActor* GCUtils::TraverseSelfToOwnerActorsBreakable(AActor* inActor, const TFunctionRef<bool(AActor&)>& inShouldBreakPredicate)
 {
-    AActor* actor = GetOuterActor(inObject);
-    if (!actor)
+    for (AActor* owner = inActor; owner; owner = owner->GetOwner())
     {
-        return nullptr;
-    }
-
-    return GetTypedOwnerActorIncludingSelf(actor, inTargetClass);
-}
-
-AActor* GCUtils::GetInterfaceTypedOwnerActorForObject(const UObject* inObject, TSubclassOf<UInterface> inTargetClass)
-{
-    AActor* actor = GetOuterActor(inObject);
-    if (!actor)
-    {
-        return nullptr;
-    }
-
-    return GetInterfaceTypedOwnerActorIncludingSelf(actor, inTargetClass);
-}
-
-UObject* GCUtils::GetTypedOuter(const UObject* inObject, UClass* inTargetClass)
-{
-    if (!inObject)
-    {
-        return nullptr;
-    }
-
-    return inObject->GetTypedOuter(inTargetClass);
-}
-
-UObject* GCUtils::GetTypedOuterIncludingSelf(UObject* inObject, UClass* inTargetClass)
-{
-    if (!inObject)
-    {
-        return nullptr;
-    }
-
-    if (inObject->IsA(inTargetClass))
-    {
-        return inObject;
-    }
-
-    return inObject->GetTypedOuter(inTargetClass);
-}
-
-UObject* GCUtils::GetInterfaceTypedOuter(const UObject* inObject, TSubclassOf<UInterface> inTargetClass)
-{
-    if (!inObject)
-    {
-        return nullptr;
-    }
-
-    // Use some similar code to UObjectBaseUtility::GetTypedOuter().
-    for (UObject* outer = inObject->GetOuter(); outer; outer = outer->GetOuter())
-    {
-        // TODO: Check if we can do IsA<>().
-        check(outer->GetClass());
-        if (outer->GetClass()->ImplementsInterface(inTargetClass))
-        {
-            return outer;
-        }
-    }
-
-    return nullptr;
-}
-
-UObject* GCUtils::GetInterfaceTypedOuterIncludingSelf(UObject* inObject, TSubclassOf<UInterface> inTargetClass)
-{
-    if (!inObject)
-    {
-        return nullptr;
-    }
-
-    check(inObject->GetClass());
-    if (inObject->GetClass()->ImplementsInterface(inTargetClass))
-    {
-        return inObject;
-    }
-
-    return GetInterfaceTypedOuter(inObject, inTargetClass);
-}
-
-AActor* GCUtils::GetTypedOwnerActor(const AActor* inActor, TSubclassOf<AActor> inTargetClass)
-{
-    if (!inActor)
-    {
-        return nullptr;
-    }
-
-    for (AActor* owner = inActor->GetOwner(); owner; owner = owner->GetOwner())
-    {
-        if (owner->IsA(inTargetClass))
+        if (inShouldBreakPredicate(*owner))
         {
             return owner;
         }
@@ -226,53 +167,134 @@ AActor* GCUtils::GetTypedOwnerActor(const AActor* inActor, TSubclassOf<AActor> i
     return nullptr;
 }
 
-AActor* GCUtils::GetTypedOwnerActorIncludingSelf(AActor* inActor, TSubclassOf<AActor> inTargetClass)
+AActor* GCUtils::TraverseOwnerActorsBreakable(const AActor* inActor, const TFunctionRef<bool(AActor&)>& inShouldBreakPredicate)
 {
     if (!inActor)
     {
         return nullptr;
     }
 
-    if (inActor->IsA(inTargetClass))
-    {
-        return inActor;
-    }
-
-    return GetTypedOwnerActor(inActor, inTargetClass);
+    return TraverseSelfToOwnerActorsBreakable(inActor->GetOwner(), inShouldBreakPredicate);
 }
 
-AActor* GCUtils::GetInterfaceTypedOwnerActor(const AActor* inActor, TSubclassOf<UInterface> inTargetClass)
+UObject* GCUtils::GetTypedSelfOrOuterOrOwnerActorByInterface(UObject* inObject, const TSubclassOf<UInterface>& inTargetClass)
 {
-    if (!inActor)
-    {
-        return nullptr;
-    }
-
-    for (AActor* owner = inActor->GetOwner(); owner; owner = owner->GetOwner())
-    {
-        check(owner->GetClass());
-        if (owner->GetClass()->ImplementsInterface(inTargetClass))
+    return TraverseSelfToOutersToOwnerActorsBreakable(inObject,
+        [&inTargetClass](UObject& object) -> bool
         {
-            return owner;
-        }
-    }
-
-    return nullptr;
+            check(object.GetClass());
+            return object.GetClass()->ImplementsInterface(inTargetClass);
+        });
 }
 
-AActor* GCUtils::GetInterfaceTypedOwnerActorIncludingSelf(AActor* inActor, TSubclassOf<UInterface> inTargetClass)
+UObject* GCUtils::GetTypedOuterOrOwnerActorByInterface(const UObject* inObject, const TSubclassOf<UInterface>& inTargetClass)
+{
+    if (!inObject)
+    {
+        return nullptr;
+    }
+
+    if (const AActor* actor = Cast<AActor>(inObject))
+    {
+        return GetTypedSelfOrOuterOrOwnerActorByInterface(actor->GetOwner(), inTargetClass);
+    }
+
+    return GetTypedSelfOrOuterOrOwnerActorByInterface(inObject->GetOuter(), inTargetClass);
+}
+
+AActor* GCUtils::GetOwnerActorForObject(const UObject* inObject)
+{
+    UObject* result = GetTypedOuter(inObject, AActor::StaticClass());
+    check(!(result && result->IsA<AActor>() == false));
+    return static_cast<AActor*>(result);
+}
+
+AActor* GCUtils::GetTypedOwnerActorForObject(const UObject* inObject, const TSubclassOf<AActor>& inTargetClass)
+{
+    AActor* actor = GetOwnerActorForObject(inObject);
+    return GetTypedSelfOrOwnerActor(actor, inTargetClass);
+}
+
+AActor* GCUtils::GetTypedOwnerActorForObjectByInterface(const UObject* inObject, const TSubclassOf<UInterface>& inTargetClass)
+{
+    AActor* actor = GetOwnerActorForObject(inObject);
+    return GetTypedSelfOrOwnerActorByInterface(actor, inTargetClass);
+}
+
+AActor* GCUtils::GetTypedSelfOrOwnerActor(AActor* inActor, const TSubclassOf<AActor>& inTargetClass)
+{
+    return TraverseSelfToOwnerActorsBreakable(inActor,
+        [&inTargetClass](AActor& actor) -> bool
+        {
+            return actor.IsA(inTargetClass);
+        });
+}
+
+AActor* GCUtils::GetTypedSelfOrOwnerActorByInterface(AActor* inActor, const TSubclassOf<UInterface>& inTargetClass)
+{
+    return TraverseSelfToOwnerActorsBreakable(inActor,
+        [&inTargetClass](AActor& actor) -> bool
+        {
+            check(actor.GetClass());
+            return actor.GetClass()->ImplementsInterface(inTargetClass);
+        });
+}
+
+AActor* GCUtils::GetTypedOwnerActor(const AActor* inActor, const TSubclassOf<AActor>& inTargetClass)
 {
     if (!inActor)
     {
         return nullptr;
     }
 
-    check(inActor->GetClass());
-    if (inActor->GetClass()->ImplementsInterface(inTargetClass))
+    return GetTypedSelfOrOwnerActor(inActor->GetOwner(), inTargetClass);
+}
+
+AActor* GCUtils::GetTypedOwnerActorByInterface(const AActor* inActor, const TSubclassOf<UInterface>& inTargetClass)
+{
+    if (!inActor)
     {
-        return inActor;
+        return nullptr;
     }
 
+    return GetTypedSelfOrOwnerActorByInterface(inActor->GetOwner(), inTargetClass);
+}
 
-    return GetInterfaceTypedOwnerActor(inActor, inTargetClass);
+UObject* GCUtils::GetTypedSelfOrOuter(UObject* inObject, const TSubclassOf<UObject>& inTargetClass)
+{
+    return TraverseSelfToOutersBreakable(inObject,
+        [&inTargetClass](UObject& object) -> bool
+        {
+            return object.IsA(inTargetClass);
+        });
+}
+
+UObject* GCUtils::GetTypedSelfOrOuterByInterface(UObject* inObject, const TSubclassOf<UInterface>& inTargetClass)
+{
+    return TraverseSelfToOutersBreakable(inObject,
+        [&inTargetClass](UObject& object) -> bool
+        {
+            check(object.GetClass());
+            return object.GetClass()->ImplementsInterface(inTargetClass);
+        });
+}
+
+UObject* GCUtils::GetTypedOuter(const UObject* inObject, const TSubclassOf<UObject>& inTargetClass)
+{
+    if (!inObject)
+    {
+        return nullptr;
+    }
+
+    return GetTypedSelfOrOuter(inObject->GetOuter(), inTargetClass);
+}
+
+UObject* GCUtils::GetTypedOuterByInterface(const UObject* inObject, const TSubclassOf<UInterface>& inTargetClass)
+{
+    if (!inObject)
+    {
+        return nullptr;
+    }
+
+    return GetTypedSelfOrOuterByInterface(inObject->GetOuter(), inTargetClass);
 }
