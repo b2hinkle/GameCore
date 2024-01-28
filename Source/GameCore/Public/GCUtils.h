@@ -58,7 +58,7 @@ namespace GCUtils
      * E.g., you are up-casting.
      */
     template <class TTo, class TFrom>
-    TTo StaticCastChecked(TFrom inObject);
+    TTo StaticCastChecked(TFrom&& inObject);
 
     /**
      * If static casting isn't an option but inObject is still guaranteed to be a TTo.
@@ -66,31 +66,45 @@ namespace GCUtils
      * Necessary for casting to interface classes that aren't part of TFrom's inheritance chain.
      */
     template <class TTo, class TFrom>
-    TTo ReinterpretCastChecked(TFrom inObject);
+    TTo ReinterpretCastChecked(TFrom&& inObject);
 }
 
 template <class TTo, class TFrom>
-TTo GCUtils::StaticCastChecked(TFrom inObject)
+TTo GCUtils::StaticCastChecked(TFrom&& inObject)
 {
 #if DO_CHECK
-    if (inObject)
+    if constexpr (TIsPointer<TTo>::Value)
     {
-        check(Cast<TRemovePointer<TTo>::Type>(inObject));
+        if (inObject)
+        {
+            check(Cast<TRemovePointer<TTo>::Type>(inObject));
+        }
+    }
+    else if constexpr (TIsReferenceType<TTo>::Value)
+    {
+        check(Cast<TRemoveReference<TTo>::Type>(&inObject));
     }
 #endif // DO_CHECK
 
-    return static_cast<TTo>(inObject);
+    return static_cast<TTo>(Forward<TFrom>(inObject));
 }
 
 template <class TTo, class TFrom>
-TTo GCUtils::ReinterpretCastChecked(TFrom inObject)
+TTo GCUtils::ReinterpretCastChecked(TFrom&& inObject)
 {
 #if DO_CHECK
-    if (inObject)
+    if constexpr (TIsPointer<TTo>::Value)
     {
-        check(Cast<TRemovePointer<TTo>::Type>(inObject));
+        if (inObject)
+        {
+            check(Cast<TRemovePointer<TTo>::Type>(inObject));
+        }
+    }
+    else if constexpr (TIsReferenceType<TTo>::Value)
+    {
+        check(Cast<TRemoveReference<TTo>::Type>(&inObject));
     }
 #endif // DO_CHECK
 
-    return reinterpret_cast<TTo>(inObject);
+    return reinterpret_cast<TTo>(Forward<TFrom>(inObject));
 }
