@@ -104,7 +104,7 @@ AActor* GCUtils::ObjectTraversal::TraverseOwnerActorsBreakable(const AActor* inA
 
 AActor* GCUtils::ObjectTraversal::GetOwnerActorForObject(const UObject* inObject)
 {
-    return GetTypedOwnerActorForObject<AActor>(inObject);
+    return GetTypedOuter<AActor>(inObject);
 }
 
 AActor* GCUtils::ObjectTraversal::GetOwnerActorForObjectByClass(const UObject* inObject, const TSubclassOf<AActor>& inTargetClass)

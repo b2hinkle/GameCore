@@ -101,7 +101,7 @@ namespace GCUtils::ObjectTraversal
     GAMECORE_API UObject* GetSelfOrOuterByInterface(UObject* inObject, const TSubclassOf<UInterface>& inTargetClass);
 
     template <class TTargetClass>
-    TTargetClass* GetTypedOuter(UObject* inObject);
+    TTargetClass* GetTypedOuter(const UObject* inObject);
     GAMECORE_API UObject* GetOuterByClass(const UObject* inObject, const TSubclassOf<UObject>& inTargetClass);
     GAMECORE_API UObject* GetOuterByInterface(const UObject* inObject, const TSubclassOf<UInterface>& inTargetClass);
 }
@@ -187,7 +187,7 @@ TTargetClass* GCUtils::ObjectTraversal::GetTypedSelfOrOuter(UObject* inObject)
 }
 
 template <class TTargetClass>
-TTargetClass* GCUtils::ObjectTraversal::GetTypedOuter(UObject* inObject)
+TTargetClass* GCUtils::ObjectTraversal::GetTypedOuter(const UObject* inObject)
 {
     if constexpr (TIsIInterface<TTargetClass>::Value == true)
     {
