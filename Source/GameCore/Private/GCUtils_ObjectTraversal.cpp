@@ -102,6 +102,23 @@ AActor* GCUtils::ObjectTraversal::TraverseOwnerActorsBreakable(const AActor* inA
     return TraverseSelfToOwnerActorsBreakable(inActor->GetOwner(), inShouldBreakPredicate);
 }
 
+AActor* GCUtils::ObjectTraversal::GetOwnerActorForObject(const UObject* inObject)
+{
+    return GetTypedOwnerActorForObject<AActor>(inObject);
+}
+
+AActor* GCUtils::ObjectTraversal::GetOwnerActorForObjectByClass(const UObject* inObject, const TSubclassOf<AActor>& inTargetClass)
+{
+    AActor* actor = GetOwnerActorForObject(inObject);
+    return GetSelfOrOwnerActorByClass(actor, inTargetClass);
+}
+
+AActor* GCUtils::ObjectTraversal::GetOwnerActorForObjectByInterface(const UObject* inObject, const TSubclassOf<UInterface>& inTargetClass)
+{
+    AActor* actor = GetOwnerActorForObject(inObject);
+    return GetSelfOrOwnerActorByInterface(actor, inTargetClass);
+}
+
 UObject* GCUtils::ObjectTraversal::GetSelfOrOuterOrOwnerActorByInterface(UObject* inObject, const TSubclassOf<UInterface>& inTargetClass)
 {
     return TraverseSelfToOutersToOwnerActorsBreakable(inObject,
@@ -125,25 +142,6 @@ UObject* GCUtils::ObjectTraversal::GetOuterOrOwnerActorByInterface(const UObject
     }
 
     return GetSelfOrOuterOrOwnerActorByInterface(inObject->GetOuter(), inTargetClass);
-}
-
-AActor* GCUtils::ObjectTraversal::GetOwnerActorForObject(const UObject* inObject)
-{
-    UObject* result = GetOuterByClass(inObject, AActor::StaticClass());
-    check(!(result && result->IsA<AActor>() == false));
-    return static_cast<AActor*>(result);
-}
-
-AActor* GCUtils::ObjectTraversal::GetOwnerActorForObjectByClass(const UObject* inObject, const TSubclassOf<AActor>& inTargetClass)
-{
-    AActor* actor = GetOwnerActorForObject(inObject);
-    return GetSelfOrOwnerActorByClass(actor, inTargetClass);
-}
-
-AActor* GCUtils::ObjectTraversal::GetOwnerActorForObjectByInterface(const UObject* inObject, const TSubclassOf<UInterface>& inTargetClass)
-{
-    AActor* actor = GetOwnerActorForObject(inObject);
-    return GetSelfOrOwnerActorByInterface(actor, inTargetClass);
 }
 
 AActor* GCUtils::ObjectTraversal::GetSelfOrOwnerActorByClass(AActor* inActor, const TSubclassOf<AActor>& inTargetClass)

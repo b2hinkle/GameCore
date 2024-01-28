@@ -49,4 +49,48 @@ namespace GCUtils
     GAMECORE_API const TCHAR* GetWorldNetModeCString(const UObject* inWorldContextObject);
 
     GAMECORE_API UWorld* GetWorldSafe(const UObject* inObject);
+
+    /**
+     * If inObject is already guaranteed to be a TTo.
+     *
+     * E.g., you load an asset by class and you are certain the result is a TTo.
+     *
+     * E.g., you are up-casting.
+     */
+    template <class TTo, class TFrom>
+    TTo StaticCastChecked(TFrom inObject);
+
+    /**
+     * If static casting isn't an option but inObject is still guaranteed to be a TTo.
+     *
+     * Necessary for casting to interface classes that aren't part of TFrom's inheritance chain.
+     */
+    template <class TTo, class TFrom>
+    TTo ReinterpretCastChecked(TFrom inObject);
+}
+
+template <class TTo, class TFrom>
+TTo GCUtils::StaticCastChecked(TFrom inObject)
+{
+#if DO_CHECK
+    if (inObject)
+    {
+        check(Cast<TRemovePointer<TTo>::Type>(inObject));
+    }
+#endif // DO_CHECK
+
+    return static_cast<TTo>(inObject);
+}
+
+template <class TTo, class TFrom>
+TTo GCUtils::ReinterpretCastChecked(TFrom inObject)
+{
+#if DO_CHECK
+    if (inObject)
+    {
+        check(Cast<TRemovePointer<TTo>::Type>(inObject));
+    }
+#endif // DO_CHECK
+
+    return reinterpret_cast<TTo>(inObject);
 }
