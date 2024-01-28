@@ -100,12 +100,12 @@ namespace GCUtils
      * Traverse the UObject outer chain then the AActor owner chain to return the
      * first thing that implements the interface. Including self.
      */
-    GAMECORE_API UObject* GetTypedSelfOrOuterOrOwnerActorByInterface(UObject* inObject, const TSubclassOf<UInterface>& inTargetClass);
+    GAMECORE_API UObject* GetSelfOrOuterOrOwnerActorByInterface(UObject* inObject, const TSubclassOf<UInterface>& inTargetClass);
 
     /**
-     * Same as GetTypedSelfOrOuterOrOwnerActorByInterface() but doesn't include self.
+     * Same as GetSelfOrOuterOrOwnerActorByInterface() but doesn't include self.
      */
-    GAMECORE_API UObject* GetTypedOuterOrOwnerActorByInterface(const UObject* inObject, const TSubclassOf<UInterface>& inTargetClass);
+    GAMECORE_API UObject* GetOuterOrOwnerActorByInterface(const UObject* inObject, const TSubclassOf<UInterface>& inTargetClass);
 
     /**
      * Traverse the UObject outer chain to return the first AActor that we find.
@@ -114,18 +114,18 @@ namespace GCUtils
      */
     GAMECORE_API AActor* GetOwnerActorForObject(const UObject* inObject);
 
-    GAMECORE_API AActor* GetTypedOwnerActorForObject(const UObject* inObject, const TSubclassOf<AActor>& inTargetClass);
-    GAMECORE_API AActor* GetTypedOwnerActorForObjectByInterface(const UObject* inObject, const TSubclassOf<UInterface>& inTargetClass);
+    GAMECORE_API AActor* GetOwnerActorForObjectByClass(const UObject* inObject, const TSubclassOf<AActor>& inTargetClass);
+    GAMECORE_API AActor* GetOwnerActorForObjectByInterface(const UObject* inObject, const TSubclassOf<UInterface>& inTargetClass);
 
-    GAMECORE_API AActor* GetTypedSelfOrOwnerActor(AActor* inActor, const TSubclassOf<AActor>& inTargetClass);
-    GAMECORE_API AActor* GetTypedSelfOrOwnerActorByInterface(AActor* inActor, const TSubclassOf<UInterface>& inTargetClass);
+    GAMECORE_API AActor* GetSelfOrOwnerActorByClass(AActor* inActor, const TSubclassOf<AActor>& inTargetClass);
+    GAMECORE_API AActor* GetSelfOrOwnerActorByInterface(AActor* inActor, const TSubclassOf<UInterface>& inTargetClass);
 
-    GAMECORE_API AActor* GetTypedOwnerActor(const AActor* inActor, const TSubclassOf<AActor>& inTargetClass);
-    GAMECORE_API AActor* GetTypedOwnerActorByInterface(const AActor* inActor, const TSubclassOf<UInterface>& inTargetClass);
+    GAMECORE_API AActor* GetOwnerActorByClass(const AActor* inActor, const TSubclassOf<AActor>& inTargetClass);
+    GAMECORE_API AActor* GetOwnerActorByInterface(const AActor* inActor, const TSubclassOf<UInterface>& inTargetClass);
 
-    GAMECORE_API UObject* GetTypedSelfOrOuter(UObject* inObject, const TSubclassOf<UObject>& inTargetClass);
-    GAMECORE_API UObject* GetTypedSelfOrOuterByInterface(UObject* inObject, const TSubclassOf<UInterface>& inTargetClass);
+    GAMECORE_API UObject* GetSelfOrOuterByClass(UObject* inObject, const TSubclassOf<UObject>& inTargetClass);
+    GAMECORE_API UObject* GetSelfOrOuterByInterface(UObject* inObject, const TSubclassOf<UInterface>& inTargetClass);
 
-    GAMECORE_API UObject* GetTypedOuter(const UObject* inObject, const TSubclassOf<UObject>& inTargetClass);
-    GAMECORE_API UObject* GetTypedOuterByInterface(const UObject* inObject, const TSubclassOf<UInterface>& inTargetClass);
+    GAMECORE_API UObject* GetOuterByClass(const UObject* inObject, const TSubclassOf<UObject>& inTargetClass);
+    GAMECORE_API UObject* GetOuterByInterface(const UObject* inObject, const TSubclassOf<UInterface>& inTargetClass);
 }
