@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GCUtils.h"
 
 namespace GCUtils::ObjectTraversal
 {

@@ -1,14 +1,14 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "BlueprintFunctionLibraries/GCBlueprintFunctionLibrary_ContentTools.h"
+#include "GCUtils_Plugin.h"
 
 #include "Interfaces/IPluginManager.h"
 #include "PluginDescriptor.h"
 
 
 
-void UGCBlueprintFunctionLibrary_ContentTools::UseContentFromDependentPlugins(const FString& InSelfPluginName, const TDelegate<void(const IPlugin&)>& InOnPluginAddContent, const TDelegate<void(const IPlugin&)>& InOnPluginRemoveContent)
+void GCUtils::Plugin::UseContentFromDependentPlugins(const FString& InSelfPluginName, const TDelegate<void(const IPlugin&)>& InOnPluginAddContent, const TDelegate<void(const IPlugin&)>& InOnPluginRemoveContent)
 {
 	// Look for plugins that have content for us to use
 	for (const TSharedRef<IPlugin>& Plugin : IPluginManager::Get().GetEnabledPluginsWithContent())
@@ -53,7 +53,7 @@ void UGCBlueprintFunctionLibrary_ContentTools::UseContentFromDependentPlugins(co
 	);
 }
 
-bool UGCBlueprintFunctionLibrary_ContentTools::PluginUsesUs(const FString& InSelfPluginName, const IPlugin& InPlugin)
+bool GCUtils::Plugin::PluginUsesUs(const FString& InSelfPluginName, const IPlugin& InPlugin)
 {
 	if (InPlugin.GetName() == InSelfPluginName)
 	{
