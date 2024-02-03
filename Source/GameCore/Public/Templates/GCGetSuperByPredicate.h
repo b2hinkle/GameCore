@@ -4,10 +4,6 @@
 
 #include "CoreMinimal.h"
 
-//#include "GCGetSuperByPredicate.generated.h" // uncomment this if we ever need reflection in here
-
-
-
 /**
  * Recursively traverse the Super chain until the TPredicate is met
  */

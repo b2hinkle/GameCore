@@ -4,8 +4,6 @@
 
 #include "CoreMinimal.h"
 
-
-
 /**
  * Check if T is a pointer to TPointedType.
  * 
@@ -19,7 +17,6 @@ struct TGCIsPointerTo
 		Value = TAnd<TIsPointer<T>, TIsSame<TRemovePointer<T>::Type, TPointedType>>::Value
 	};
 };
-
 
 /**
  * Check if T is a pointer to TPointedType.
@@ -47,7 +44,6 @@ template <class T> struct TGCIsObjectPointer<const TObjectPtr<T>>     { enum { V
 template <class T> struct TGCIsObjectPointer<TWeakObjectPtr<T>>       { enum { Value = 1 }; };
 template <class T> struct TGCIsObjectPointer<const TWeakObjectPtr<T>> { enum { Value = 1 }; };
 
-
 /**
  * Remove pointer from UObject T.
  * 
@@ -70,7 +66,6 @@ template <class T> struct TGCRemoveObjectPointer<const TObjectPtr<T>>     { usin
 
 template <class T> struct TGCRemoveObjectPointer<TWeakObjectPtr<T>>       { using Type = T; };
 template <class T> struct TGCRemoveObjectPointer<const TWeakObjectPtr<T>> { using Type = T; };
-
 
 /**
  * Check if T is a pointer to TPointedType.
