@@ -66,7 +66,7 @@ const TCHAR* GCUtils::GetWorldNetModeCString(const UObject* inWorldContextObject
 
     if (!world)
     {
-        return TEXT("Null") GC_CSTRINGIZE(world);
+        return TEXT("Null ") GC_CSTRINGIZE(world);
     }
 
     return LexToString(world->GetNetMode());

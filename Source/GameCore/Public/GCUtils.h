@@ -14,11 +14,21 @@
 #define GC_CLOG_NO_CONTEXT(condition, categoryName, verbosity, format, ...) UE_CLOG(condition, categoryName, verbosity, TEXT("[%s] ") format, ANSI_TO_TCHAR(__func__), ##__VA_ARGS__)
 
 /**
- * @param worldContextObject - UObject to get the world from so that we can output its net mode. May be a UWorld.
+ * Format cstring to print info of a context object.
  */
-#define GC_LOG(worldContextObject, categoryName, verbosity, format, ...) GC_LOG_NO_CONTEXT(categoryName, verbosity, TEXT("[%s] ") format, GCUtils::GetWorldNetModeCString(worldContextObject), ##__VA_ARGS__)
+#define GC_CONTEXT_OBJECT_FORMAT_CSTRING TEXT("[Context Object: %s] [Context World NetMode: %s] ")
 
-#define GC_CLOG(worldContextObject, condition, categoryName, verbosity, format, ...) GC_CLOG_NO_CONTEXT(condition, categoryName, verbosity, TEXT("[%s] ") format, GCUtils::GetWorldNetModeCString(worldContextObject), ##__VA_ARGS__)
+/**
+ * Variadic arguments that correspond with GC_CONTEXT_OBJECT_FORMAT_CSTRING.
+ */
+#define GC_CONTEXT_OBJECT_FORMAT_ARGS(contextObject) *GCUtils::GetUObjectNameSafe(contextObject), GCUtils::GetWorldNetModeCString(contextObject)
+
+/**
+ * @param contextObject - UObject to get the world from so that we can output its net mode. May be a UWorld.
+ */
+#define GC_LOG(contextObject, categoryName, verbosity, format, ...) GC_LOG_NO_CONTEXT(categoryName, verbosity, GC_CONTEXT_OBJECT_FORMAT_CSTRING format, GC_CONTEXT_OBJECT_FORMAT_ARGS(contextObject), ##__VA_ARGS__)
+
+#define GC_CLOG(contextObject, condition, categoryName, verbosity, format, ...) GC_CLOG_NO_CONTEXT(condition, categoryName, verbosity, GC_CONTEXT_OBJECT_FORMAT_CSTRING format, GC_CONTEXT_OBJECT_FORMAT_ARGS(contextObject), ##__VA_ARGS__)
 
 /**
  * Returns the string representation of the specified ENetMode value.
