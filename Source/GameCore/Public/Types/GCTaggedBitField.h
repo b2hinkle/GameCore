@@ -13,7 +13,7 @@ template
     typename TBitFieldType,
     class = typename TEnableIf
         <
-        TIsIntegral<TBitFieldType>::Value
+        TIsIntegral<TBitFieldType>::Value // Ensure integral type to avoid instantiations for types with custom operator overloads.
         >::Type
     >
 struct TGCTaggedBitField;
