@@ -3,6 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Templates/GCIsUObjectOrIInterface.h"
+#include "Templates/GCRemovePtrOrRef.h"
 
 #define GC_CSTRINGIZE(text) TEXT(PREPROCESSOR_TO_STRING(text))
 
@@ -57,7 +59,23 @@ namespace GCUtils
      *
      * E.g., you are up-casting.
      */
-    template <class TTo, class TFrom>
+    template
+        <
+        class TTo, class TFrom,
+        class = typename TEnableIf
+            <
+            TGCIsUObjectOrIInterface<typename TGCRemovePtrOrRef<TTo>::Type>::Value
+            >::Type,
+        class = typename TEnableIf
+            <
+            //
+            // Note: We remove reference from TFrom first things first to handle case where forwarding reference parameter makes TFrom an lvalue reference.
+            //
+            // E.g., lvalue UObject* argument -> UObject*& parameter.
+            //
+            TGCIsUObjectOrIInterface<typename TRemovePointer<typename TRemoveReference<TFrom>::Type>::Type>::Value
+            >::Type
+        >
     TTo StaticCastChecked(TFrom&& inObject);
 
     /**
@@ -65,11 +83,28 @@ namespace GCUtils
      *
      * Necessary for casting to interface classes that aren't part of TFrom's inheritance chain.
      */
-    template <class TTo, class TFrom>
+    template
+        <
+        class TTo, class TFrom,
+        class = typename TEnableIf
+            <
+            TGCIsUObjectOrIInterface<typename TGCRemovePtrOrRef<TTo>::Type>::Value
+            >::Type,
+        class = typename TEnableIf
+            <
+            // See StaticCastChecked() comment.
+            TGCIsUObjectOrIInterface<typename TRemovePointer<typename TRemoveReference<TFrom>::Type>::Type>::Value
+            >::Type
+        >
     TTo ReinterpretCastChecked(TFrom&& inObject);
 }
 
-template <class TTo, class TFrom>
+template
+    <
+    class TTo, class TFrom,
+    class,
+    class
+    >
 TTo GCUtils::StaticCastChecked(TFrom&& inObject)
 {
 #if DO_CHECK
@@ -89,7 +124,12 @@ TTo GCUtils::StaticCastChecked(TFrom&& inObject)
     return static_cast<TTo>(Forward<TFrom>(inObject));
 }
 
-template <class TTo, class TFrom>
+template
+    <
+    class TTo, class TFrom,
+    class,
+    class
+    >
 TTo GCUtils::ReinterpretCastChecked(TFrom&& inObject)
 {
 #if DO_CHECK
