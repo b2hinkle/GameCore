@@ -7,6 +7,17 @@
 
 struct FGameplayTag;
 
+// Primary template defined here to avoid clutter for the function implementations.
+template
+    <
+    typename TBitFieldType,
+    class = typename TEnableIf
+        <
+        TIsIntegral<TBitFieldType>::Value
+        >::Type
+    >
+struct TGCTaggedBitField;
+
 /**
 * Bit packing via gameplay tags.
 *
@@ -14,7 +25,7 @@ struct FGameplayTag;
 * the network while still using gameplay tags.
 */
 template <typename TBitFieldType>
-struct TGCTaggedBitField
+struct TGCTaggedBitField<TBitFieldType>
 {
     TGCTaggedBitField()
     {
