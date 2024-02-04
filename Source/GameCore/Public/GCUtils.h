@@ -6,13 +6,25 @@
 #include "Templates/GCIsUObjectOrIInterface.h"
 #include "Templates/GCRemovePtrOrRef.h"
 
+/**
+ * Makes a cstring literal out of the given text.
+ */
 #define GC_CSTRINGIZE(text) TEXT(PREPROCESSOR_TO_STRING(text))
+
+/**
+ * Macro version of GCUtils::CStringNull. Nice if you need a string literal instead of
+ * a variable. E.g., for combining string literals together.
+ */
+#define GC_CSTRING_NULL TEXT("NULL")
 
 /**
  * If you can't get ahold of a UObject, you may need to use this.
  */
 #define GC_LOG_NO_CONTEXT(categoryName, verbosity, format, ...) UE_LOG(categoryName, verbosity, TEXT("[%s] ") format, ANSI_TO_TCHAR(__func__), ##__VA_ARGS__)
 
+/**
+ * Conditional log version of GC_LOG_NO_CONTEXT().
+ */
 #define GC_CLOG_NO_CONTEXT(condition, categoryName, verbosity, format, ...) UE_CLOG(condition, categoryName, verbosity, TEXT("[%s] ") format, ANSI_TO_TCHAR(__func__), ##__VA_ARGS__)
 
 /**
@@ -30,6 +42,9 @@
  */
 #define GC_LOG(contextObject, categoryName, verbosity, format, ...) GC_LOG_NO_CONTEXT(categoryName, verbosity, GC_CONTEXT_OBJECT_FORMAT_CSTRING format, GC_CONTEXT_OBJECT_FORMAT_ARGS(contextObject), ##__VA_ARGS__)
 
+/**
+ * Conditional log version of GC_LOG().
+ */
 #define GC_CLOG(contextObject, condition, categoryName, verbosity, format, ...) GC_CLOG_NO_CONTEXT(condition, categoryName, verbosity, GC_CONTEXT_OBJECT_FORMAT_CSTRING format, GC_CONTEXT_OBJECT_FORMAT_ARGS(contextObject), ##__VA_ARGS__)
 
 /**
@@ -50,7 +65,7 @@ GAMECORE_API const TCHAR* LexToString(ENetRole inNetRole);
 
 namespace GCUtils
 {
-    inline constexpr const TCHAR* CStringNull = TEXT("NULL");
+    inline constexpr const TCHAR* CStringNull = GC_CSTRING_NULL;
 
     GAMECORE_API FString GetUObjectNameSafe(const UObject* inUObject);
 
