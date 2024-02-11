@@ -75,6 +75,8 @@ namespace GCUtils
 
     GAMECORE_API const TCHAR* GetWorldNetModeCString(const UObject* inWorldContextObject);
 
+    GAMECORE_API const TCHAR* GetObjectLocalNetRoleCString(const UObject* inWorldContextObject);
+
     GAMECORE_API UWorld* GetWorldSafe(const UObject* inObject);
 
     /**

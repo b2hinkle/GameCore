@@ -2,6 +2,8 @@
 
 #include "GCUtils.h"
 
+#include "GCUtils_ObjectTraversal.h"
+
 const TCHAR* LexToString(ENetMode inNetMode)
 {
     switch (inNetMode)
@@ -70,6 +72,23 @@ const TCHAR* GCUtils::GetWorldNetModeCString(const UObject* inWorldContextObject
     }
 
     return LexToString(world->GetNetMode());
+}
+
+const TCHAR* GCUtils::GetObjectLocalNetRoleCString(const UObject* inWorldContextObject)
+{
+    if (!inWorldContextObject)
+    {
+        return TEXT("Null ") GC_CSTRINGIZE(inWorldContextObject);
+    }
+
+    const AActor* ownedActor = ObjectTraversal::GetOwnerActorForObject(inWorldContextObject);
+
+    if (!ownedActor)
+    {
+        return TEXT("Null ") GC_CSTRINGIZE(world);
+    }
+
+    return LexToString(ownedActor->GetLocalRole());
 }
 
 UWorld* GCUtils::GetWorldSafe(const UObject* inObject)
