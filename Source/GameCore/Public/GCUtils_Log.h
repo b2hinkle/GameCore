@@ -34,7 +34,6 @@
  */
 #define GC_CLOG(contextObject, condition, categoryName, verbosity, format, ...) GC_CLOG_NO_CONTEXT(condition, categoryName, verbosity, GC_CONTEXT_OBJECT_FORMAT_CSTRING TEXT(" ") format, GC_CONTEXT_OBJECT_FORMAT_ARGS(contextObject) __VA_OPT__(,) __VA_ARGS__)
 
-namespace GCUtils
+namespace GCUtils::Log
 {
-    
 }

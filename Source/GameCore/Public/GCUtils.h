@@ -39,15 +39,15 @@ namespace GCUtils
 
     GAMECORE_API FString GetUObjectNameSafe(const UObject* inUObject);
 
-    GAMECORE_API FString GetUObjectFullNameSafe(const UObject* inUObject, const UObject* StopOuter = NULL, EObjectFullNameFlags Flags = EObjectFullNameFlags::None);
+    GAMECORE_API FString GetUObjectFullNameSafe(const UObject* inUObject, const UObject* inStopOuter = nullptr, EObjectFullNameFlags inFlags = EObjectFullNameFlags::None);
 
     GAMECORE_API const TCHAR* BoolToCString(const bool inBool);
 
     GAMECORE_API const TCHAR* GetWorldNetModeCString(const UObject* inWorldContextObject);
 
-    GAMECORE_API const TCHAR* GetObjectLocalNetRoleCString(const UObject* inWorldContextObject);
+    GAMECORE_API const TCHAR* GetObjectLocalRoleCString(const UObject* inContextObject);
 
-    GAMECORE_API UWorld* GetWorldSafe(const UObject* inObject);
+    GAMECORE_API UWorld* GetWorldSafe(const UObject* inContextObject);
 
     /**
      * If inObject is already guaranteed to be a TTo.

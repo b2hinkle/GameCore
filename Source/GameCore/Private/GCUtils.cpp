@@ -47,9 +47,9 @@ FString GCUtils::GetUObjectNameSafe(const UObject* inUObject)
     return inUObject ? inUObject->GetName() : CStringNull;
 }
 
-FString GCUtils::GetUObjectFullNameSafe(const UObject* inUObject, const UObject* StopOuter, EObjectFullNameFlags Flags)
+FString GCUtils::GetUObjectFullNameSafe(const UObject* inUObject, const UObject* inStopOuter, EObjectFullNameFlags inFlags)
 {
-    return inUObject ? inUObject->GetFullName(StopOuter, Flags) : CStringNull;
+    return inUObject ? inUObject->GetFullName(inStopOuter, inFlags) : CStringNull;
 }
 
 const TCHAR* GCUtils::BoolToCString(const bool inBool)
@@ -74,24 +74,24 @@ const TCHAR* GCUtils::GetWorldNetModeCString(const UObject* inWorldContextObject
     return LexToString(world->GetNetMode());
 }
 
-const TCHAR* GCUtils::GetObjectLocalNetRoleCString(const UObject* inWorldContextObject)
+const TCHAR* GCUtils::GetObjectLocalRoleCString(const UObject* inContextObject)
 {
-    if (!inWorldContextObject)
+    if (!inContextObject)
     {
-        return TEXT("Null ") GC_CSTRINGIZE(inWorldContextObject);
+        return TEXT("Null ") GC_CSTRINGIZE(inContextObject);
     }
 
-    const AActor* ownedActor = ObjectTraversal::GetOwnerActorForObject(inWorldContextObject);
+    const AActor* contextActor = ObjectTraversal::GetTypedSelfOrOuter<AActor>(inContextObject);
 
-    if (!ownedActor)
+    if (!contextActor)
     {
-        return TEXT("Null ") GC_CSTRINGIZE(ownedActor);
+        return TEXT("Null ") GC_CSTRINGIZE(contextActor);
     }
 
-    return LexToString(ownedActor->GetLocalRole());
+    return LexToString(contextActor->GetLocalRole());
 }
 
-UWorld* GCUtils::GetWorldSafe(const UObject* inObject)
+UWorld* GCUtils::GetWorldSafe(const UObject* inContextObject)
 {
-    return inObject ? inObject->GetWorld() : nullptr;
+    return inContextObject ? inContextObject->GetWorld() : nullptr;
 }
