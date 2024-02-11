@@ -85,7 +85,7 @@ const TCHAR* GCUtils::GetObjectLocalNetRoleCString(const UObject* inWorldContext
 
     if (!ownedActor)
     {
-        return TEXT("Null ") GC_CSTRINGIZE(world);
+        return TEXT("Null ") GC_CSTRINGIZE(ownedActor);
     }
 
     return LexToString(ownedActor->GetLocalRole());
