@@ -137,12 +137,12 @@ TTo GCUtils::StaticCastChecked(TFrom&& inObject)
     {
         if (inObject)
         {
-            check(Cast<TRemovePointer<TTo>::Type>(inObject));
+            check(Cast<typename TRemovePointer<TTo>::Type>(inObject));
         }
     }
     else if constexpr (TIsReferenceType<TTo>::Value)
     {
-        check(Cast<TRemoveReference<TTo>::Type>(&inObject));
+        check(Cast<typename TRemoveReference<TTo>::Type>(&inObject));
     }
 #endif // DO_CHECK
 
@@ -162,12 +162,12 @@ TTo GCUtils::ReinterpretCastChecked(TFrom&& inObject)
     {
         if (inObject)
         {
-            check(Cast<TRemovePointer<TTo>::Type>(inObject));
+            check(Cast<typename TRemovePointer<TTo>::Type>(inObject));
         }
     }
     else if constexpr (TIsReferenceType<TTo>::Value)
     {
-        check(Cast<TRemoveReference<TTo>::Type>(&inObject));
+        check(Cast<typename TRemoveReference<TTo>::Type>(&inObject));
     }
 #endif // DO_CHECK
 
