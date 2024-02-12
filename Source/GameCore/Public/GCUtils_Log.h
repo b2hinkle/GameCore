@@ -28,12 +28,12 @@
 /**
  * @param contextObject - UObject which will be used when our log gathers extra data to help us out. May be a UWorld.
  */
-#define GC_LOG(contextObject, categoryName, verbosity, format, ...) GC_LOG_NO_CONTEXT(categoryName, verbosity, GC_CONTEXT_OBJECT_FORMAT_CSTRING TEXT(" ") format, GC_CONTEXT_OBJECT_FORMAT_ARGS(contextObject) __VA_OPT__(,) __VA_ARGS__)
+#define GC_LOG(contextObject, categoryName, verbosity, format, ...) GC_LOG_NO_CONTEXT(categoryName, verbosity, format TEXT(" ") GC_CONTEXT_OBJECT_FORMAT_CSTRING, __VA_ARGS__ __VA_OPT__(,) GC_CONTEXT_OBJECT_FORMAT_ARGS(contextObject))
 
 /**
  * Conditional log version of GC_LOG().
  */
-#define GC_CLOG(contextObject, condition, categoryName, verbosity, format, ...) GC_CLOG_NO_CONTEXT(condition, categoryName, verbosity, GC_CONTEXT_OBJECT_FORMAT_CSTRING TEXT(" ") format, GC_CONTEXT_OBJECT_FORMAT_ARGS(contextObject) __VA_OPT__(,) __VA_ARGS__)
+#define GC_CLOG(contextObject, condition, categoryName, verbosity, format, ...) GC_CLOG_NO_CONTEXT(condition, categoryName, verbosity, format TEXT(" ") GC_CONTEXT_OBJECT_FORMAT_CSTRING, __VA_ARGS__ __VA_OPT__(,) GC_CONTEXT_OBJECT_FORMAT_ARGS(contextObject))
 
 namespace GCUtils::Log
 {
