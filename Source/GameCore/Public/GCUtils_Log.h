@@ -3,16 +3,17 @@
 #pragma once
 
 #include "GCUtils.h"
+#include <source_location>
 
 /**
  * If you can't get ahold of a UObject, you may need to use this.
  */
-#define GC_LOG_NO_CONTEXT(categoryName, verbosity, format, ...) UE_LOG(categoryName, verbosity, TEXT("[%s] ") format, ANSI_TO_TCHAR(__func__) __VA_OPT__(,) __VA_ARGS__)
+#define GC_LOG_NO_CONTEXT(categoryName, verbosity, format, ...) UE_LOG(categoryName, verbosity, TEXT("[%s] ") format, StringCast<TCHAR>(std::source_location::current().function_name()).Get() __VA_OPT__(,) __VA_ARGS__)
 
 /**
  * Conditional log version of GC_LOG_NO_CONTEXT().
  */
-#define GC_CLOG_NO_CONTEXT(condition, categoryName, verbosity, format, ...) UE_CLOG(condition, categoryName, verbosity, TEXT("[%s] ") format, ANSI_TO_TCHAR(__func__) __VA_OPT__(,) __VA_ARGS__)
+#define GC_CLOG_NO_CONTEXT(condition, categoryName, verbosity, format, ...) UE_CLOG(condition, categoryName, verbosity, TEXT("[%s] ") format, StringCast<TCHAR>(std::source_location::current().function_name()).Get() __VA_OPT__(,) __VA_ARGS__)
 
 /**
  * Format cstring to print info of a context object.
