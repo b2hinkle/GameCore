@@ -50,6 +50,12 @@ namespace GCUtils
     GAMECORE_API UWorld* GetWorldSafe(const UObject* inContextObject);
 
     /**
+     * Get the "owning" controller for an object.
+     */
+    GAMECORE_API const AController* GetController(const UObject* inObject);
+    GAMECORE_API AController* GetController(UObject* inObject);
+
+    /**
      * If inObject is already guaranteed to be a TTo.
      *
      * E.g., you load an asset by class and you are certain the result is a TTo.
