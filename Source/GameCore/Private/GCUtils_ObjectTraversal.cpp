@@ -40,7 +40,6 @@ const UObject* GCUtils::ObjectTraversal::TraverseSelfToOutersToOwnerActorsBreaka
 
     return objectBrokenOn;
 }
-
 UObject* GCUtils::ObjectTraversal::TraverseSelfToOutersToOwnerActorsBreakable(UObject* inObject, const TFunctionRef<bool(UObject&)>& inShouldBreakPredicate)
 {
     return const_cast<UObject*>(
@@ -69,42 +68,6 @@ UObject* GCUtils::ObjectTraversal::TraverseOutersToOwnerActorsBreakable(const UO
     return TraverseSelfToOutersToOwnerActorsBreakable(inObject->GetOuter(), inShouldBreakPredicate);
 }
 
-const UObject* GCUtils::ObjectTraversal::TraverseSelfToOutersBreakable(const UObject* inObject, const TFunctionRef<bool(const UObject&)>& inShouldBreakPredicate)
-{
-    for (const UObject* outer = inObject; outer; outer = outer->GetOuter())
-    {
-        if (inShouldBreakPredicate(*outer))
-        {
-            return outer;
-        }
-    }
-
-    return nullptr;
-}
-
-UObject* GCUtils::ObjectTraversal::TraverseSelfToOutersBreakable(UObject* inObject, const TFunctionRef<bool(UObject&)>& inShouldBreakPredicate)
-{
-    return const_cast<UObject*>(
-        TraverseSelfToOutersBreakable(
-            const_cast<const UObject*>(inObject),
-            [&inShouldBreakPredicate](const UObject& object)
-            {
-                return inShouldBreakPredicate(const_cast<UObject&>(object));
-            }
-            )
-        );
-}
-
-UObject* GCUtils::ObjectTraversal::TraverseOutersBreakable(const UObject* inObject, const TFunctionRef<bool(UObject&)>& inShouldBreakPredicate)
-{
-    if (!inObject)
-    {
-        return nullptr;
-    }
-
-    return TraverseSelfToOutersBreakable(inObject->GetOuter(), inShouldBreakPredicate);
-}
-
 const AActor* GCUtils::ObjectTraversal::TraverseSelfToOwnerActorsBreakable(const AActor* inActor, const TFunctionRef<bool(const AActor&)>& inShouldBreakPredicate)
 {
     for (const AActor* owner = inActor; owner; owner = owner->GetOwner())
@@ -117,7 +80,6 @@ const AActor* GCUtils::ObjectTraversal::TraverseSelfToOwnerActorsBreakable(const
 
     return nullptr;
 }
-
 AActor* GCUtils::ObjectTraversal::TraverseSelfToOwnerActorsBreakable(AActor* inActor, const TFunctionRef<bool(AActor&)>& inShouldBreakPredicate)
 {
     return const_cast<AActor*>(
@@ -141,21 +103,39 @@ AActor* GCUtils::ObjectTraversal::TraverseOwnerActorsBreakable(const AActor* inA
     return TraverseSelfToOwnerActorsBreakable(inActor->GetOwner(), inShouldBreakPredicate);
 }
 
-AActor* GCUtils::ObjectTraversal::GetOwnerActorForObject(const UObject* inObject)
+const UObject* GCUtils::ObjectTraversal::TraverseSelfToOutersBreakable(const UObject* inObject, const TFunctionRef<bool(const UObject&)>& inShouldBreakPredicate)
 {
-    return GetTypedOuter<AActor>(inObject);
+    for (const UObject* outer = inObject; outer; outer = outer->GetOuter())
+    {
+        if (inShouldBreakPredicate(*outer))
+        {
+            return outer;
+        }
+    }
+
+    return nullptr;
+}
+UObject* GCUtils::ObjectTraversal::TraverseSelfToOutersBreakable(UObject* inObject, const TFunctionRef<bool(UObject&)>& inShouldBreakPredicate)
+{
+    return const_cast<UObject*>(
+        TraverseSelfToOutersBreakable(
+            const_cast<const UObject*>(inObject),
+            [&inShouldBreakPredicate](const UObject& object)
+            {
+                return inShouldBreakPredicate(const_cast<UObject&>(object));
+            }
+            )
+        );
 }
 
-AActor* GCUtils::ObjectTraversal::GetOwnerActorForObjectByClass(const UObject* inObject, const TSubclassOf<AActor>& inTargetClass)
+UObject* GCUtils::ObjectTraversal::TraverseOutersBreakable(const UObject* inObject, const TFunctionRef<bool(UObject&)>& inShouldBreakPredicate)
 {
-    AActor* actor = GetOwnerActorForObject(inObject);
-    return GetSelfOrOwnerActorByClass(actor, inTargetClass);
-}
+    if (!inObject)
+    {
+        return nullptr;
+    }
 
-AActor* GCUtils::ObjectTraversal::GetOwnerActorForObjectByInterface(const UObject* inObject, const TSubclassOf<UInterface>& inTargetClass)
-{
-    AActor* actor = GetOwnerActorForObject(inObject);
-    return GetSelfOrOwnerActorByInterface(actor, inTargetClass);
+    return TraverseSelfToOutersBreakable(inObject->GetOuter(), inShouldBreakPredicate);
 }
 
 const UObject* GCUtils::ObjectTraversal::GetSelfOrOuterOrOwnerActorByInterface(const UObject* inObject, const TSubclassOf<UInterface>& inTargetClass)
@@ -167,7 +147,6 @@ const UObject* GCUtils::ObjectTraversal::GetSelfOrOuterOrOwnerActorByInterface(c
             return object.GetClass()->ImplementsInterface(inTargetClass);
         });
 }
-
 UObject* GCUtils::ObjectTraversal::GetSelfOrOuterOrOwnerActorByInterface(UObject* inObject, const TSubclassOf<UInterface>& inTargetClass)
 {
     return const_cast<UObject*>(GetSelfOrOuterOrOwnerActorByInterface(const_cast<const UObject*>(inObject), inTargetClass));
@@ -196,7 +175,6 @@ const AActor* GCUtils::ObjectTraversal::GetSelfOrOwnerActorByClass(const AActor*
             return actor.IsA(inTargetClass);
         });
 }
-
 AActor* GCUtils::ObjectTraversal::GetSelfOrOwnerActorByClass(AActor* inActor, const TSubclassOf<AActor>& inTargetClass)
 {
     return const_cast<AActor*>(GetSelfOrOwnerActorByClass(const_cast<const AActor*>(inActor), inTargetClass));
@@ -211,7 +189,6 @@ const AActor* GCUtils::ObjectTraversal::GetSelfOrOwnerActorByInterface(const AAc
             return actor.GetClass()->ImplementsInterface(inTargetClass);
         });
 }
-
 AActor* GCUtils::ObjectTraversal::GetSelfOrOwnerActorByInterface(AActor* inActor, const TSubclassOf<UInterface>& inTargetClass)
 {
     return const_cast<AActor*>(GetSelfOrOwnerActorByInterface(const_cast<const AActor*>(inActor), inTargetClass));
@@ -245,7 +222,6 @@ const UObject* GCUtils::ObjectTraversal::GetSelfOrOuterByClass(const UObject* in
             return object.IsA(inTargetClass);
         });
 }
-
 UObject* GCUtils::ObjectTraversal::GetSelfOrOuterByClass(UObject* inObject, const TSubclassOf<UObject>& inTargetClass)
 {
     return const_cast<UObject*>(GetSelfOrOuterByClass(const_cast<const UObject*>(inObject), inTargetClass));
@@ -260,7 +236,6 @@ const UObject* GCUtils::ObjectTraversal::GetSelfOrOuterByInterface(const UObject
             return object.GetClass()->ImplementsInterface(inTargetClass);
         });
 }
-
 UObject* GCUtils::ObjectTraversal::GetSelfOrOuterByInterface(UObject* inObject, const TSubclassOf<UInterface>& inTargetClass)
 {
     return const_cast<UObject*>(GetSelfOrOuterByInterface(const_cast<const UObject*>(inObject), inTargetClass));
