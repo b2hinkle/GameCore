@@ -12,10 +12,20 @@
 #define GC_CSTRINGIZE(text) TEXT(PREPROCESSOR_TO_STRING(text))
 
 /**
- * Macro version of GCUtils::CStringNull. Nice if you need a string literal instead of
+ * Macro alternative to GCUtils::CStringNull. Nice if you need a string literal instead of
  * a variable. E.g., for combining string literals together.
  */
 #define GC_CSTRING_NULL TEXT("NULL")
+
+/**
+ * Macro alternative to GCUtils::CStringTrue.
+ */
+#define GC_CSTRING_TRUE TEXT("True")
+
+/**
+ * Macro alternative to GCUtils::CStringFalse.
+ */
+#define GC_CSTRING_FALSE TEXT("False")
 
 /**
  * Returns the string representation of the specified ENetMode value.
@@ -37,11 +47,15 @@ namespace GCUtils
 {
     constexpr const TCHAR* CStringNull = GC_CSTRING_NULL;
 
+    constexpr const TCHAR* CStringTrue = GC_CSTRING_TRUE;
+
+    constexpr const TCHAR* CStringFalse = GC_CSTRING_FALSE;
+
+    GAMECORE_API constexpr const TCHAR* BoolToCString(const bool inBool);
+
     GAMECORE_API FString GetUObjectNameSafe(const UObject* inUObject);
 
     GAMECORE_API FString GetUObjectFullNameSafe(const UObject* inUObject, const UObject* inStopOuter = nullptr, EObjectFullNameFlags inFlags = EObjectFullNameFlags::None);
-
-    GAMECORE_API const TCHAR* BoolToCString(const bool inBool);
 
     GAMECORE_API const TCHAR* GetWorldNetModeCString(const UObject* inWorldContextObject);
 
