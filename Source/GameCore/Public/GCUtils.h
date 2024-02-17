@@ -35,7 +35,7 @@ GAMECORE_API const TCHAR* LexToString(ENetRole inNetRole);
 
 namespace GCUtils
 {
-    inline constexpr const TCHAR* CStringNull = GC_CSTRING_NULL;
+    constexpr const TCHAR* CStringNull = GC_CSTRING_NULL;
 
     GAMECORE_API FString GetUObjectNameSafe(const UObject* inUObject);
 
