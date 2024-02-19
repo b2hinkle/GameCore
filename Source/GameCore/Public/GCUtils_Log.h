@@ -3,6 +3,7 @@
 #pragma once
 
 #include "GCUtils.h"
+#include "GCUtils_String.h"
 #include <source_location>
 
 /**
@@ -23,7 +24,7 @@
 /**
  * Variadic arguments that correspond with GC_CONTEXT_OBJECT_FORMAT_CSTRING.
  */
-#define GC_CONTEXT_OBJECT_FORMAT_ARGS(contextObject, contextObjectArgCString) contextObjectArgCString, *GCUtils::GetUObjectNameSafe(contextObject), GCUtils::GetWorldNetModeCString(contextObject), GCUtils::GetObjectLocalRoleCString(contextObject), *GCUtils::GetUObjectNameSafe(GCUtils::GetController(contextObject))
+#define GC_CONTEXT_OBJECT_FORMAT_ARGS(contextObject, contextObjectArgCString) contextObjectArgCString, *GCUtils::String::GetUObjectNameSafe(contextObject), GCUtils::String::GetWorldNetModeCString(contextObject), GCUtils::String::GetObjectLocalRoleCString(contextObject), *GCUtils::String::GetUObjectNameSafe(GCUtils::GetController(contextObject))
 
 /**
  * @param contextObject - UObject which will be used when our log gathers extra data to help us out. May be a UWorld.
@@ -34,7 +35,3 @@
  * Conditional log version of GC_LOG().
  */
 #define GC_CLOG(contextObject, condition, categoryName, verbosity, format, ...) GC_CLOG_NO_CONTEXT(condition, categoryName, verbosity, format TEXT(" ") GC_CONTEXT_OBJECT_FORMAT_CSTRING, __VA_ARGS__ __VA_OPT__(,) GC_CONTEXT_OBJECT_FORMAT_ARGS(contextObject, TEXT(PREPROCESSOR_TO_STRING(contextObject))))
-
-namespace GCUtils::Log
-{
-}
