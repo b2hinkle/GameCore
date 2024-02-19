@@ -59,4 +59,11 @@ namespace GCUtils::String
     GAMECORE_API const TCHAR* GetWorldNetModeCString(const UObject* inWorldContextObject);
 
     GAMECORE_API const TCHAR* GetObjectLocalRoleCString(const UObject* inContextObject);
+
+    /**
+     * Whether the "owning" controller for an object is local.
+     *
+     * See GCUtils::GetController().
+     */
+    GAMECORE_API const TCHAR* GetIsControllerLocalCString(const UObject* inObject);
 }

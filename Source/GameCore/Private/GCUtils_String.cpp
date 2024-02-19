@@ -90,3 +90,19 @@ const TCHAR* GCUtils::String::GetObjectLocalRoleCString(const UObject* inContext
 
     return LexToString(contextActor->GetLocalRole());
 }
+
+const TCHAR* GCUtils::String::GetIsControllerLocalCString(const UObject* inObject)
+{
+    if (!inObject)
+    {
+        return TEXT("Null ") GC_CSTRINGIZE(inObject);
+    }
+
+    const AController* controller = GetController(inObject);
+    if (!controller)
+    {
+        return TEXT("Null ") GC_CSTRINGIZE(controller);
+    }
+
+    return BoolToCString(controller->IsLocalController());
+}

@@ -19,12 +19,12 @@
 /**
  * Format cstring to print info of a context object.
  */
-#define GC_CONTEXT_OBJECT_FORMAT_CSTRING TEXT("[Context Object Arg: `%s`] [Context Object: %s] [Context Object NetMode: %s] [Context Object NetRole: %s] [Context Object Controller: %s]")
+#define GC_CONTEXT_OBJECT_FORMAT_CSTRING TEXT("[Context Object Arg: `%s`] [Context Object: %s] [Context Object NetMode: %s] [Context Object NetRole: %s] [Context Object Controller: %s] [Context Object Controller Is Local: %s]")
 
 /**
  * Variadic arguments that correspond with GC_CONTEXT_OBJECT_FORMAT_CSTRING.
  */
-#define GC_CONTEXT_OBJECT_FORMAT_ARGS(contextObject, contextObjectArgCString) contextObjectArgCString, *GCUtils::String::GetUObjectNameSafe(contextObject), GCUtils::String::GetWorldNetModeCString(contextObject), GCUtils::String::GetObjectLocalRoleCString(contextObject), *GCUtils::String::GetUObjectNameSafe(GCUtils::GetController(contextObject))
+#define GC_CONTEXT_OBJECT_FORMAT_ARGS(contextObject, contextObjectArgCString) contextObjectArgCString, *GCUtils::String::GetUObjectNameSafe(contextObject), GCUtils::String::GetWorldNetModeCString(contextObject), GCUtils::String::GetObjectLocalRoleCString(contextObject), *GCUtils::String::GetUObjectNameSafe(GCUtils::GetController(contextObject)), GCUtils::String::GetIsControllerLocalCString(contextObject)
 
 /**
  * @param contextObject - UObject which will be used when our log gathers extra data to help us out. May be a UWorld.
