@@ -15,11 +15,11 @@
 UCLASS()
 class GAMECORE_API UGCBlueprintFunctionLibrary_MaterialHelpers : public UBlueprintFunctionLibrary
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 
 public:
-	/** Returns the MaterialIndex given the material's section index */
-	UFUNCTION(BlueprintPure, Category = "MaterialHelpers|MaterialFinding")
-		static int32 GetMaterialIndexFromSectionIndex(const UStaticMeshComponent* StaticMeshComponent, const int32 SectionIndex);
+    /** Returns the MaterialIndex given the material's section index */
+    UFUNCTION(BlueprintPure, Category = "MaterialHelpers|MaterialFinding")
+        static int32 GetMaterialIndexFromSectionIndex(const UStaticMeshComponent* StaticMeshComponent, const int32 SectionIndex);
 
 };

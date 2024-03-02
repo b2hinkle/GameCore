@@ -15,6 +15,6 @@
 UCLASS()
 class GAMECORE_API UGCAssetManager : public UAssetManager
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 
 };

@@ -12,10 +12,10 @@
 template <class T, class TPointedType>
 struct TGCIsPointerTo
 {
-	enum
-	{
-		Value = TAnd<TIsPointer<T>, TIsSame<TRemovePointer<T>::Type, TPointedType>>::Value
-	};
+    enum
+    {
+        Value = TAnd<TIsPointer<T>, TIsSame<TRemovePointer<T>::Type, TPointedType>>::Value
+    };
 };
 
 /**
@@ -26,10 +26,10 @@ struct TGCIsPointerTo
 template <class T>
 struct TGCIsObjectPointer
 {
-	enum
-	{
-		Value = 0
-	};
+    enum
+    {
+        Value = 0
+    };
 };
 
 // NOTE: There is probably a better way to implement these specializations without worrying
@@ -52,7 +52,7 @@ template <class T> struct TGCIsObjectPointer<const TWeakObjectPtr<T>> { enum { V
 template <class T>
 struct TGCRemoveObjectPointer
 {
-	using Type = T;
+    using Type = T;
 };
 
 // NOTE: There is probably a better way to implement these specializations without worrying
@@ -75,8 +75,8 @@ template <class T> struct TGCRemoveObjectPointer<const TWeakObjectPtr<T>> { usin
 template <class T, class TPointedType>
 struct TGCIsObjectPointerTo
 {
-	enum
-	{
-		Value = TAnd<TGCIsObjectPointer<T>, TIsSame<TGCRemoveObjectPointer<T>::Type, TPointedType>>::Value
-	};
+    enum
+    {
+        Value = TAnd<TGCIsObjectPointer<T>, TIsSame<TGCRemoveObjectPointer<T>::Type, TPointedType>>::Value
+    };
 };

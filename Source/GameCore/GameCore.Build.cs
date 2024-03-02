@@ -4,20 +4,20 @@ using UnrealBuildTool;
 
 public class GameCore : ModuleRules
 {
-	public GameCore(ReadOnlyTargetRules Target) : base(Target)
-	{
-		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
-		PrivatePCHHeaderFile = "Private/GameCorePrivatePCH.h";
+    public GameCore(ReadOnlyTargetRules Target) : base(Target)
+    {
+        PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
+        PrivatePCHHeaderFile = "Private/GameCorePrivatePCH.h";
 
-		PublicDependencyModuleNames.AddRange(new string[] { "Core" });
-		PrivateDependencyModuleNames.AddRange(new string[] { "CoreUObject", "Engine" });
+        PublicDependencyModuleNames.AddRange(new string[] { "Core" });
+        PrivateDependencyModuleNames.AddRange(new string[] { "CoreUObject", "Engine" });
 
-		PrivateDependencyModuleNames.AddRange(
-			new string[]
-			{
-				"NetCore", // for push model
-				"Projects"
-			}
-		);
-	}
+        PrivateDependencyModuleNames.AddRange(
+            new string[]
+            {
+                "NetCore", // for push model
+                "Projects"
+            }
+        );
+    }
 }
