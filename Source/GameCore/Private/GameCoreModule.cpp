@@ -19,5 +19,5 @@ void FGameCoreModule::ShutdownModule()
 }
 
 #undef LOCTEXT_NAMESPACE
-    
+
 IMPLEMENT_MODULE(FGameCoreModule, GameCore)

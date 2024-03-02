@@ -14,10 +14,10 @@
 
 /**
  * FGCPropertyWrapperBase
- * 
+ *
  * Property wrappers give you more control over your variables. It provides a delegate that notifies when the value of the property changes.
  * For its implementation, since UStructs don't support templates, we are making use of inheritence and a generic GC_PROPERTY_WRAPPER_CHILD_BODY macro.
- * 
+ *
  * Subclass' responsibilities:
  *    - Put GC_PROPERTY_WRAPPER_CHILD_BODY() anywhere in the struct body and provide it with the required parameters to generate required boilerplate code.
  *    - Declare your Value member as a UPROPERTY. EditAnywhere and BlueprintReadOnly is genrally what we use for it so it's functional in blueprint. Child classes have to declare the value themselves since Unreal Header Tool can't see generated code.

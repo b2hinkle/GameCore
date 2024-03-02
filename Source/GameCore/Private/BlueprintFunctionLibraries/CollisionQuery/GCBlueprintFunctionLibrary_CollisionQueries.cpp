@@ -282,7 +282,7 @@ void UGCBlueprintFunctionLibrary_CollisionQueries::ChangeHitsResponseData(TArray
 FVector UGCBlueprintFunctionLibrary_CollisionQueries::DetermineBackwardsSceneCastStart(const TArray<FHitResult>& InForwardsHitResults, const FVector& InForwardsStart, const FVector& InForwardsEnd, const FHitResult* InHitStoppedAt, const bool bOptimizeBackwardsSceneCastLength, const float InSweepShapeBoundingSphereRadius)
 {
     const FVector ForwardDir = (InForwardsEnd - InForwardsStart).GetSafeNormal();
-    
+
     if (InHitStoppedAt)
     {
         // We hit an impenetrable hit, so we don't want to start the backwards scene cast past that hit's location

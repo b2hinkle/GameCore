@@ -58,7 +58,7 @@ public:
     //  BEGIN Custom query
     /**
      * Scene cast with penetrations that outputs entrance and exit hits in order of the forwards direction
-     * 
+     *
      * @param  OutHits                              Array of entrance and exit hits (overlap and blocking) that were found until IsHitImpenetrable condition is met
      * @param  bOptimizeBackwardsSceneCastLength    Only recommend using this if you're not starting the scene cast inside of geometry, otherwise the exits of any gemometry you're starting inside of may not be found. However, you still could possibly get away with it if you are doing a very lengthy scene cast, because you are more likely to hit an entrance past the exit of the geometry that you started in. If true, will minimize the backwards scene cast length to start no further than the exit of the furthest entrance.
      * @return TRUE if hit and stopped at a blocking hit.
@@ -73,14 +73,14 @@ public:
     //  BEGIN Custom query
     /**
      *  Scene cast that penetrates everything except for what the caller says in IsHitImpenetrable Delegate
-     *  
+     *
      *  The engine's way of handling collisions is good, but is limiting in some situations. We want to run a scene cast where
      *  blocking hits don't actually block it, creating a sort of "penetration" feature. The reason we can't just use
      *  a collision trace channel who's default response is overlap is because doing so removes the distinction between overlaps
      *  and blocking hits (e.g. no way to know what is a triggerbox and what is a physical wall).
      *  This is effectively a linetrace/sweep multi that is not stopped by blocking hits and instead gets stopped by whatever condition the
      *  caller provides while still preserving the hits' collision responses.
-     *  
+     *
      *  @param  InWorld                      The world to scene cast in
      *  @param  OutHits                      Array of hits (overlap and blocking) that were found until IsHitImpenetrable condition is met
      *  @param  InStart                      Start location of the scene cast
@@ -128,7 +128,7 @@ public:
 
     /**
      * Determine the resulting response for a query hitting a body instance.
-     * 
+     *
      * Takes in a body instance to test against (e.g. a Primitive Component's).
      * Takes in a query's trace channel and response params to use (e.g. the visibility trace channel).
      * Returns the resulting response of the query hitting the body instance.
@@ -139,7 +139,7 @@ private:
     /**
      * Modifies existing HitResults to respond appropriately to the caller's ECollisionChannel, FCollisionQueryParams, and FCollisionResponseParams.
      * Outputs modified hits and potentially removes some.
-     * 
+     *
      * @param  InOutHits                    Hits to modify
      * @param  InTraceChannel               The collision channel in which the hits will conform to (e.g. setting FHitResult::bBlockingHit to true because of the hit component's response to our trace channel)
      * @param  InCollisionQueryParams       The collision query params in which the hits will conform to (e.g. removing blocking hits because of FCollisionQueryParams::bIgnoreBlocks)

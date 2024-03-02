@@ -10,7 +10,7 @@
 
 
 /**
- * 
+ *
  */
 UCLASS()
 class GAMECORE_API UGCAssetManager : public UAssetManager

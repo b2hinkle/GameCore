@@ -36,7 +36,7 @@ public:
      */
     UFUNCTION(BlueprintPure, Category = "MathHelpers|VectorMath")
         static bool DirectionIsBetween(const FVector& InA, const FVector& InB, const bool bInInclusive, const FVector& InDirection, const float InErrorTolerance = 1.e-4f); // InErrorTolerance = KINDA_SMALL_NUMBER
-    
+
     /**
      * Given a segment and a point, does that point lie on the segment?
      */

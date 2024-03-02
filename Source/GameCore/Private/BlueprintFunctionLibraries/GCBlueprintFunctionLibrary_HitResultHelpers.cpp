@@ -27,7 +27,7 @@ float UGCBlueprintFunctionLibrary_HitResultHelpers::CheapCalculateTraceLength(co
         UE_LOG(LogGCHitResultHelpers, Verbose, TEXT("%s() Cannot cheaply calculate trace length from a hit result with time of 0. Fall back on normal (more expensive) method for calculating"), ANSI_TO_TCHAR(__FUNCTION__));
         return FVector::Distance(InHit.TraceStart, InHit.TraceEnd);
     }
-    
+
     // Return the hit's distance scaled up by the trace time
     return InHit.Distance * (1 / InHit.Time);
 }

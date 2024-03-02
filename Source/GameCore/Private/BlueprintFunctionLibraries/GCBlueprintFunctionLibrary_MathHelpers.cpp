@@ -50,7 +50,7 @@ float UGCBlueprintFunctionLibrary_MathHelpers::GetBoxBoundingSphereRadius(const 
 bool UGCBlueprintFunctionLibrary_MathHelpers::DirectionIsBetween(const FVector& InA, const FVector& InB, const bool bInInclusive, const FVector& InDirection, const float InErrorTolerance)
 {
     // Get the normals
-    // 
+    //
     // InA ^
     //     |        InDirection
     //     |          ^
@@ -65,7 +65,7 @@ bool UGCBlueprintFunctionLibrary_MathHelpers::DirectionIsBetween(const FVector& 
     //     | /
     //     |/_____________>
     //                    InB
-    // 
+    //
     const FVector NormalA = FVector::CrossProduct(InA, InDirection).GetSafeNormal();
     const FVector NormalB = FVector::CrossProduct(InDirection, InB).GetSafeNormal();
 
@@ -144,7 +144,7 @@ bool UGCBlueprintFunctionLibrary_MathHelpers::PointLiesOnTriangle(const FVector&
     if (bPointIsBetweenBAndC && bPointIsBetweenAAndC)
     {
         // Point is on the triangle
-        // 
+        //
         //          C
         //         / \
         //        /   \
@@ -152,12 +152,12 @@ bool UGCBlueprintFunctionLibrary_MathHelpers::PointLiesOnTriangle(const FVector&
         //      /       \
         //     /         \
         //    A _________ B
-        // 
+        //
         return true;
     }
 
     // Point is not on the triangle
-    // 
+    //
     //          C
     //         / \
     //      o /   \
@@ -165,7 +165,7 @@ bool UGCBlueprintFunctionLibrary_MathHelpers::PointLiesOnTriangle(const FVector&
     //      /       \
     //     /         \
     //    A _________ B
-    // 
+    //
     return false;
 }
 

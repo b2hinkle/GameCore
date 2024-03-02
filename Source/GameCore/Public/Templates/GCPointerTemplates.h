@@ -6,7 +6,7 @@
 
 /**
  * Check if T is a pointer to TPointedType.
- * 
+ *
  * NOTE: Only for raw pointer types.
  */
 template <class T, class TPointedType>
@@ -20,7 +20,7 @@ struct TGCIsPointerTo
 
 /**
  * Check if T is a pointer to TPointedType.
- * 
+ *
  * Accounts for UObject pointer wrappers.
  */
 template <class T>
@@ -46,7 +46,7 @@ template <class T> struct TGCIsObjectPointer<const TWeakObjectPtr<T>> { enum { V
 
 /**
  * Remove pointer from UObject T.
- * 
+ *
  * Accounts for UObject pointer wrappers.
  */
 template <class T>
@@ -69,7 +69,7 @@ template <class T> struct TGCRemoveObjectPointer<const TWeakObjectPtr<T>> { usin
 
 /**
  * Check if T is a pointer to TPointedType.
- * 
+ *
  * Accounts for UObject pointer wrappers.
  */
 template <class T, class TPointedType>
