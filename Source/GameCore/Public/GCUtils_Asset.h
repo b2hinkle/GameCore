@@ -5,7 +5,12 @@
 #include "CoreMinimal.h"
 
 /**
+ * @brief Utilities for sofly casting paths and more.
  *
+ * @remark We pass around class paths as FSoftObjectPath because it's the most
+ * supported and simplified form of an asset path. I would love to use FSoftClassPath but
+ * it's just not as good. We runtime assert paths that are intended to be class paths
+ * for safety.
  */
 namespace GCUtils::Asset
 {
@@ -29,25 +34,49 @@ namespace GCUtils::Asset
     /**
      * @brief Determines whether an object is of the target class without loading the object nor the class.
      */
-    GAMECORE_API bool SoftIsA(FSoftObjectPath objectPath, const FSoftClassPath& targetClassPath);
+    GAMECORE_API bool SoftIsA(FSoftObjectPath objectPath, const FSoftObjectPath& targetClassPath);
 
     template <class TTargetClass>
-    bool SoftIsChildOf(FSoftClassPath classPath);
+    bool SoftIsChildOf(FSoftObjectPath classPath);
 
-    GAMECORE_API bool SoftIsChildOf(FSoftClassPath classPath, const UClass* targetClass);
+    GAMECORE_API bool SoftIsChildOf(FSoftObjectPath classPath, const UClass* targetClass);
 
     /**
      * @brief Determines whether a class is of the target class without loading either of the classes.
      */
-    GAMECORE_API bool SoftIsChildOf(FSoftClassPath classPath, const FSoftClassPath& targetClassPath);
+    GAMECORE_API bool SoftIsChildOf(FSoftObjectPath classPath, const FSoftObjectPath& targetClassPath);
 
-    GAMECORE_API FSoftClassPath SoftGetSuperClass(const FSoftClassPath& classPath);
+    GAMECORE_API FSoftObjectPath SoftGetSuperClass(const FSoftObjectPath& classPath);
 
-    GAMECORE_API FSoftClassPath SoftGetClass(const FSoftObjectPath& objectPath);
+    GAMECORE_API FSoftObjectPath SoftGetClass(const FSoftObjectPath& objectPath);
 
-    GAMECORE_API FSoftObjectPath MakeSoftObjectPathForSoftClassPath(FSoftClassPath classPath);
+    /**
+     * @brief Determines whether the path is a path to a UClass (including bp-generated).
+     */
+    GAMECORE_API bool IsClassPath(const FSoftObjectPath& path);
 
-    GAMECORE_API FSoftClassPath MakeSoftClassPathForSoftObjectPath(const FSoftObjectPath& objectPath);
+    /**
+     * @brief Determines whether the path is a path to a native UClass (excluding bp-generated).
+     */
+    GAMECORE_API bool IsNativeClassPath(const FSoftObjectPath& path);
+
+    /**
+     * @brief Determines whether the path is a path to a UBlueprintGeneratedClass.
+     */
+    GAMECORE_API bool IsBlueprintGeneratedClassPath(const FSoftObjectPath& path);
+
+    /** @brief Determines whether an object name may be a UBlueprintGeneratedClass. */
+    GAMECORE_API bool IsBlueprintGeneratedClassName(const FStringView& nameString);
+
+    /** @brief Determines whether an object name may be a class default object. */
+    GAMECORE_API bool IsClassDefaultObjectName(const FStringView& nameString);
+
+    /**
+     * @brief Postfix found at the end of blueprint generated class asset names. The engine
+     * provides no constant for this so we have our own here.
+     */
+    constexpr TCHAR BlueprintGeneratedClassPostfix[] = TEXT("_C");
+    constexpr int32 BlueprintGeneratedClassPostfixLen = (sizeof(BlueprintGeneratedClassPostfix) / sizeof(TCHAR)) - 1;
 }
 
 template <class TTo, class TFrom>
@@ -68,7 +97,7 @@ TSoftClassPtr<TTo> GCUtils::Asset::CastSoftClassPtr(const TSoftClassPtr<TFrom>& 
 {
     TRACE_CPUPROFILER_EVENT_SCOPE(GCUtils::Asset::CastSoftClassPtr);
 
-    if (SoftIsChildOf<TTo>(MakeSoftClassPathForSoftObjectPath(classSoft.ToSoftObjectPath())))
+    if (SoftIsChildOf<TTo>(classSoft.ToSoftObjectPath()))
     {
         return ReinterpretSoftClassPtr<TTo>(classSoft);
     }
@@ -111,7 +140,7 @@ bool GCUtils::Asset::SoftIsA(FSoftObjectPath objectPath)
 }
 
 template <class TTargetClass>
-bool GCUtils::Asset::SoftIsChildOf(FSoftClassPath classPath)
+bool GCUtils::Asset::SoftIsChildOf(FSoftObjectPath classPath)
 {
     return SoftIsChildOf(MoveTemp(classPath), TTargetClass::StaticClass());
 }
