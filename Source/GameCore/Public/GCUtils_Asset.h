@@ -14,9 +14,17 @@
  */
 namespace GCUtils::Asset
 {
+    /** @brief Signature for object result callback of ResolveObjectOrGetAssetData. */
+    typedef TFunctionRef<void(UObject& /* resolvedObject */)> FObjectResolvedCallbackFunctionRef;
+
+    /** @brief Signature for asset data result callback of ResolveObjectOrGetAssetData. */
+    typedef TFunctionRef<void(FAssetData /* assetData */)> FAssetDataGottenCallbackFunctionRef;
+
+    /** @brief Convert the soft object ptr to another type and return null if not of that type. */
     template <class TTo, class TFrom>
     TSoftObjectPtr<TTo> CastSoftObjectPtr(const TSoftObjectPtr<TFrom>& objectSoft);
 
+    /** @brief Convert the soft class ptr to another type and return null if not child of that type. */
     template <class TTo, class TFrom>
     TSoftClassPtr<TTo> CastSoftClassPtr(const TSoftClassPtr<TFrom>& classSoft);
 
@@ -29,6 +37,9 @@ namespace GCUtils::Asset
     template <class TTargetClass>
     bool SoftIsA(FSoftObjectPath objectPath);
 
+    /**
+     * @brief Determines whether an object is of the already-loaded target class without loading the object.
+     */
     GAMECORE_API bool SoftIsA(FSoftObjectPath objectPath, const UClass* targetClass);
 
     /**
@@ -39,6 +50,9 @@ namespace GCUtils::Asset
     template <class TTargetClass>
     bool SoftIsChildOf(FSoftObjectPath classPath);
 
+    /**
+     * @brief Determines whether a class is of the already-loaded target class without loading the class.
+     */
     GAMECORE_API bool SoftIsChildOf(FSoftObjectPath classPath, const UClass* targetClass);
 
     /**
@@ -46,9 +60,25 @@ namespace GCUtils::Asset
      */
     GAMECORE_API bool SoftIsChildOf(FSoftObjectPath classPath, const FSoftObjectPath& targetClassPath);
 
-    GAMECORE_API FSoftObjectPath SoftGetSuperClass(const FSoftObjectPath& classPath);
+    /** @brief Get the first native class in the super chain of the given object path's class. */
+    GAMECORE_API UClass* GetNativeClassForObjectPath(const FSoftObjectPath& objectPath);
+
+    /** @brief Get the first native class in the super chain for the given class path. */
+    GAMECORE_API UClass* GetNativeClassForClassPath(const FSoftObjectPath& classPath);
 
     GAMECORE_API FSoftObjectPath SoftGetClass(const FSoftObjectPath& objectPath);
+
+    GAMECORE_API FSoftObjectPath SoftGetSuperClass(const FSoftObjectPath& classPath);
+
+    /**
+     * @brief Call on callbacks for, either, the object being resolved, or, the asset data being gotten. Neither
+     * are called if neither method yeilds a valid result.
+     *
+     * @return Whether able to get a valid result or not. I.e., whether a callback was called or not.
+     */
+    GAMECORE_API bool ResolveObjectOrGetAssetData(const FSoftObjectPath& path,
+        FObjectResolvedCallbackFunctionRef onObjectResolvedCallback,
+        FAssetDataGottenCallbackFunctionRef onAssetDataGottenCallback);
 
     /**
      * @brief Determines whether the path is a path to a UClass (including bp-generated).

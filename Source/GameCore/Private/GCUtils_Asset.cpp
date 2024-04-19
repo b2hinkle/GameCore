@@ -6,6 +6,31 @@
 
 bool GCUtils::Asset::SoftIsA(FSoftObjectPath objectPath, const UClass* targetClass)
 {
+    TRACE_CPUPROFILER_EVENT_SCOPE(GCUtils::Asset::SoftIsA);
+
+    if (objectPath.IsValid() == false)
+    {
+        return false;
+    }
+
+    if (!targetClass)
+    {
+        return false;
+    }
+
+    // If the target class is native, skip to native classes and work with those.
+    if (targetClass->IsNative())
+    {
+        const UClass* nativeClass = GetNativeClassForObjectPath(MoveTemp(objectPath));
+        if (!nativeClass)
+        {
+            return false;
+        }
+
+        return nativeClass->IsChildOf(targetClass);
+    }
+
+    // Use the entirely path-based way.
     return SoftIsA(MoveTemp(objectPath), FSoftObjectPath(targetClass));
 }
 
@@ -30,11 +55,75 @@ bool GCUtils::Asset::SoftIsA(FSoftObjectPath objectPath, const FSoftObjectPath& 
         return false;
     }
 
-    return SoftIsChildOf(SoftGetClass(objectPath), targetClassPath);
+    // If the target class is native, skip to native classes and work with those.
+    if (IsNativeClassPath(targetClassPath))
+    {
+        const UClass* nativeClass = GetNativeClassForObjectPath(MoveTemp(objectPath));
+        if (!nativeClass)
+        {
+            return false;
+        }
+
+        const UClass* nativeTargetClass = GetNativeClassForClassPath(targetClassPath);
+        return nativeClass->IsChildOf(nativeTargetClass);
+    }
+
+    // We are dealing with a non-native target class. Traverse the super class paths until
+    // we hit the target class path.
+    for (FSoftObjectPath classPath = SoftGetClass(MoveTemp(objectPath));
+        classPath.IsValid();
+        classPath = SoftGetSuperClass(MoveTemp(classPath)))
+    {
+        if (classPath == targetClassPath)
+        {
+            return true;
+        }
+    }
+
+    // Not of the target class.
+    return false;
 }
 
 bool GCUtils::Asset::SoftIsChildOf(FSoftObjectPath classPath, const UClass* targetClass)
 {
+    TRACE_CPUPROFILER_EVENT_SCOPE(GCUtils::Asset::SoftIsChildOf);
+
+#if DO_ENSURE
+    if (classPath.IsValid())
+    {
+        ensureAlways(IsClassPath(classPath));
+    }
+#endif // DO_ENSURE
+
+    if (classPath.IsValid() == false)
+    {
+        return false;
+    }
+
+    if (!targetClass)
+    {
+        return false;
+    }
+
+    // If the target class is native, skip to native classes and work with those.
+    if (targetClass->IsNative())
+    {
+        const UClass* nativeClass = GetNativeClassForClassPath(MoveTemp(classPath));
+        if (!nativeClass)
+        {
+            return false;
+        }
+
+        return nativeClass->IsChildOf(targetClass);
+    }
+
+    if (IsNativeClassPath(classPath))
+    {
+        // It's impossible for native to be a child of non-native.
+        return false;
+    }
+
+    // Use the entirely path-based way.
     return SoftIsChildOf(MoveTemp(classPath), FSoftObjectPath(targetClass));
 }
 
@@ -56,11 +145,31 @@ bool GCUtils::Asset::SoftIsChildOf(FSoftObjectPath classPath, const FSoftObjectP
     }
 #endif // DO_ENSURE
 
+    if (classPath.IsValid() == false)
+    {
+        return false;
+    }
+
     if (targetClassPath.IsValid() == false)
     {
         return false;
     }
 
+    // If the target class is native, skip to native classes and work with those.
+    if (IsNativeClassPath(targetClassPath))
+    {
+        const UClass* nativeClass = GetNativeClassForClassPath(MoveTemp(classPath));
+        if (!nativeClass)
+        {
+            return false;
+        }
+
+        const UClass* nativeTargetClass = GetNativeClassForClassPath(targetClassPath);
+        return nativeClass->IsChildOf(nativeTargetClass);
+    }
+
+    // We are dealing with a non-native target class. Traverse the super class paths until
+    // we hit the target class path.
     for (classPath; classPath.IsValid(); classPath = SoftGetSuperClass(MoveTemp(classPath)))
     {
         if (classPath == targetClassPath)
@@ -69,7 +178,102 @@ bool GCUtils::Asset::SoftIsChildOf(FSoftObjectPath classPath, const FSoftObjectP
         }
     }
 
+    // Not a child of the target class.
     return false;
+}
+
+UClass* GCUtils::Asset::GetNativeClassForObjectPath(const FSoftObjectPath& objectPath)
+{
+    TRACE_CPUPROFILER_EVENT_SCOPE(GCUtils::Asset::GetNativeClassForObjectPath);
+
+    UClass* nativeClass = nullptr;
+
+    ResolveObjectOrGetAssetData(objectPath,
+        [&nativeClass](UObject& resolvedObject)
+        {
+            // Go up the super classes until we get a native one, setting our native class pointer as we go.
+            for (nativeClass = resolvedObject.GetClass();
+                nativeClass && nativeClass->IsNative() == false;
+                nativeClass = nativeClass->GetSuperClass());
+        },
+        [&nativeClass](FAssetData assetData)
+        {
+            FSoftObjectPath nativeClassPath = assetData.GetTagValueRef<FString>(FBlueprintTags::NativeParentClassPath);
+            nativeClass = Cast<UClass>(nativeClassPath.ResolveObject());
+            ensureAlways(nativeClass);
+        });
+
+#if DO_ENSURE
+    if (nativeClass)
+    {
+        ensureAlways(nativeClass->IsNative());
+    }
+#endif // DO_ENSURE
+
+    return nativeClass;
+}
+
+UClass* GCUtils::Asset::GetNativeClassForClassPath(const FSoftObjectPath& classPath)
+{
+    TRACE_CPUPROFILER_EVENT_SCOPE(GCUtils::Asset::GetNativeClassForClassPath);
+
+#if DO_ENSURE
+    if (classPath.IsValid())
+    {
+        ensureAlways(IsClassPath(classPath));
+    }
+#endif // DO_ENSURE
+
+    UClass* nativeClass = nullptr;
+
+    ResolveObjectOrGetAssetData(classPath,
+        [&nativeClass](UObject& resolvedObject)
+        {
+            UClass* resolvedClass = Cast<UClass>(&resolvedObject);
+            if (!ensureAlwaysMsgf(resolvedClass, TEXT("Resolved object should be a class.")))
+            {
+                return;
+            }
+
+            // Go up the super classes until we get a native one, setting our native class pointer as we go.
+            for (nativeClass = resolvedClass;
+                nativeClass && nativeClass->IsNative() == false;
+                nativeClass = nativeClass->GetSuperClass());
+        },
+        [&nativeClass](FAssetData assetData)
+        {
+            FSoftObjectPath nativeClassPath = assetData.GetTagValueRef<FString>(FBlueprintTags::NativeParentClassPath);
+            nativeClass = Cast<UClass>(nativeClassPath.ResolveObject());
+            ensureAlways(nativeClass);
+        });
+
+#if DO_ENSURE
+    if (nativeClass)
+    {
+        ensureAlways(nativeClass->IsNative());
+    }
+#endif // DO_ENSURE
+
+    return nativeClass;
+}
+
+FSoftObjectPath GCUtils::Asset::SoftGetClass(const FSoftObjectPath& objectPath)
+{
+    TRACE_CPUPROFILER_EVENT_SCOPE(GCUtils::Asset::SoftGetClass);
+
+    FSoftObjectPath classPath;
+
+    ResolveObjectOrGetAssetData(objectPath,
+        [&classPath](UObject& resolvedObject)
+        {
+            classPath = resolvedObject.GetClass();
+        },
+        [&classPath](FAssetData assetData)
+        {
+            classPath = assetData.GetTagValueRef<FString>(FBlueprintTags::ParentClassPath);
+        });
+
+    return classPath;
 }
 
 FSoftObjectPath GCUtils::Asset::SoftGetSuperClass(const FSoftObjectPath& classPath)
@@ -83,91 +287,100 @@ FSoftObjectPath GCUtils::Asset::SoftGetSuperClass(const FSoftObjectPath& classPa
     }
 #endif // DO_ENSURE
 
-    if (classPath.IsValid() == false)
-    {
-        return nullptr;
-    }
+    FSoftObjectPath superClassPath = nullptr;
 
-    // If the class can be resolved, use it.
-    // - E.g., the class is a native class.
-    // - E.g., the class is a serialized asset (blueprint generated class) that just happens to be loaded.
-    {
-        TRACE_CPUPROFILER_EVENT_SCOPE(GCUtils::Asset::SoftGetSuperClass - Resolve Attempt);
-
-        const UObject* resolvedObject = classPath.ResolveObject();
-        const UClass* resolvedClass = Cast<UClass>(resolvedObject);
-
-        if (resolvedClass)
+    ResolveObjectOrGetAssetData(classPath,
+        [&superClassPath](UObject& resolvedObject)
         {
-            return resolvedClass->GetSuperClass();
-        }
+            const UClass* resolvedClass = Cast<UClass>(&resolvedObject);
+            if (!ensureAlwaysMsgf(resolvedClass, TEXT("Resolved object should be a class.")))
+            {
+                return;
+            }
 
-        if (IsNativeClassPath(classPath))
+            superClassPath = resolvedClass->GetSuperClass();
+        },
+        [&superClassPath](FAssetData assetData)
         {
-            ensureAlwaysMsgf(!resolvedObject, TEXT("If no resolved class, no object should've been resolvable either."));
+            superClassPath = assetData.GetTagValueRef<FString>(FBlueprintTags::ParentClassPath);
+        });
 
-            // No valid class from this path.
-            return nullptr;
-        }
-    }
-
-    TRACE_CPUPROFILER_EVENT_SCOPE(GCUtils::Asset::SoftGetSuperClass - On Disk Asset Data);
-
-    // The class must be a serialized asset (blueprint generated class) that's unloaded.
-
-    // TODO @techdebt: Account for redirectors!
-
-    const IAssetRegistry& assetRegistry = UAssetManager::Get().GetAssetRegistry();
-
-    // Look for asset data on disk.
-    constexpr bool shouldIncludeOnlyOnDiskAssets = true; // Skip looking in memory because we've already tried.
-    constexpr bool shouldSkipARFilteredAssets = false;
-    FAssetData assetData = assetRegistry.GetAssetByObjectPath(classPath,
-        shouldIncludeOnlyOnDiskAssets,
-        shouldSkipARFilteredAssets);
-
-    return assetData.GetTagValueRef<FString>(FBlueprintTags::ParentClassPath);
+    return superClassPath;
 }
 
-FSoftObjectPath GCUtils::Asset::SoftGetClass(const FSoftObjectPath& objectPath)
+bool GCUtils::Asset::ResolveObjectOrGetAssetData(const FSoftObjectPath& path,
+    FObjectResolvedCallbackFunctionRef onObjectResolvedCallback,
+    FAssetDataGottenCallbackFunctionRef onAssetDataGottenCallback)
 {
-    TRACE_CPUPROFILER_EVENT_SCOPE(GCUtils::Asset::SoftGetClass);
+    TRACE_CPUPROFILER_EVENT_SCOPE(GCUtils::Asset::ResolveObjectOrGetAssetData);
 
-    if (objectPath.IsValid() == false)
+    if (path.IsValid() == false)
     {
-        return nullptr;
+        return false;
     }
 
     // If the object can be resolved, use it.
-    // - E.g., the object is a CDO of a native class.
+    // - E.g., the object is from a native script package.
     // - E.g., the object is a transient object.
     // - E.g., the object is a serialized asset that just happens to be loaded.
     {
-        TRACE_CPUPROFILER_EVENT_SCOPE(GCUtils::Asset::SoftGetClass - Resolve Attempt);
+        UObject* resolvedObject = nullptr;
+        {
+            TRACE_CPUPROFILER_EVENT_SCOPE(GCUtils::Asset::ResolveObjectOrGetAssetData - Resolve Attempt);
+            resolvedObject = path.ResolveObject();
+        }
 
-        const UObject* resolvedObject = objectPath.ResolveObject();
         if (resolvedObject)
         {
-            return resolvedObject->GetClass();
+            onObjectResolvedCallback(*resolvedObject);
+            return true;
         }
     }
 
-    TRACE_CPUPROFILER_EVENT_SCOPE(GCUtils::Asset::SoftGetClass - On Disk Asset Data);
+    FTopLevelAssetPath assetPath = path.GetAssetPath();
+    const FName packageName = assetPath.GetPackageName();
+
+    if (packageName == GetTransientPackage()->GetFName())
+    {
+        // This is a transient package path. So know we there won't be on-disk asset data for it. Must've been
+        // a bad path. Return.
+        return false;
+    }
+
+    TStringBuilder<256> packageNameString;
+    packageName.ToString(packageNameString);
+    if (FPackageName::IsScriptPackage(packageNameString))
+    {
+        // This is a script path. So know we there won't be on-disk asset data for it. Must've been
+        // a bad path. Return.
+        return false;
+    }
 
     // The object must be a serialized asset that's unloaded.
 
-    // TODO @techdebt: Account for redirectors!
+    FAssetData assetData;
+    {
+        TRACE_CPUPROFILER_EVENT_SCOPE(GCUtils::Asset::ResolveObjectOrGetAssetData - On Disk Asset Data);
 
-    const IAssetRegistry& assetRegistry = UAssetManager::Get().GetAssetRegistry();
+        const IAssetRegistry& assetRegistry = UAssetManager::Get().GetAssetRegistry();
 
-    // Look for asset data on disk.
-    constexpr bool shouldIncludeOnlyOnDiskAssets = true; // Skip looking in memory because we've already tried.
-    constexpr bool shouldSkipARFilteredAssets = false;
-    FAssetData assetData = assetRegistry.GetAssetByObjectPath(objectPath,
-        shouldIncludeOnlyOnDiskAssets,
-        shouldSkipARFilteredAssets);
+        // Look for asset data on disk.
+        constexpr bool shouldIncludeOnlyOnDiskAssets = true; // Skip looking in memory because we've already tried.
+        constexpr bool shouldSkipARFilteredAssets = false;
+        assetData = assetRegistry.GetAssetByObjectPath(path,
+            shouldIncludeOnlyOnDiskAssets,
+            shouldSkipARFilteredAssets);
 
-    return assetData.GetTagValueRef<FString>(FBlueprintTags::ParentClassPath);
+        // TODO @techdebt: Account for redirectors!
+    }
+
+    if (assetData.IsValid() == false)
+    {
+        return false;
+    }
+
+    onAssetDataGottenCallback(MoveTemp(assetData));
+    return true;
 }
 
 bool GCUtils::Asset::IsClassPath(const FSoftObjectPath& path)
