@@ -83,21 +83,44 @@ FSoftObjectPath GCUtils::Asset::SoftGetSuperClass(const FSoftObjectPath& classPa
     }
 #endif // DO_ENSURE
 
-    // If the class can be resolved, return its super class.
-    // - E.g., the class is a native class.
-    // - Also, e.g., the class is an asset (blueprint generated class) that happens to be loaded.
-    if (const UClass* resolvedClass = Cast<UClass>(classPath.ResolveObject()))
+    if (classPath.IsValid() == false)
     {
-        return resolvedClass->GetSuperClass();
+        return nullptr;
     }
 
-    // The class must be an asset (blueprint generated class) that's unloaded.
+    // If the class can be resolved, use it.
+    // - E.g., the class is a native class.
+    // - E.g., the class is a serialized asset (blueprint generated class) that just happens to be loaded.
+    {
+        TRACE_CPUPROFILER_EVENT_SCOPE(GCUtils::Asset::SoftGetSuperClass - Resolve Attempt);
+
+        const UObject* resolvedObject = classPath.ResolveObject();
+        const UClass* resolvedClass = Cast<UClass>(resolvedObject);
+
+        if (resolvedClass)
+        {
+            return resolvedClass->GetSuperClass();
+        }
+
+        if (IsNativeClassPath(classPath))
+        {
+            ensureAlwaysMsgf(!resolvedObject, TEXT("If no resolved class, no object should've been resolvable either."));
+
+            // No valid class from this path.
+            return nullptr;
+        }
+    }
+
+    TRACE_CPUPROFILER_EVENT_SCOPE(GCUtils::Asset::SoftGetSuperClass - On Disk Asset Data);
+
+    // The class must be a serialized asset (blueprint generated class) that's unloaded.
 
     // TODO @techdebt: Account for redirectors!
 
     const IAssetRegistry& assetRegistry = UAssetManager::Get().GetAssetRegistry();
 
-    constexpr bool shouldIncludeOnlyOnDiskAssets = false;
+    // Look for asset data on disk.
+    constexpr bool shouldIncludeOnlyOnDiskAssets = true; // Skip looking in memory because we've already tried.
     constexpr bool shouldSkipARFilteredAssets = false;
     FAssetData assetData = assetRegistry.GetAssetByObjectPath(classPath,
         shouldIncludeOnlyOnDiskAssets,
@@ -110,22 +133,35 @@ FSoftObjectPath GCUtils::Asset::SoftGetClass(const FSoftObjectPath& objectPath)
 {
     TRACE_CPUPROFILER_EVENT_SCOPE(GCUtils::Asset::SoftGetClass);
 
-    // If the object can be resolved, return its class.
-    // - E.g., the object is a CDO of a native class.
-    // - E.g., the object is a transient object that's loaded.
-    // - Also, e.g., the object is an asset that happens to be loaded.
-    if (const UObject* resolvedObject = objectPath.ResolveObject())
+    if (objectPath.IsValid() == false)
     {
-        return resolvedObject->GetClass();
+        return nullptr;
     }
 
-    // The object must be an asset that's unloaded.
+    // If the object can be resolved, use it.
+    // - E.g., the object is a CDO of a native class.
+    // - E.g., the object is a transient object.
+    // - E.g., the object is a serialized asset that just happens to be loaded.
+    {
+        TRACE_CPUPROFILER_EVENT_SCOPE(GCUtils::Asset::SoftGetClass - Resolve Attempt);
+
+        const UObject* resolvedObject = objectPath.ResolveObject();
+        if (resolvedObject)
+        {
+            return resolvedObject->GetClass();
+        }
+    }
+
+    TRACE_CPUPROFILER_EVENT_SCOPE(GCUtils::Asset::SoftGetClass - On Disk Asset Data);
+
+    // The object must be a serialized asset that's unloaded.
 
     // TODO @techdebt: Account for redirectors!
 
     const IAssetRegistry& assetRegistry = UAssetManager::Get().GetAssetRegistry();
 
-    constexpr bool shouldIncludeOnlyOnDiskAssets = false;
+    // Look for asset data on disk.
+    constexpr bool shouldIncludeOnlyOnDiskAssets = true; // Skip looking in memory because we've already tried.
     constexpr bool shouldSkipARFilteredAssets = false;
     FAssetData assetData = assetRegistry.GetAssetByObjectPath(objectPath,
         shouldIncludeOnlyOnDiskAssets,
