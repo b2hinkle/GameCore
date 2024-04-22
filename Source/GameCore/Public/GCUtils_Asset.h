@@ -3,6 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include <string>
+
+DECLARE_LOG_CATEGORY_EXTERN(LogGCUtils_Asset, Log, All);
 
 /**
  * @brief Utilities for sofly casting paths and more.
@@ -14,17 +17,15 @@
  */
 namespace GCUtils::Asset
 {
-    /** @brief Signature for object result callback of ResolveObjectOrGetAssetData. */
-    typedef TFunctionRef<void(UObject& /* resolvedObject */)> FObjectResolvedCallbackFunctionRef;
-
-    /** @brief Signature for asset data result callback of ResolveObjectOrGetAssetData. */
-    typedef TFunctionRef<void(FAssetData /* assetData */)> FAssetDataGottenCallbackFunctionRef;
-
-    /** @brief Convert the soft object ptr to another type and return null if not of that type. */
+    /**
+     * @brief Convert the soft object ptr to another type and return null if not of that type.
+     */
     template <class TTo, class TFrom>
     TSoftObjectPtr<TTo> CastSoftObjectPtr(const TSoftObjectPtr<TFrom>& objectSoft);
 
-    /** @brief Convert the soft class ptr to another type and return null if not child of that type. */
+    /**
+     * @brief Convert the soft class ptr to another type and return null if not child of that type.
+     */
     template <class TTo, class TFrom>
     TSoftClassPtr<TTo> CastSoftClassPtr(const TSoftClassPtr<TFrom>& classSoft);
 
@@ -35,17 +36,22 @@ namespace GCUtils::Asset
     TSoftClassPtr<TTo> ReinterpretSoftClassPtr(const TSoftClassPtr<TFrom>& classSoft);
 
     template <class TTargetClass>
-    bool SoftIsA(FSoftObjectPath objectPath);
+    bool SoftIsA(const FSoftObjectPath& objectPath);
 
     /**
      * @brief Determines whether an object is of the already-loaded target class without loading the object.
      */
-    GAMECORE_API bool SoftIsA(FSoftObjectPath objectPath, const UClass* targetClass);
+    GAMECORE_API bool SoftIsA(const FSoftObjectPath& objectPath, const UClass* targetClass);
 
     /**
-     * @brief Determines whether an object is of the target class without loading the object nor the class.
+     * @brief Determines whether an already-loaded object is of the target class without loading the target class.
      */
-    GAMECORE_API bool SoftIsA(FSoftObjectPath objectPath, const FSoftObjectPath& targetClassPath);
+    GAMECORE_API bool SoftIsA(const UObject* objectPtr, const FSoftObjectPath& targetClassPath);
+
+    /**
+     * @brief Determines whether an object is of the target class without loading them.
+     */
+    GAMECORE_API bool SoftIsA(const FSoftObjectPath& objectPath, const FSoftObjectPath& targetClassPath);
 
     template <class TTargetClass>
     bool SoftIsChildOf(FSoftObjectPath classPath);
@@ -56,29 +62,27 @@ namespace GCUtils::Asset
     GAMECORE_API bool SoftIsChildOf(FSoftObjectPath classPath, const UClass* targetClass);
 
     /**
-     * @brief Determines whether a class is of the target class without loading either of the classes.
+     * @brief Determines whether an already-loaded class is of the target class without loading the target class.
+     */
+    GAMECORE_API bool SoftIsChildOf(const UClass* classPtr, const FSoftObjectPath& targetClassPath);
+
+    /**
+     * @brief Determines whether a class is of the target class without loading them.
      */
     GAMECORE_API bool SoftIsChildOf(FSoftObjectPath classPath, const FSoftObjectPath& targetClassPath);
 
-    /** @brief Get the first native class in the super chain of the given object path's class. */
-    GAMECORE_API UClass* GetNativeClassForObjectPath(const FSoftObjectPath& objectPath);
-
-    /** @brief Get the first native class in the super chain for the given class path. */
-    GAMECORE_API UClass* GetNativeClassForClassPath(const FSoftObjectPath& classPath);
-
-    GAMECORE_API FSoftObjectPath SoftGetClass(const FSoftObjectPath& objectPath);
-
-    GAMECORE_API FSoftObjectPath SoftGetSuperClass(const FSoftObjectPath& classPath);
+    /**
+     * @brief Get on-disk asset data for an asset that we know isn't loaded. Warning logs if asset is in memory.
+     *
+     * @note Only use this if you've already tried finding the object in memory, as getting
+     * asset data is generally more expensive.
+     */
+    GAMECORE_API FAssetData GetAssetDataForUnloadedAsset(const FSoftObjectPath& path);
 
     /**
-     * @brief Call on callbacks for, either, the object being resolved, or, the asset data being gotten. Neither
-     * are called if neither method yeilds a valid result.
-     *
-     * @return Whether able to get a valid result or not. I.e., whether a callback was called or not.
+     * @brief Resolve a class path. Error logs if the resolved object isn't a class.
      */
-    GAMECORE_API bool ResolveObjectOrGetAssetData(const FSoftObjectPath& path,
-        FObjectResolvedCallbackFunctionRef onObjectResolvedCallback,
-        FAssetDataGottenCallbackFunctionRef onAssetDataGottenCallback);
+    GAMECORE_API UClass* ResolveClass(const FSoftObjectPath& classPath);
 
     /**
      * @brief Determines whether the path is a path to a UClass (including bp-generated).
@@ -105,8 +109,14 @@ namespace GCUtils::Asset
      * @brief Postfix found at the end of blueprint generated class asset names. The engine
      * provides no constant for this so we have our own here.
      */
-    constexpr TCHAR BlueprintGeneratedClassPostfix[] = TEXT("_C");
-    constexpr int32 BlueprintGeneratedClassPostfixLen = (sizeof(BlueprintGeneratedClassPostfix) / sizeof(TCHAR)) - 1;
+    constexpr FStringView BlueprintGeneratedClassPostfixString =
+        FStringView(TEXT("_C"), std::char_traits<TCHAR>::length(TEXT("_C")));
+
+    /**
+     * @brief Convenient string view of the engine's DEFAULT_OBJECT_PREFIX cstring.
+     */
+    constexpr FStringView ClassDefaultObjectPrefixString =
+        FStringView(DEFAULT_OBJECT_PREFIX, std::char_traits<TCHAR>::length(DEFAULT_OBJECT_PREFIX));
 }
 
 template <class TTo, class TFrom>
@@ -140,7 +150,7 @@ TSoftObjectPtr<TTo> GCUtils::Asset::ReinterpretSoftObjectPtr(const TSoftObjectPt
 {
     TRACE_CPUPROFILER_EVENT_SCOPE(GCUtils::Asset::ReinterpretSoftObjectPtr);
 
-    // Copy the pointer if valid.
+    // Copy the stored pointer if valid.
     if (const UObject* objectPtr = objectSoft.Get())
     {
         return objectPtr;
@@ -154,7 +164,7 @@ TSoftClassPtr<TTo> GCUtils::Asset::ReinterpretSoftClassPtr(const TSoftClassPtr<T
 {
     TRACE_CPUPROFILER_EVENT_SCOPE(GCUtils::Asset::ReinterpretSoftClassPtr);
 
-    // Copy the pointer if valid.
+    // Copy the stored pointer if valid.
     if (const UClass* classPtr = classSoft.Get())
     {
         return classPtr;
@@ -164,9 +174,9 @@ TSoftClassPtr<TTo> GCUtils::Asset::ReinterpretSoftClassPtr(const TSoftClassPtr<T
 }
 
 template <class TTargetClass>
-bool GCUtils::Asset::SoftIsA(FSoftObjectPath objectPath)
+bool GCUtils::Asset::SoftIsA(const FSoftObjectPath& objectPath)
 {
-    return SoftIsA(MoveTemp(objectPath), TTargetClass::StaticClass());
+    return SoftIsA(objectPath, TTargetClass::StaticClass());
 }
 
 template <class TTargetClass>
