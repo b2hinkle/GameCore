@@ -9,11 +9,10 @@ DECLARE_LOG_CATEGORY_EXTERN(LogGCUtils_Asset, Log, All);
 
 /**
  * @brief Utilities for sofly casting paths and more.
- *
  * @remark We pass around class paths as FSoftObjectPath because it's the most
  * supported and simplified form of an asset path. I would love to use FSoftClassPath but
- * it's just not as good. We runtime assert paths that are intended to be class paths
- * for safety.
+ * it's just not as good. We runtime assert paths that are intended to be class paths and
+ * error log if they're not.
  */
 namespace GCUtils::Asset
 {
@@ -29,58 +28,85 @@ namespace GCUtils::Asset
     template <class TTo, class TFrom>
     TSoftClassPtr<TTo> CastSoftClassPtr(const TSoftClassPtr<TFrom>& classSoft);
 
+    /**
+     * @brief Copy the data from one soft object ptr to another of a different type.
+     * @note Consider using CastSoftObjectPtr for a type safety.
+     */
     template <class TTo, class TFrom>
     TSoftObjectPtr<TTo> ReinterpretSoftObjectPtr(const TSoftObjectPtr<TFrom>& objectSoft);
 
+    /**
+     * @brief Copy the data from one soft class ptr to another of a different type.
+     * @note Consider using CastSoftClassPtr for a type safety.
+     */
     template <class TTo, class TFrom>
     TSoftClassPtr<TTo> ReinterpretSoftClassPtr(const TSoftClassPtr<TFrom>& classSoft);
 
+    /**
+     * @brief Determines whether an object is of the target class without loading.
+     * @tparam TTargetClass Native target class type.
+     * @param objectPath Unresolved or unloaded object path.
+     */
     template <class TTargetClass>
     bool SoftIsA(const FSoftObjectPath& objectPath);
 
     /**
-     * @brief Determines whether an object is of the already-loaded target class without loading the object.
+     * @brief Determines whether an object is of the target class without loading.
+     * @param objectPath Unresolved or unloaded object path.
+     * @param targetClass Loaded target class.
      */
     GAMECORE_API bool SoftIsA(const FSoftObjectPath& objectPath, const UClass* targetClass);
 
     /**
-     * @brief Determines whether an already-loaded object is of the target class without loading the target class.
+     * @brief Determines whether an object is of the target class without loading.
+     * @param objectPtr Loaded object.
+     * @param targetClassPath Unresolved or unloaded target class.
      */
     GAMECORE_API bool SoftIsA(const UObject* objectPtr, const FSoftObjectPath& targetClassPath);
 
     /**
-     * @brief Determines whether an object is of the target class without loading them.
+     * @brief Determines whether an object is of the target class without loading.
+     * @param objectPath Unresolved or unloaded object.
+     * @param targetClassPath Unresolved or unloaded target class.
      */
     GAMECORE_API bool SoftIsA(const FSoftObjectPath& objectPath, const FSoftObjectPath& targetClassPath);
 
+    /**
+     * @brief Determines whether a class is a child of the target class without loading.
+     * @tparam TTargetClass Native target class type.
+     * @param classPath Unresolved or unloaded class path.
+     */
     template <class TTargetClass>
     bool SoftIsChildOf(FSoftObjectPath classPath);
 
     /**
-     * @brief Determines whether a class is of the already-loaded target class without loading the class.
+     * @brief Determines whether a class is a child of the target class without loading.
+     * @param classPath Unresolved or unloaded class path.
+     * @param targetClass Loaded target class.
      */
     GAMECORE_API bool SoftIsChildOf(FSoftObjectPath classPath, const UClass* targetClass);
 
     /**
-     * @brief Determines whether an already-loaded class is of the target class without loading the target class.
+     * @brief Determines whether a class is a child of the target class without loading.
+     * @param classPtr Loaded class path.
+     * @param targetClassPath Unresolved or unloaded target class path.
      */
     GAMECORE_API bool SoftIsChildOf(const UClass* classPtr, const FSoftObjectPath& targetClassPath);
 
     /**
-     * @brief Determines whether a class is of the target class without loading them.
+     * @brief Determines whether a class is a child of the target class without loading.
+     * @param classPath Unresolved or unloaded class path.
+     * @param targetClassPath Unresolved or unloaded target class path.
      */
     GAMECORE_API bool SoftIsChildOf(FSoftObjectPath classPath, const FSoftObjectPath& targetClassPath);
 
     /**
-     * @brief Get on-disk asset data for an asset that we know isn't loaded. Warning logs if asset is in memory.
-     *
-     * @note Only use this if you've already tried finding the object in memory, as getting
-     * asset data is generally more expensive.
+     * @brief Get on-disk asset data for an asset that we know isn't loaded and warn if it is in memory.
      */
-    GAMECORE_API FAssetData GetAssetDataForUnloadedAsset(const FSoftObjectPath& path);
+    GAMECORE_API FAssetData GetAssetByObjectPathUnloaded(const FSoftObjectPath& path);
 
     /**
-     * @brief Resolve a class path. Error logs if the resolved object isn't a class.
+     * @brief Resolve a class path. Error logs if the path and object aren't a class.
      */
     GAMECORE_API UClass* ResolveClass(const FSoftObjectPath& classPath);
 
@@ -100,10 +126,10 @@ namespace GCUtils::Asset
     GAMECORE_API bool IsBlueprintGeneratedClassPath(const FSoftObjectPath& path);
 
     /** @brief Determines whether an object name may be a UBlueprintGeneratedClass. */
-    GAMECORE_API bool IsBlueprintGeneratedClassName(const FStringView& nameString);
+    GAMECORE_API bool IsBlueprintGeneratedClassName(const FName name);
 
     /** @brief Determines whether an object name may be a class default object. */
-    GAMECORE_API bool IsClassDefaultObjectName(const FStringView& nameString);
+    GAMECORE_API bool IsClassDefaultObjectName(const FName name);
 
     /**
      * @brief Postfix found at the end of blueprint generated class asset names. The engine
@@ -129,7 +155,7 @@ TSoftObjectPtr<TTo> GCUtils::Asset::CastSoftObjectPtr(const TSoftObjectPtr<TFrom
         return ReinterpretSoftObjectPtr<TTo>(objectSoft);
     }
 
-    return nullptr;
+    return TSoftObjectPtr<TTo>(nullptr);
 }
 
 template <class TTo, class TFrom>
@@ -142,7 +168,7 @@ TSoftClassPtr<TTo> GCUtils::Asset::CastSoftClassPtr(const TSoftClassPtr<TFrom>& 
         return ReinterpretSoftClassPtr<TTo>(classSoft);
     }
 
-    return nullptr;
+    return TSoftClassPtr<TTo>(nullptr);
 }
 
 template <class TTo, class TFrom>
@@ -153,7 +179,7 @@ TSoftObjectPtr<TTo> GCUtils::Asset::ReinterpretSoftObjectPtr(const TSoftObjectPt
     // Copy the stored pointer if valid.
     if (const UObject* objectPtr = objectSoft.Get())
     {
-        return objectPtr;
+        return TSoftObjectPtr<TTo>(objectPtr);
     }
 
     return TSoftObjectPtr<TTo>(objectSoft.ToSoftObjectPath());
@@ -167,7 +193,7 @@ TSoftClassPtr<TTo> GCUtils::Asset::ReinterpretSoftClassPtr(const TSoftClassPtr<T
     // Copy the stored pointer if valid.
     if (const UClass* classPtr = classSoft.Get())
     {
-        return classPtr;
+        return TSoftClassPtr<TTo>(classPtr);
     }
 
     return TSoftClassPtr<TTo>(classSoft.ToSoftObjectPath());

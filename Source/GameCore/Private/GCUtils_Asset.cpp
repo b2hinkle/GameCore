@@ -12,8 +12,11 @@ DEFINE_LOG_CATEGORY(LogGCUtils_Asset);
  */
 namespace GCUtils::Asset
 {
-    static FSoftObjectPath GetNextClassTowardsTargetParentClassFromUnloadedAssetPath(
-        const FSoftObjectPath& assetPath,
+    static FSoftObjectPath GetClassPathForObjectPathUnloaded(
+        const FSoftObjectPath& objectPath);
+
+    static FSoftObjectPath GetNextClassPathTowardsTargetParentUnloaded(
+        const FSoftObjectPath& currentClassPath,
         const FSoftObjectPath& targetClassPath);
 }
 
@@ -38,10 +41,7 @@ bool GCUtils::Asset::SoftIsA(const FSoftObjectPath& objectPath, const UClass* ta
     }
 
     // Rely on on-disk asset data.
-    FSoftObjectPath classPath = GetNextClassTowardsTargetParentClassFromUnloadedAssetPath(
-        objectPath,
-        FSoftObjectPath(targetClass));
-
+    FSoftObjectPath classPath = GetClassPathForObjectPathUnloaded(objectPath);
     return SoftIsChildOf(MoveTemp(classPath), targetClass);
 }
 
@@ -97,10 +97,7 @@ bool GCUtils::Asset::SoftIsA(const FSoftObjectPath& objectPath, const FSoftObjec
     }
 
     // Rely on on-disk asset data.
-    FSoftObjectPath classPath = GetNextClassTowardsTargetParentClassFromUnloadedAssetPath(
-        objectPath,
-        targetClassPath);
-
+    FSoftObjectPath classPath = GetClassPathForObjectPathUnloaded(objectPath);
     return SoftIsChildOf(MoveTemp(classPath), targetClassPath);
 }
 
@@ -132,11 +129,11 @@ bool GCUtils::Asset::SoftIsChildOf(FSoftObjectPath classPath, const UClass* targ
         return false;
     }
 
-    const FSoftObjectPath targetClassPath = FSoftObjectPath(classPath);
+    const FSoftObjectPath targetClassPath = FSoftObjectPath(targetClass);
 
     for (FSoftObjectPath currentClassPath = MoveTemp(classPath);
         currentClassPath.IsValid();
-        currentClassPath = GetNextClassTowardsTargetParentClassFromUnloadedAssetPath(
+        currentClassPath = GetNextClassPathTowardsTargetParentUnloaded(
             MoveTemp(currentClassPath),
             targetClassPath))
     {
@@ -225,7 +222,7 @@ bool GCUtils::Asset::SoftIsChildOf(FSoftObjectPath classPath, const FSoftObjectP
 
     for (FSoftObjectPath currentClassPath = MoveTemp(classPath);
         currentClassPath.IsValid();
-        currentClassPath = GetNextClassTowardsTargetParentClassFromUnloadedAssetPath(
+        currentClassPath = GetNextClassPathTowardsTargetParentUnloaded(
             MoveTemp(currentClassPath),
             targetClassPath))
     {
@@ -245,9 +242,9 @@ bool GCUtils::Asset::SoftIsChildOf(FSoftObjectPath classPath, const FSoftObjectP
     return false;
 }
 
-FAssetData GCUtils::Asset::GetAssetDataForUnloadedAsset(const FSoftObjectPath& path)
+FAssetData GCUtils::Asset::GetAssetByObjectPathUnloaded(const FSoftObjectPath& path)
 {
-    TRACE_CPUPROFILER_EVENT_SCOPE(GCUtils::Asset::GetAssetDataForUnloadedAsset);
+    TRACE_CPUPROFILER_EVENT_SCOPE(GCUtils::Asset::GetAssetByObjectPathUnloaded);
 
 #if !NO_LOGGING || DO_ENSURE
     if (!ensureAlways(path.ResolveObject() == nullptr))
@@ -270,7 +267,7 @@ FAssetData GCUtils::Asset::GetAssetDataForUnloadedAsset(const FSoftObjectPath& p
 
     if (packageName == GetTransientPackage()->GetFName())
     {
-        // This is a transient package path. So know we there won't be on-disk asset data for it. Must've been
+        // This is a transient package path. So we know there won't be on-disk asset data for it. Must've been
         // a bad path. Return.
         return FAssetData();
     }
@@ -280,7 +277,7 @@ FAssetData GCUtils::Asset::GetAssetDataForUnloadedAsset(const FSoftObjectPath& p
 
     if (FPackageName::IsScriptPackage(FStringView(packageNameString.GetData(), packageNameString.Len())))
     {
-        // This is a script path. So know we there won't be on-disk asset data for it. Must've been
+        // This is a script path. So we know there won't be on-disk asset data for it. Must've been
         // a bad path. Return.
         return FAssetData();
     }
@@ -330,12 +327,16 @@ UClass* GCUtils::Asset::ResolveClass(const FSoftObjectPath& classPath)
 
     UClass* resolvedClass = Cast<UClass>(resolvedObject);
 
-    GC_CLOG_NO_CONTEXT(
-        !ensureAlways(resolvedClass),
-        LogGCUtils_Asset,
-        Error,
-        TEXT("Resolved object is supposed to be a class. NULL will be returned. ") GC_CSTRINGIZE(classPath) TEXT(": {%s}."),
-        classPath.ToString().GetCharArray().GetData());
+#if !NO_LOGGING || DO_ENSURE
+    if (!ensureAlways(resolvedClass))
+    {
+        GC_LOG_NO_CONTEXT(
+            LogGCUtils_Asset,
+            Error,
+            TEXT("Resolved object is supposed to be a class. NULL will be returned. ") GC_CSTRINGIZE(classPath) TEXT(": {%s}."),
+            classPath.ToString().GetCharArray().GetData());
+    }
+#endif // !NO_LOGGING || DO_ENSURE
 
     return resolvedClass;
 }
@@ -344,14 +345,57 @@ bool GCUtils::Asset::IsClassPath(const FSoftObjectPath& path)
 {
     TRACE_CPUPROFILER_EVENT_SCOPE(GCUtils::Asset::IsClassPath);
 
-    return IsBlueprintGeneratedClassPath(path) || IsNativeClassPath(path);
+    return IsNativeClassPath(path) || IsBlueprintGeneratedClassPath(path);
 }
 
 bool GCUtils::Asset::IsNativeClassPath(const FSoftObjectPath& path)
 {
     TRACE_CPUPROFILER_EVENT_SCOPE(GCUtils::Asset::IsNativeClassPath);
 
-    // Note: We make an effort to reliably determine this without using FSoftObjectPath::ResolveObject().
+    // Goal: We make an effort to reliably determine this without using FSoftObjectPath::ResolveObject().
+
+    if (path.IsValid() == false)
+    {
+        return false;
+    }
+
+    if (path.IsSubobject())
+    {
+        // Classes are never subobjects.
+        return false;
+    }
+
+    FTopLevelAssetPath assetPath = path.GetAssetPath();
+    const FName packageName = assetPath.GetPackageName();
+    const FName assetName = assetPath.GetAssetName();
+
+    if (assetName.IsNone())
+    {
+        // This is just a package.
+        return false;
+    }
+
+    if (IsClassDefaultObjectName(assetName))
+    {
+        // This is a class default object, not a class.
+        return false;
+    }
+
+    TStringBuilder<256> packageNameString;
+    packageName.ToString(packageNameString);
+
+    if (FPackageName::IsScriptPackage(FStringView(packageNameString.GetData(), packageNameString.Len())) == false)
+    {
+        // Not a native.
+        return false;
+    }
+
+    return true;
+}
+
+bool GCUtils::Asset::IsBlueprintGeneratedClassPath(const FSoftObjectPath& path)
+{
+    TRACE_CPUPROFILER_EVENT_SCOPE(GCUtils::Asset::IsBlueprintGeneratedClassPath);
 
     if (path.IsValid() == false)
     {
@@ -377,79 +421,74 @@ bool GCUtils::Asset::IsNativeClassPath(const FSoftObjectPath& path)
     TStringBuilder<256> packageNameString;
     packageName.ToString(packageNameString);
 
-    if (FPackageName::IsScriptPackage(FStringView(packageNameString.GetData(), packageNameString.Len())) == false)
+    if (FPackageName::IsScriptPackage(FStringView(packageNameString.GetData(), packageNameString.Len())))
     {
-        // Not a native object.
+        // This is a native.
         return false;
     }
 
-    TStringBuilder<128> assetNameString;
-    assetName.ToString(assetNameString);
-
-    if (IsClassDefaultObjectName(FStringView(assetNameString.GetData(), assetNameString.Len())))
-    {
-        // This is a class default object.
-        return false;
-    }
-
-    return true;
+    return IsBlueprintGeneratedClassName(assetName);
 }
 
-bool GCUtils::Asset::IsBlueprintGeneratedClassPath(const FSoftObjectPath& path)
-{
-    TRACE_CPUPROFILER_EVENT_SCOPE(GCUtils::Asset::IsBlueprintGeneratedClassPath);
-
-    if (path.IsValid() == false)
-    {
-        return false;
-    }
-
-    const FName assetName = path.GetAssetPath().GetAssetName();
-    TStringBuilder<128> assetNameString;
-    assetName.ToString(assetNameString);
-
-    return IsBlueprintGeneratedClassName(FStringView(assetNameString.GetData(), assetNameString.Len()));
-}
-
-bool GCUtils::Asset::IsBlueprintGeneratedClassName(const FStringView& nameString)
+bool GCUtils::Asset::IsBlueprintGeneratedClassName(const FName name)
 {
     TRACE_CPUPROFILER_EVENT_SCOPE(GCUtils::Asset::IsBlueprintGeneratedClassName);
 
-    return nameString.EndsWith(BlueprintGeneratedClassPostfixString);
+    if (IsClassDefaultObjectName(name))
+    {
+        // This is a class default object, not a class.
+        return false;
+    }
+
+    TStringBuilder<128> nameString;
+    name.ToString(nameString);
+
+    return FStringView(nameString.GetData(), nameString.Len()).EndsWith(BlueprintGeneratedClassPostfixString);
 }
 
-bool GCUtils::Asset::IsClassDefaultObjectName(const FStringView& nameString)
+bool GCUtils::Asset::IsClassDefaultObjectName(const FName name)
 {
     TRACE_CPUPROFILER_EVENT_SCOPE(GCUtils::Asset::IsClassDefaultObjectName);
 
-    return nameString.StartsWith(ClassDefaultObjectPrefixString);
+    TStringBuilder<128> nameString;
+    name.ToString(nameString);
+
+    return FStringView(nameString.GetData(), nameString.Len()).StartsWith(ClassDefaultObjectPrefixString);
 }
 
-FSoftObjectPath GCUtils::Asset::GetNextClassTowardsTargetParentClassFromUnloadedAssetPath(
-    const FSoftObjectPath& assetPath,
-    const FSoftObjectPath& targetClassPath)
+FSoftObjectPath GCUtils::Asset::GetClassPathForObjectPathUnloaded(const FSoftObjectPath& objectPath)
 {
-    TRACE_CPUPROFILER_EVENT_SCOPE(GCUtils::Asset::GetNextClassTowardsTargetParentClassFromUnloadedAssetPath);
+    TRACE_CPUPROFILER_EVENT_SCOPE(GCUtils::Asset::GetClassPathForObjectPathUnloaded);
 
-#if DO_ENSURE
-    if (targetClassPath.IsValid())
-    {
-        ensureAlways(IsClassPath(targetClassPath));
-    }
-#endif // DO_ENSURE
-
-    if (assetPath.IsValid() == false)
-    {
-        return nullptr;
-    }
-
-    if (targetClassPath.IsValid() == false)
-    {
-        return nullptr;
-    }
+    ensureAlways(objectPath.IsValid());
 
     // Use on-disk asset data.
-    FAssetData assetData = GetAssetDataForUnloadedAsset(assetPath);
+    FAssetData assetData = GetAssetByObjectPathUnloaded(objectPath);
+    if (assetData.IsValid() == false)
+    {
+        // No on-disk asset data found. The path is likely a bad path overall that
+        // could neither be resolved in memory nor found on disk.
+        return nullptr;
+    }
+
+    // TODO @techdebt: Account for redirectors!
+
+    return FSoftObjectPath(assetData.AssetClassPath);
+}
+
+FSoftObjectPath GCUtils::Asset::GetNextClassPathTowardsTargetParentUnloaded(
+    const FSoftObjectPath& currentClassPath,
+    const FSoftObjectPath& targetClassPath)
+{
+    TRACE_CPUPROFILER_EVENT_SCOPE(GCUtils::Asset::GetNextClassPathTowardsTargetParentUnloaded);
+
+    ensureAlways(currentClassPath.IsValid());
+    ensureAlways(targetClassPath.IsValid());
+    ensureAlways(IsClassPath(currentClassPath));
+    ensureAlways(IsClassPath(targetClassPath));
+
+    // Use on-disk asset data.
+    FAssetData assetData = GetAssetByObjectPathUnloaded(currentClassPath);
     if (!assetData.IsValid())
     {
         // No on-disk asset data found. The path is likely a bad path overall that
@@ -467,7 +506,6 @@ FSoftObjectPath GCUtils::Asset::GetNextClassTowardsTargetParentClassFromUnloaded
         assetTagNameForNextClass = FBlueprintTags::NativeParentClassPath;
     }
 
-    // TODO @techdebt: These "parent class" tags only work for class assets. Use FAssetData::AssetClassPath for IsA functions.
     FName nextClassPathName = assetData.GetTagValueRef<FName>(assetTagNameForNextClass);
 
     TStringBuilder<256> nextClassPathString;
