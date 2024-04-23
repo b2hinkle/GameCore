@@ -18,32 +18,43 @@ namespace GCUtils::Asset
 {
     /**
      * @brief Convert the soft object ptr to another type and return null if not of that type.
+     * @note This is still expensive. The function may resolve object paths, get on-disk asset data,
+     *     and get weak object ptrs. It may be preferable for you, the caller, to perform these
+     *     operations yourself so you can reuse that data, or just completely load the asset if you
+     *     were planning to do that anyway.
      */
     template <class TTo, class TFrom>
     TSoftObjectPtr<TTo> CastSoftObjectPtr(const TSoftObjectPtr<TFrom>& objectSoft);
 
     /**
      * @brief Convert the soft class ptr to another type and return null if not child of that type.
+     * @note This is still expensive. The function may resolve object paths, get on-disk asset data,
+     *     and get weak object ptrs. It may be preferable for you, the caller, to perform these
+     *     operations yourself so you can reuse that data, or just completely load the asset if you
+     *     were planning to do that anyway.
      */
     template <class TTo, class TFrom>
     TSoftClassPtr<TTo> CastSoftClassPtr(const TSoftClassPtr<TFrom>& classSoft);
 
     /**
      * @brief Copy the data from one soft object ptr to another of a different type.
-     * @note Consider using CastSoftObjectPtr for a type safety.
+     * @note Consider using CastSoftObjectPtr for type safety.
      */
     template <class TTo, class TFrom>
     TSoftObjectPtr<TTo> ReinterpretSoftObjectPtr(const TSoftObjectPtr<TFrom>& objectSoft);
 
     /**
      * @brief Copy the data from one soft class ptr to another of a different type.
-     * @note Consider using CastSoftClassPtr for a type safety.
+     * @note Consider using CastSoftClassPtr for type safety.
      */
     template <class TTo, class TFrom>
     TSoftClassPtr<TTo> ReinterpretSoftClassPtr(const TSoftClassPtr<TFrom>& classSoft);
 
     /**
      * @brief Determines whether an object is of the target class without loading.
+     * @note This is still expensive. The function may resolve object paths and get on-disk asset
+     *     data. It may be preferable for you, the caller, to perform these operations yourself so you
+     *     can reuse that data, or just completely load the asset if you were planning to do that anyway.
      * @tparam TTargetClass Native target class type.
      * @param objectPath Unresolved or unloaded object path.
      */
@@ -52,6 +63,9 @@ namespace GCUtils::Asset
 
     /**
      * @brief Determines whether an object is of the target class without loading.
+     * @note This is still expensive. The function may resolve object paths and get on-disk asset
+     *     data. It may be preferable for you, the caller, to perform these operations yourself so you
+     *     can reuse that data, or just completely load the asset if you were planning to do that anyway.
      * @param objectPath Unresolved or unloaded object path.
      * @param targetClass Loaded target class.
      */
@@ -59,6 +73,9 @@ namespace GCUtils::Asset
 
     /**
      * @brief Determines whether an object is of the target class without loading.
+     * @note This is still expensive. The function may resolve object paths and get on-disk asset
+     *     data. It may be preferable for you, the caller, to perform these operations yourself so you
+     *     can reuse that data, or just completely load the asset if you were planning to do that anyway.
      * @param objectPtr Loaded object.
      * @param targetClassPath Unresolved or unloaded target class.
      */
@@ -66,6 +83,9 @@ namespace GCUtils::Asset
 
     /**
      * @brief Determines whether an object is of the target class without loading.
+     * @note This is still expensive. The function may resolve object paths and get on-disk asset
+     *     data. It may be preferable for you, the caller, to perform these operations yourself so you
+     *     can reuse that data, or just completely load the asset if you were planning to do that anyway.
      * @param objectPath Unresolved or unloaded object.
      * @param targetClassPath Unresolved or unloaded target class.
      */
@@ -73,6 +93,9 @@ namespace GCUtils::Asset
 
     /**
      * @brief Determines whether a class is a child of the target class without loading.
+     * @note This is still expensive. The function may resolve object paths and get on-disk asset
+     *     data. It may be preferable for you, the caller, to perform these operations yourself so you
+     *     can reuse that data, or just completely load the asset if you were planning to do that anyway.
      * @tparam TTargetClass Native target class type.
      * @param classPath Unresolved or unloaded class path.
      */
@@ -81,6 +104,9 @@ namespace GCUtils::Asset
 
     /**
      * @brief Determines whether a class is a child of the target class without loading.
+     * @note This is still expensive. The function may resolve object paths and get on-disk asset
+     *     data. It may be preferable for you, the caller, to perform these operations yourself so you
+     *     can reuse that data, or just completely load the asset if you were planning to do that anyway.
      * @param classPath Unresolved or unloaded class path.
      * @param targetClass Loaded target class.
      */
@@ -88,6 +114,9 @@ namespace GCUtils::Asset
 
     /**
      * @brief Determines whether a class is a child of the target class without loading.
+     * @note This is still expensive. The function may resolve object paths and get on-disk asset
+     *     data. It may be preferable for you, the caller, to perform these operations yourself so you
+     *     can reuse that data, or just completely load the asset if you were planning to do that anyway.
      * @param classPtr Loaded class path.
      * @param targetClassPath Unresolved or unloaded target class path.
      */
@@ -95,6 +124,9 @@ namespace GCUtils::Asset
 
     /**
      * @brief Determines whether a class is a child of the target class without loading.
+     * @note This is still expensive. The function may resolve object paths and get on-disk asset
+     *     data. It may be preferable for you, the caller, to perform these operations yourself so you
+     *     can reuse that data, or just completely load the asset if you were planning to do that anyway.
      * @param classPath Unresolved or unloaded class path.
      * @param targetClassPath Unresolved or unloaded target class path.
      */
