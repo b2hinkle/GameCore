@@ -16,7 +16,8 @@ public class GameCore : ModuleRules
             new string[]
             {
                 "NetCore", // for push model
-                "Projects"
+                "Projects",
+                "GameplayTags"
             }
         );
     }
