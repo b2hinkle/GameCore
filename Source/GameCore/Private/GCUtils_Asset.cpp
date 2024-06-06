@@ -263,8 +263,9 @@ FAssetData GCUtils::Asset::GetAssetByObjectPathUnloaded(const FSoftObjectPath& p
     }
 
     FTopLevelAssetPath assetPath = path.GetAssetPath();
-    const FName packageName = assetPath.GetPackageName();
+    const FName& packageName = assetPath.GetPackageName();
 
+    check(GetTransientPackage());
     if (packageName == GetTransientPackage()->GetFName())
     {
         // This is a transient package path. So we know there won't be on-disk asset data for it. Must've been
@@ -366,8 +367,8 @@ bool GCUtils::Asset::IsNativeClassPath(const FSoftObjectPath& path)
     }
 
     FTopLevelAssetPath assetPath = path.GetAssetPath();
-    const FName packageName = assetPath.GetPackageName();
-    const FName assetName = assetPath.GetAssetName();
+    const FName& packageName = assetPath.GetPackageName();
+    const FName& assetName = assetPath.GetAssetName();
 
     if (assetName.IsNone())
     {
@@ -409,8 +410,8 @@ bool GCUtils::Asset::IsBlueprintGeneratedClassPath(const FSoftObjectPath& path)
     }
 
     FTopLevelAssetPath assetPath = path.GetAssetPath();
-    const FName packageName = assetPath.GetPackageName();
-    const FName assetName = assetPath.GetAssetName();
+    const FName& packageName = assetPath.GetPackageName();
+    const FName& assetName = assetPath.GetAssetName();
 
     if (assetName.IsNone())
     {
@@ -430,7 +431,7 @@ bool GCUtils::Asset::IsBlueprintGeneratedClassPath(const FSoftObjectPath& path)
     return IsBlueprintGeneratedClassName(assetName);
 }
 
-bool GCUtils::Asset::IsBlueprintGeneratedClassName(const FName name)
+bool GCUtils::Asset::IsBlueprintGeneratedClassName(const FName& name)
 {
     TRACE_CPUPROFILER_EVENT_SCOPE(GCUtils::Asset::IsBlueprintGeneratedClassName);
 
@@ -446,7 +447,7 @@ bool GCUtils::Asset::IsBlueprintGeneratedClassName(const FName name)
     return FStringView(nameString.GetData(), nameString.Len()).EndsWith(BlueprintGeneratedClassPostfixString);
 }
 
-bool GCUtils::Asset::IsClassDefaultObjectName(const FName name)
+bool GCUtils::Asset::IsClassDefaultObjectName(const FName& name)
 {
     TRACE_CPUPROFILER_EVENT_SCOPE(GCUtils::Asset::IsClassDefaultObjectName);
 
@@ -506,7 +507,7 @@ FSoftObjectPath GCUtils::Asset::GetNextClassPathTowardsTargetParentUnloaded(
         assetTagNameForNextClass = FBlueprintTags::NativeParentClassPath;
     }
 
-    FName nextClassPathName = assetData.GetTagValueRef<FName>(assetTagNameForNextClass);
+    const FName& nextClassPathName = assetData.GetTagValueRef<FName>(assetTagNameForNextClass);
 
     TStringBuilder<256> nextClassPathString;
     nextClassPathName.ToString(nextClassPathString);

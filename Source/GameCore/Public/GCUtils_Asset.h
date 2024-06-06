@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include <string>
 
 DECLARE_LOG_CATEGORY_EXTERN(LogGCUtils_Asset, Log, All);
 
@@ -158,23 +157,21 @@ namespace GCUtils::Asset
     GAMECORE_API bool IsBlueprintGeneratedClassPath(const FSoftObjectPath& path);
 
     /** @brief Determines whether an object name may be a UBlueprintGeneratedClass. */
-    GAMECORE_API bool IsBlueprintGeneratedClassName(const FName name);
+    GAMECORE_API bool IsBlueprintGeneratedClassName(const FName& name);
 
     /** @brief Determines whether an object name may be a class default object. */
-    GAMECORE_API bool IsClassDefaultObjectName(const FName name);
+    GAMECORE_API bool IsClassDefaultObjectName(const FName& name);
 
     /**
      * @brief Postfix found at the end of blueprint generated class asset names. The engine
      * provides no constant for this so we have our own here.
      */
-    constexpr FStringView BlueprintGeneratedClassPostfixString =
-        FStringView(TEXT("_C"), std::char_traits<TCHAR>::length(TEXT("_C")));
+    constexpr FStringView BlueprintGeneratedClassPostfixString = TEXTVIEW("_C");
 
     /**
      * @brief Convenient string view of the engine's DEFAULT_OBJECT_PREFIX cstring.
      */
-    constexpr FStringView ClassDefaultObjectPrefixString =
-        FStringView(DEFAULT_OBJECT_PREFIX, std::char_traits<TCHAR>::length(DEFAULT_OBJECT_PREFIX));
+    constexpr FStringView ClassDefaultObjectPrefixString = PREPROCESSOR_JOIN(DEFAULT_OBJECT_PREFIX, _PrivateSV);
 }
 
 template <class TTo, class TFrom>
