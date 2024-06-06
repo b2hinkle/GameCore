@@ -41,8 +41,9 @@ bool GCUtils::Asset::SoftIsA(const FSoftObjectPath& objectPath, const UClass* ta
     }
 
     // Rely on on-disk asset data.
-    FSoftObjectPath classPath = GetClassPathForObjectPathUnloaded(objectPath);
-    return SoftIsChildOf(MoveTemp(classPath), targetClass);
+    return SoftIsChildOf(
+        GetClassPathForObjectPathUnloaded(objectPath),
+        targetClass);
 }
 
 bool GCUtils::Asset::SoftIsA(const UObject* objectPtr, const FSoftObjectPath& targetClassPath)
@@ -97,8 +98,9 @@ bool GCUtils::Asset::SoftIsA(const FSoftObjectPath& objectPath, const FSoftObjec
     }
 
     // Rely on on-disk asset data.
-    FSoftObjectPath classPath = GetClassPathForObjectPathUnloaded(objectPath);
-    return SoftIsChildOf(MoveTemp(classPath), targetClassPath);
+    return SoftIsChildOf(
+        GetClassPathForObjectPathUnloaded(objectPath),
+        targetClassPath);
 }
 
 bool GCUtils::Asset::SoftIsChildOf(FSoftObjectPath classPath, const UClass* targetClass)
@@ -262,7 +264,7 @@ FAssetData GCUtils::Asset::GetAssetByObjectPathUnloaded(const FSoftObjectPath& p
         return FAssetData();
     }
 
-    FTopLevelAssetPath assetPath = path.GetAssetPath();
+    const FTopLevelAssetPath& assetPath = path.GetAssetPath();
     const FName& packageName = assetPath.GetPackageName();
 
     check(GetTransientPackage());
@@ -284,21 +286,16 @@ FAssetData GCUtils::Asset::GetAssetByObjectPathUnloaded(const FSoftObjectPath& p
 
     // The object must be a serialized asset that's unloaded.
 
-    FAssetData assetData;
-    {
-        const IAssetRegistry& assetRegistry = UAssetManager::Get().GetAssetRegistry();
+    const IAssetRegistry& assetRegistry = UAssetManager::Get().GetAssetRegistry();
 
-        // Look for asset data on disk.
-        constexpr bool shouldIncludeOnlyOnDiskAssets = true; // Skip looking in memory.
-        constexpr bool shouldSkipARFilteredAssets = false;
-        assetData = assetRegistry.GetAssetByObjectPath(path,
-            shouldIncludeOnlyOnDiskAssets,
-            shouldSkipARFilteredAssets);
+    // TODO @techdebt: Account for redirectors!
 
-        // TODO @techdebt: Account for redirectors!
-    }
-
-    return assetData;
+    // Look for asset data on disk.
+    constexpr bool shouldIncludeOnlyOnDiskAssets = true; // Skip looking in memory.
+    constexpr bool shouldSkipARFilteredAssets = false;
+    return assetRegistry.GetAssetByObjectPath(path,
+        shouldIncludeOnlyOnDiskAssets,
+        shouldSkipARFilteredAssets);
 }
 
 UClass* GCUtils::Asset::ResolveClass(const FSoftObjectPath& classPath)
@@ -365,7 +362,7 @@ bool GCUtils::Asset::IsNativeClassPath(const FSoftObjectPath& path)
         return false;
     }
 
-    FTopLevelAssetPath assetPath = path.GetAssetPath();
+    const FTopLevelAssetPath& assetPath = path.GetAssetPath();
     const FName& packageName = assetPath.GetPackageName();
     const FName& assetName = assetPath.GetAssetName();
 
@@ -407,7 +404,7 @@ bool GCUtils::Asset::IsBlueprintGeneratedClassPath(const FSoftObjectPath& path)
         return false;
     }
 
-    FTopLevelAssetPath assetPath = path.GetAssetPath();
+    const FTopLevelAssetPath& assetPath = path.GetAssetPath();
     const FName& packageName = assetPath.GetPackageName();
     const FName& assetName = assetPath.GetAssetName();
 
@@ -467,7 +464,7 @@ FSoftObjectPath GCUtils::Asset::GetClassPathForObjectPathUnloaded(const FSoftObj
 
     // TODO @techdebt: Account for redirectors!
 
-    return FSoftObjectPath(assetData.AssetClassPath);
+    return FSoftObjectPath(MoveTemp(assetData.AssetClassPath));
 }
 
 FSoftObjectPath GCUtils::Asset::GetNextClassPathTowardsTargetParentUnloaded(
@@ -501,7 +498,7 @@ FSoftObjectPath GCUtils::Asset::GetNextClassPathTowardsTargetParentUnloaded(
     }
 
     const FName& nextClassPathName = assetData.GetTagValueRef<FName>(assetTagNameForNextClass);
-
     TStringBuilder<256> nextClassPathString(EInPlace::InPlace, nextClassPathName);
-    return FSoftObjectPath(nextClassPathString);
+
+    return FSoftObjectPath(MoveTemp(nextClassPathString));
 }
