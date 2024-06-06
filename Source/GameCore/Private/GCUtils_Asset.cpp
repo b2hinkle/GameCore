@@ -273,10 +273,9 @@ FAssetData GCUtils::Asset::GetAssetByObjectPathUnloaded(const FSoftObjectPath& p
         return FAssetData();
     }
 
-    TStringBuilder<256> packageNameString;
-    packageName.ToString(packageNameString);
+    TStringBuilder<256> packageNameString(EInPlace::InPlace, packageName);
 
-    if (FPackageName::IsScriptPackage(FStringView(packageNameString.GetData(), packageNameString.Len())))
+    if (FPackageName::IsScriptPackage(packageNameString))
     {
         // This is a script path. So we know there won't be on-disk asset data for it. Must've been
         // a bad path. Return.
@@ -382,10 +381,9 @@ bool GCUtils::Asset::IsNativeClassPath(const FSoftObjectPath& path)
         return false;
     }
 
-    TStringBuilder<256> packageNameString;
-    packageName.ToString(packageNameString);
+    TStringBuilder<256> packageNameString(EInPlace::InPlace, packageName);
 
-    if (FPackageName::IsScriptPackage(FStringView(packageNameString.GetData(), packageNameString.Len())) == false)
+    if (FPackageName::IsScriptPackage(packageNameString) == false)
     {
         // Not a native.
         return false;
@@ -419,10 +417,9 @@ bool GCUtils::Asset::IsBlueprintGeneratedClassPath(const FSoftObjectPath& path)
         return false;
     }
 
-    TStringBuilder<256> packageNameString;
-    packageName.ToString(packageNameString);
+    TStringBuilder<256> packageNameString(EInPlace::InPlace, packageName);
 
-    if (FPackageName::IsScriptPackage(FStringView(packageNameString.GetData(), packageNameString.Len())))
+    if (FPackageName::IsScriptPackage(packageNameString))
     {
         // This is a native.
         return false;
@@ -441,20 +438,16 @@ bool GCUtils::Asset::IsBlueprintGeneratedClassName(const FName& name)
         return false;
     }
 
-    TStringBuilder<128> nameString;
-    name.ToString(nameString);
-
-    return FStringView(nameString.GetData(), nameString.Len()).EndsWith(BlueprintGeneratedClassPostfixString);
+    TStringBuilder<128> nameString(EInPlace::InPlace, name);
+    return FStringView(nameString).EndsWith(BlueprintGeneratedClassPostfixString);
 }
 
 bool GCUtils::Asset::IsClassDefaultObjectName(const FName& name)
 {
     TRACE_CPUPROFILER_EVENT_SCOPE(GCUtils::Asset::IsClassDefaultObjectName);
 
-    TStringBuilder<128> nameString;
-    name.ToString(nameString);
-
-    return FStringView(nameString.GetData(), nameString.Len()).StartsWith(ClassDefaultObjectPrefixString);
+    TStringBuilder<128> nameString(EInPlace::InPlace, name);
+    return FStringView(nameString).StartsWith(ClassDefaultObjectPrefixString);
 }
 
 FSoftObjectPath GCUtils::Asset::GetClassPathForObjectPathUnloaded(const FSoftObjectPath& objectPath)
@@ -509,7 +502,6 @@ FSoftObjectPath GCUtils::Asset::GetNextClassPathTowardsTargetParentUnloaded(
 
     const FName& nextClassPathName = assetData.GetTagValueRef<FName>(assetTagNameForNextClass);
 
-    TStringBuilder<256> nextClassPathString;
-    nextClassPathName.ToString(nextClassPathString);
-    return FSoftObjectPath(FStringView(nextClassPathString.GetData(), nextClassPathString.Len()));
+    TStringBuilder<256> nextClassPathString(EInPlace::InPlace, nextClassPathName);
+    return FSoftObjectPath(nextClassPathString);
 }
