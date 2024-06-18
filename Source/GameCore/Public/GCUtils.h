@@ -38,7 +38,7 @@ namespace GCUtils
             TGCIsUObjectOrIInterface<typename TRemovePointer<typename TRemoveReference<TFrom>::Type>::Type>::Value
             >::Type
         >
-    TTo StaticCastChecked(TFrom&& inObject);
+    FORCEINLINE_DEBUGGABLE TTo StaticCastChecked(TFrom&& inObject);
 
     /**
      * If static casting isn't an option but inObject is still guaranteed to be a TTo.
@@ -58,7 +58,7 @@ namespace GCUtils
             TGCIsUObjectOrIInterface<typename TRemovePointer<typename TRemoveReference<TFrom>::Type>::Type>::Value
             >::Type
         >
-    TTo ReinterpretCastChecked(TFrom&& inObject);
+    FORCEINLINE_DEBUGGABLE TTo ReinterpretCastChecked(TFrom&& inObject);
 }
 
 template
