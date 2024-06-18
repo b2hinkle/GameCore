@@ -47,16 +47,6 @@ constexpr const TCHAR* GCUtils::String::BoolToCString(const bool inBool)
     return inBool ? CStringTrue : CStringFalse;
 }
 
-FString GCUtils::String::GetUObjectNameSafe(const UObject* inUObject)
-{
-    return inUObject ? inUObject->GetName() : CStringNull;
-}
-
-FString GCUtils::String::GetUObjectFullNameSafe(const UObject* inUObject, const UObject* inStopOuter, EObjectFullNameFlags inFlags)
-{
-    return inUObject ? inUObject->GetFullName(inStopOuter, inFlags) : CStringNull;
-}
-
 const TCHAR* GCUtils::String::GetWorldNetModeCString(const UObject* inWorldContextObject)
 {
     if (!inWorldContextObject)

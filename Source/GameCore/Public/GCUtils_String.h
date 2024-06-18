@@ -44,6 +44,31 @@ GAMECORE_API const TCHAR* LexToString(ENetRole inNetRole);
 
 namespace GCUtils::String
 {
+    /**
+     * @brief Utility struct for using `UObjectBaseUtility::GetFullName()` in the string
+     *        builder's EInPlace constructor.
+     */
+    GAMECORE_API struct FStringAppender_UObjectBaseUtility_GetFullName
+    {
+    public:
+
+        friend FStringBuilderBase& operator<<(FStringBuilderBase& inStringBuilder,
+            const FStringAppender_UObjectBaseUtility_GetFullName& inStringAppender)
+        {
+            inStringAppender.Object.GetFullName(
+                inStringBuilder,
+                inStringAppender.StopOuter,
+                inStringAppender.Flags);
+            return inStringBuilder;
+        }
+
+    public:
+
+        const UObject& Object;
+        const UObject* StopOuter = nullptr;
+        EObjectFullNameFlags Flags = EObjectFullNameFlags::None;
+    };
+
     constexpr const TCHAR* CStringNull = GC_CSTRING_NULL;
 
     constexpr const TCHAR* CStringTrue = GC_CSTRING_TRUE;
@@ -52,9 +77,14 @@ namespace GCUtils::String
 
     GAMECORE_API constexpr const TCHAR* BoolToCString(const bool inBool);
 
-    GAMECORE_API FString GetUObjectNameSafe(const UObject* inUObject);
+    template <int32 BufferSize = 256>
+    TStringBuilder<BufferSize> GetUObjectNameSafe(const UObject* inUObject);
 
-    GAMECORE_API FString GetUObjectFullNameSafe(const UObject* inUObject, const UObject* inStopOuter = nullptr, EObjectFullNameFlags inFlags = EObjectFullNameFlags::None);
+    template <int32 BufferSize = 512>
+    TStringBuilder<BufferSize> GetUObjectFullNameSafe(
+        const UObject* inUObject,
+        const UObject* inStopOuter = nullptr,
+        EObjectFullNameFlags inFlags = EObjectFullNameFlags::None);
 
     GAMECORE_API const TCHAR* GetWorldNetModeCString(const UObject* inWorldContextObject);
 
@@ -66,4 +96,40 @@ namespace GCUtils::String
      * See GCUtils::GetController().
      */
     GAMECORE_API const TCHAR* GetIsControllerLocalCString(const UObject* inObject);
+}
+
+template <int32 BufferSize>
+TStringBuilder<BufferSize> GCUtils::String::GetUObjectNameSafe(const UObject* inUObject)
+{
+    if (!inUObject)
+    {
+        return TStringBuilder<BufferSize>(EInPlace::InPlace, CStringNull);
+    }
+
+    // Avoid `UObjectBaseUtility::GetName()` that does unnecessary string allocation. Use the FName instead.
+    return TStringBuilder<BufferSize>(EInPlace::InPlace, inUObject->GetFName());
+}
+
+template <int32 BufferSize>
+TStringBuilder<BufferSize> GCUtils::String::GetUObjectFullNameSafe(
+    const UObject* inUObject,
+    const UObject* inStopOuter,
+    EObjectFullNameFlags inFlags)
+{
+    if (!inUObject)
+    {
+        return TStringBuilder<BufferSize>(EInPlace::InPlace, CStringNull);
+    }
+
+    // Note: String builders are not copyable so we must return a prvalue to elide the copy. This is
+    // a good idea anyway because we want to be wary of the possibly large buffer size.
+    return TStringBuilder<BufferSize>(
+        EInPlace::InPlace,
+        FStringAppender_UObjectBaseUtility_GetFullName
+        {
+            .Object = *inUObject,
+            .StopOuter = inStopOuter,
+            .Flags = inFlags
+        }
+        );
 }

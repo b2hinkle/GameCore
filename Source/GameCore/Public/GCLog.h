@@ -24,7 +24,7 @@
 /**
  * Variadic arguments that correspond with GC_CONTEXT_OBJECT_FORMAT_CSTRING.
  */
-#define GC_CONTEXT_OBJECT_FORMAT_ARGS(contextObject, contextObjectArgCString) contextObjectArgCString, *GCUtils::String::GetUObjectNameSafe(contextObject), GCUtils::String::GetWorldNetModeCString(contextObject), GCUtils::String::GetObjectLocalRoleCString(contextObject), *GCUtils::String::GetUObjectNameSafe(GCUtils::GetController(contextObject)), GCUtils::String::GetIsControllerLocalCString(contextObject)
+#define GC_CONTEXT_OBJECT_FORMAT_ARGS(contextObject, contextObjectArgCString) contextObjectArgCString, GCUtils::String::GetUObjectNameSafe(contextObject).ToString(), GCUtils::String::GetWorldNetModeCString(contextObject), GCUtils::String::GetObjectLocalRoleCString(contextObject), GCUtils::String::GetUObjectNameSafe(GCUtils::GetController(contextObject)).ToString(), GCUtils::String::GetIsControllerLocalCString(contextObject)
 
 /**
  * @param contextObject - UObject which will be used when our log gathers extra data to help us out. May be a UWorld.
