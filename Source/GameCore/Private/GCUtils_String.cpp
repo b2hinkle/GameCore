@@ -42,12 +42,12 @@ const TCHAR* LexToString(ENetRole inNetRole)
     return TEXT("Unknown");
 }
 
-constexpr const TCHAR* GCUtils::String::BoolToCString(const bool inBool)
+constexpr const FStringView GCUtils::String::BoolToString(const bool inBool)
 {
-    return inBool ? CStringTrue : CStringFalse;
+    return inBool ? StringTrue : StringFalse;
 }
 
-const TCHAR* GCUtils::String::GetWorldNetModeCString(const UObject* inWorldContextObject)
+const FStringView GCUtils::String::GetWorldNetModeString(const UObject* inWorldContextObject)
 {
     if (!inWorldContextObject)
     {
@@ -64,14 +64,14 @@ const TCHAR* GCUtils::String::GetWorldNetModeCString(const UObject* inWorldConte
     return LexToString(world->GetNetMode());
 }
 
-const TCHAR* GCUtils::String::GetObjectLocalRoleCString(const UObject* inContextObject)
+const FStringView GCUtils::String::GetObjectLocalRoleString(const UObject* inActorContextObject)
 {
-    if (!inContextObject)
+    if (!inActorContextObject)
     {
-        return TEXT("Null ") GC_CSTRINGIZE(inContextObject);
+        return TEXT("Null ") GC_CSTRINGIZE(inActorContextObject);
     }
 
-    const AActor* contextActor = ObjectTraversal::GetTypedSelfOrOuter<AActor>(inContextObject);
+    const AActor* contextActor = ObjectTraversal::GetTypedSelfOrOuter<AActor>(inActorContextObject);
 
     if (!contextActor)
     {
@@ -81,18 +81,18 @@ const TCHAR* GCUtils::String::GetObjectLocalRoleCString(const UObject* inContext
     return LexToString(contextActor->GetLocalRole());
 }
 
-const TCHAR* GCUtils::String::GetIsControllerLocalCString(const UObject* inObject)
+const FStringView GCUtils::String::GetIsControllerLocalString(const UObject* inControllerContextObject)
 {
-    if (!inObject)
+    if (!inControllerContextObject)
     {
-        return TEXT("Null ") GC_CSTRINGIZE(inObject);
+        return TEXT("Null ") GC_CSTRINGIZE(inControllerContextObject);
     }
 
-    const AController* controller = GetController(inObject);
+    const AController* controller = GetController(inControllerContextObject);
     if (!controller)
     {
         return TEXT("Null ") GC_CSTRINGIZE(controller);
     }
 
-    return BoolToCString(controller->IsLocalController());
+    return BoolToString(controller->IsLocalController());
 }
