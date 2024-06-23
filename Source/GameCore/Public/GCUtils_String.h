@@ -45,6 +45,30 @@ GAMECORE_API const TCHAR* LexToString(ENetRole inNetRole);
 namespace GCUtils::String
 {
     /**
+     * @brief Utility struct for using `UObjectBaseUtility::GetPathName()` in the string
+     *        builder's EInPlace constructor.
+     */
+    GAMECORE_API struct FStringAppender_UObjectBaseUtility_GetPathName
+    {
+    public:
+
+        // Note: Friend only so that we can define the free function right here in the class definition.
+        friend FStringBuilderBase& operator<<(FStringBuilderBase& inStringBuilder,
+            const FStringAppender_UObjectBaseUtility_GetPathName& inStringAppender)
+        {
+            inStringAppender.Object.GetPathName(
+                inStringAppender.StopOuter,
+                inStringBuilder);
+            return inStringBuilder;
+        }
+
+    public:
+
+        const UObject& Object;
+        const UObject* StopOuter = nullptr;
+    };
+
+    /**
      * @brief Utility struct for using `UObjectBaseUtility::GetFullName()` in the string
      *        builder's EInPlace constructor.
      */
@@ -52,6 +76,7 @@ namespace GCUtils::String
     {
     public:
 
+        // Note: Friend only so that we can define the free function right here in the class definition.
         friend FStringBuilderBase& operator<<(FStringBuilderBase& inStringBuilder,
             const FStringAppender_UObjectBaseUtility_GetFullName& inStringAppender)
         {
@@ -80,9 +105,28 @@ namespace GCUtils::String
     template <int32 BufferSize = 256>
     TStringBuilder<BufferSize> GetUObjectNameSafe(const UObject* inUObject);
 
+    template <int32 BufferSize = 256>
+    TStringBuilder<BufferSize> GetUObjectName(const UObject& inUObject);
+
+    template <int32 BufferSize = 512>
+    TStringBuilder<BufferSize> GetUObjectPathNameSafe(
+        const UObject* inUObject,
+        const UObject* inStopOuter = nullptr);
+
+    template <int32 BufferSize = 512>
+    TStringBuilder<BufferSize> GetUObjectPathName(
+        const UObject& inUObject,
+        const UObject* inStopOuter = nullptr);
+
     template <int32 BufferSize = 512>
     TStringBuilder<BufferSize> GetUObjectFullNameSafe(
         const UObject* inUObject,
+        const UObject* inStopOuter = nullptr,
+        EObjectFullNameFlags inFlags = EObjectFullNameFlags::None);
+
+    template <int32 BufferSize = 512>
+    TStringBuilder<BufferSize> GetUObjectFullName(
+        const UObject& inUObject,
         const UObject* inStopOuter = nullptr,
         EObjectFullNameFlags inFlags = EObjectFullNameFlags::None);
 
@@ -106,8 +150,45 @@ TStringBuilder<BufferSize> GCUtils::String::GetUObjectNameSafe(const UObject* in
         return TStringBuilder<BufferSize>(EInPlace::InPlace, CStringNull);
     }
 
-    // Avoid `UObjectBaseUtility::GetName()` that does unnecessary string allocation. Use the FName instead.
-    return TStringBuilder<BufferSize>(EInPlace::InPlace, inUObject->GetFName());
+    return GetUObjectName(*inUObject);
+}
+
+template <int32 BufferSize>
+TStringBuilder<BufferSize> GCUtils::String::GetUObjectName(const UObject& inUObject)
+{
+    // Avoid `UObjectBaseUtility::GetName()` which does an unnecessary free-store string
+    // allocation. Use the FName instead.
+    return TStringBuilder<BufferSize>(EInPlace::InPlace, inUObject.GetFName());
+}
+
+template <int32 BufferSize>
+TStringBuilder<BufferSize> GCUtils::String::GetUObjectPathNameSafe(
+    const UObject* inUObject,
+    const UObject* inStopOuter)
+{
+    if (!inUObject)
+    {
+        return TStringBuilder<BufferSize>(EInPlace::InPlace, CStringNull);
+    }
+
+    return GetUObjectPathName(*inUObject, inStopOuter);
+}
+
+template <int32 BufferSize>
+TStringBuilder<BufferSize> GCUtils::String::GetUObjectPathName(
+    const UObject& inUObject,
+    const UObject* inStopOuter)
+{
+    // Note: String builders are not copyable so we must return a prvalue to elide the copy. This is
+    // a good idea anyway because we want to be wary of possibly large buffer sizes.
+    return TStringBuilder<BufferSize>(
+        EInPlace::InPlace,
+        FStringAppender_UObjectBaseUtility_GetPathName
+        {
+            .Object = inUObject,
+            .StopOuter = inStopOuter
+        }
+        );
 }
 
 template <int32 BufferSize>
@@ -121,13 +202,22 @@ TStringBuilder<BufferSize> GCUtils::String::GetUObjectFullNameSafe(
         return TStringBuilder<BufferSize>(EInPlace::InPlace, CStringNull);
     }
 
+    return GetUObjectFullName(*inUObject, inStopOuter, inFlags);
+}
+
+template <int32 BufferSize>
+TStringBuilder<BufferSize> GCUtils::String::GetUObjectFullName(
+    const UObject& inUObject,
+    const UObject* inStopOuter,
+    EObjectFullNameFlags inFlags)
+{
     // Note: String builders are not copyable so we must return a prvalue to elide the copy. This is
-    // a good idea anyway because we want to be wary of the possibly large buffer size.
+    // a good idea anyway because we want to be wary of possibly large buffer sizes.
     return TStringBuilder<BufferSize>(
         EInPlace::InPlace,
         FStringAppender_UObjectBaseUtility_GetFullName
         {
-            .Object = *inUObject,
+            .Object = inUObject,
             .StopOuter = inStopOuter,
             .Flags = inFlags
         }
