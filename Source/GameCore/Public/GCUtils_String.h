@@ -8,7 +8,7 @@
 /**
  * Makes a string literal out of the given text.
  */
-#define GC_CSTRINGIZE(text) TEXT(PREPROCESSOR_TO_STRING(text))
+#define GC_STRING_LITERALIZE(text) TEXT(PREPROCESSOR_TO_STRING(text))
 
 /**
  * Literal alternative to GCUtils::String::StringNull.

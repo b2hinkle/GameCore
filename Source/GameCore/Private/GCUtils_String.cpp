@@ -51,14 +51,14 @@ const FStringView GCUtils::String::GetWorldNetModeString(const UObject* inWorldC
 {
     if (!inWorldContextObject)
     {
-        return TEXT("Null ") GC_CSTRINGIZE(inWorldContextObject);
+        return TEXT("Null ") GC_STRING_LITERALIZE(inWorldContextObject);
     }
 
     const UWorld* world = inWorldContextObject->GetWorld();
 
     if (!world)
     {
-        return TEXT("Null ") GC_CSTRINGIZE(world);
+        return TEXT("Null ") GC_STRING_LITERALIZE(world);
     }
 
     return LexToString(world->GetNetMode());
@@ -68,14 +68,14 @@ const FStringView GCUtils::String::GetObjectLocalRoleString(const UObject* inAct
 {
     if (!inActorContextObject)
     {
-        return TEXT("Null ") GC_CSTRINGIZE(inActorContextObject);
+        return TEXT("Null ") GC_STRING_LITERALIZE(inActorContextObject);
     }
 
     const AActor* contextActor = ObjectTraversal::GetTypedSelfOrOuter<AActor>(inActorContextObject);
 
     if (!contextActor)
     {
-        return TEXT("Null ") GC_CSTRINGIZE(contextActor);
+        return TEXT("Null ") GC_STRING_LITERALIZE(contextActor);
     }
 
     return LexToString(contextActor->GetLocalRole());
@@ -85,13 +85,13 @@ const FStringView GCUtils::String::GetIsControllerLocalString(const UObject* inC
 {
     if (!inControllerContextObject)
     {
-        return TEXT("Null ") GC_CSTRINGIZE(inControllerContextObject);
+        return TEXT("Null ") GC_STRING_LITERALIZE(inControllerContextObject);
     }
 
     const AController* controller = GetController(inControllerContextObject);
     if (!controller)
     {
-        return TEXT("Null ") GC_CSTRINGIZE(controller);
+        return TEXT("Null ") GC_STRING_LITERALIZE(controller);
     }
 
     return BoolToString(controller->IsLocalController());

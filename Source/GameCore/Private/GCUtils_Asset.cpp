@@ -310,7 +310,7 @@ UClass* GCUtils::Asset::ResolveClass(const FSoftObjectPath& classPath)
             GC_LOG_NO_CONTEXT(
                 LogGCUtils_Asset,
                 Error,
-                TEXT("The path given is not a class path. ") GC_CSTRINGIZE(classPath) TEXT(": {%s}. Expect side-effects."),
+                TEXT("The path given is not a class path. ") GC_STRING_LITERALIZE(classPath) TEXT(": {%s}. Expect side-effects."),
                 classPath.ToString().GetCharArray().GetData());
         }
     }
@@ -330,7 +330,7 @@ UClass* GCUtils::Asset::ResolveClass(const FSoftObjectPath& classPath)
         GC_LOG_NO_CONTEXT(
             LogGCUtils_Asset,
             Error,
-            TEXT("Resolved object is supposed to be a class. NULL will be returned. ") GC_CSTRINGIZE(classPath) TEXT(": {%s}."),
+            TEXT("Resolved object is supposed to be a class. NULL will be returned. ") GC_STRING_LITERALIZE(classPath) TEXT(": {%s}."),
             classPath.ToString().GetCharArray().GetData());
     }
 #endif // !NO_LOGGING || DO_ENSURE

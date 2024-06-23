@@ -108,7 +108,7 @@ void TGCTaggedBitField<TBitFieldType>::SetFlag(const FGameplayTag& tag)
         BitField |= *mask;
     }
 
-    checkf(mask, TEXT("Tried setting a flag that doesn't exist. Make sure the flags are initialized with tags via ") GC_CSTRINGIZE(InitializeFlags()));
+    checkf(mask, TEXT("Tried setting a flag that doesn't exist. Make sure the flags are initialized with tags via ") GC_STRING_LITERALIZE(InitializeFlags()));
 }
 
 template <typename TBitFieldType>
@@ -120,7 +120,7 @@ void TGCTaggedBitField<TBitFieldType>::ClearFlag(const FGameplayTag& tag)
         BitField &= ~(*mask);
     }
 
-    checkf(mask, TEXT("Tried clearing a flag that doesn't exist. Make sure the flags are initialized with tags via ") GC_CSTRINGIZE(InitializeFlags()));
+    checkf(mask, TEXT("Tried clearing a flag that doesn't exist. Make sure the flags are initialized with tags via ") GC_STRING_LITERALIZE(InitializeFlags()));
 }
 
 template <typename TBitFieldType>
@@ -132,7 +132,7 @@ bool TGCTaggedBitField<TBitFieldType>::IsFlagSet(const FGameplayTag& tag) const
         return BitField & *mask;
     }
 
-    checkf(mask, TEXT("Tried checking a flag that doesn't exist. Make sure the flags are initialized with tags via ") GC_CSTRINGIZE(InitializeFlags()));
+    checkf(mask, TEXT("Tried checking a flag that doesn't exist. Make sure the flags are initialized with tags via ") GC_STRING_LITERALIZE(InitializeFlags()));
     return false;
 }
 
