@@ -6,25 +6,24 @@
 #include "GCUtils.h"
 
 /**
- * Makes a cstring literal out of the given text.
+ * Makes a string literal out of the given text.
  */
 #define GC_CSTRINGIZE(text) TEXT(PREPROCESSOR_TO_STRING(text))
 
 /**
- * Literal macro alternative to GCUtils::String::StringNull. Nice if you need a string literal instead of
- * a variable. E.g., for combining string literals together.
+ * Literal alternative to GCUtils::String::StringNull.
  */
-#define GC_CSTRING_NULL TEXT("NULL")
+#define GC_STRING_LITERAL_NULL TEXT("NULL")
 
 /**
- * Literal macro alternative to GCUtils::String::StringTrue.
+ * Literal alternative to GCUtils::String::StringTrue.
  */
-#define GC_CSTRING_TRUE TEXT("True")
+#define GC_STRING_LITERAL_TRUE TEXT("True")
 
 /**
- * Literal macro alternative to GCUtils::String::StringFalse.
+ * Literal alternative to GCUtils::String::StringFalse.
  */
-#define GC_CSTRING_FALSE TEXT("False")
+#define GC_STRING_LITERAL_FALSE TEXT("False")
 
 /**
  * Returns the string representation of the specified ENetMode value.
@@ -135,11 +134,11 @@ namespace GCUtils::String
      */
     GAMECORE_API const FStringView GetIsControllerLocalString(const UObject* inControllerContextObject);
 
-    constexpr FStringView StringNull = PREPROCESSOR_JOIN(GC_CSTRING_NULL, _PrivateSV);
+    constexpr FStringView StringNull = PREPROCESSOR_JOIN(GC_STRING_LITERAL_NULL, _PrivateSV);
 
-    constexpr FStringView StringTrue = PREPROCESSOR_JOIN(GC_CSTRING_TRUE, _PrivateSV);
+    constexpr FStringView StringTrue = PREPROCESSOR_JOIN(GC_STRING_LITERAL_TRUE, _PrivateSV);
 
-    constexpr FStringView StringFalse = PREPROCESSOR_JOIN(GC_CSTRING_FALSE, _PrivateSV);
+    constexpr FStringView StringFalse = PREPROCESSOR_JOIN(GC_STRING_LITERAL_FALSE, _PrivateSV);
 }
 
 template <int32 BufferSize>

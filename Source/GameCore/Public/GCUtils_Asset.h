@@ -169,7 +169,7 @@ namespace GCUtils::Asset
     constexpr FStringView BlueprintGeneratedClassPostfixString = TEXTVIEW("_C");
 
     /**
-     * @brief Convenient string view of the engine's DEFAULT_OBJECT_PREFIX cstring.
+     * @brief Convenient string view of the engine's DEFAULT_OBJECT_PREFIX string literal.
      */
     constexpr FStringView ClassDefaultObjectPrefixString = PREPROCESSOR_JOIN(DEFAULT_OBJECT_PREFIX, _PrivateSV);
 }

@@ -17,21 +17,21 @@
 #define GC_CLOG_NO_CONTEXT(condition, categoryName, verbosity, format, ...) UE_CLOG(condition, categoryName, verbosity, TEXT("[%s] ") format, StringCast<TCHAR>(std::source_location::current().function_name()).Get() __VA_OPT__(,) __VA_ARGS__)
 
 /**
- * Format cstring to print info of a context object.
+ * Format string to print info of a context object.
  */
-#define GC_CONTEXT_OBJECT_FORMAT_CSTRING TEXT("[Context Object Arg: `%s`] [Context Object: %s] [Context Object NetMode: %s] [Context Object NetRole: %s] [Context Object Controller: %s] [Context Object Controller Is Local: %s]")
+#define GC_CONTEXT_OBJECT_FORMAT_STRING_LITERAL TEXT("[Context Object Arg: `%s`] [Context Object: %s] [Context Object NetMode: %s] [Context Object NetRole: %s] [Context Object Controller: %s] [Context Object Controller Is Local: %s]")
 
 /**
- * Variadic arguments that correspond with GC_CONTEXT_OBJECT_FORMAT_CSTRING.
+ * Variadic arguments that correspond with GC_CONTEXT_OBJECT_FORMAT_STRING_LITERAL.
  */
 #define GC_CONTEXT_OBJECT_FORMAT_ARGS(contextObject, contextObjectArgCString) contextObjectArgCString, GCUtils::String::GetUObjectNameSafe(contextObject).ToString(), GCUtils::String::GetWorldNetModeString(contextObject).GetData(), GCUtils::String::GetObjectLocalRoleString(contextObject).GetData(), GCUtils::String::GetUObjectNameSafe(GCUtils::GetController(contextObject)).ToString(), GCUtils::String::GetIsControllerLocalString(contextObject).GetData()
 
 /**
  * @param contextObject - UObject which will be used when our log gathers extra data to help us out. May be a UWorld.
  */
-#define GC_LOG(contextObject, categoryName, verbosity, format, ...) GC_LOG_NO_CONTEXT(categoryName, verbosity, format TEXT(" ") GC_CONTEXT_OBJECT_FORMAT_CSTRING, __VA_ARGS__ __VA_OPT__(,) GC_CONTEXT_OBJECT_FORMAT_ARGS(contextObject, TEXT(PREPROCESSOR_TO_STRING(contextObject))))
+#define GC_LOG(contextObject, categoryName, verbosity, format, ...) GC_LOG_NO_CONTEXT(categoryName, verbosity, format TEXT(" ") GC_CONTEXT_OBJECT_FORMAT_STRING_LITERAL, __VA_ARGS__ __VA_OPT__(,) GC_CONTEXT_OBJECT_FORMAT_ARGS(contextObject, TEXT(PREPROCESSOR_TO_STRING(contextObject))))
 
 /**
  * Conditional log version of GC_LOG().
  */
-#define GC_CLOG(contextObject, condition, categoryName, verbosity, format, ...) GC_CLOG_NO_CONTEXT(condition, categoryName, verbosity, format TEXT(" ") GC_CONTEXT_OBJECT_FORMAT_CSTRING, __VA_ARGS__ __VA_OPT__(,) GC_CONTEXT_OBJECT_FORMAT_ARGS(contextObject, TEXT(PREPROCESSOR_TO_STRING(contextObject))))
+#define GC_CLOG(contextObject, condition, categoryName, verbosity, format, ...) GC_CLOG_NO_CONTEXT(condition, categoryName, verbosity, format TEXT(" ") GC_CONTEXT_OBJECT_FORMAT_STRING_LITERAL, __VA_ARGS__ __VA_OPT__(,) GC_CONTEXT_OBJECT_FORMAT_ARGS(contextObject, TEXT(PREPROCESSOR_TO_STRING(contextObject))))
