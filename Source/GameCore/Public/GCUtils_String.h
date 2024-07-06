@@ -44,56 +44,54 @@ GAMECORE_API const TCHAR* LexToString(ENetRole inNetRole);
 namespace GCUtils::String
 {
     /**
-     * @brief Utility struct for using `UObjectBaseUtility::GetPathName()` in the string
-     *        builder's EInPlace constructor.
+     * @brief Utility struct to offload implementation of the string builder append operator to
+     *        a callback functor.
+     * @tparam TFunctor Type of the callback functor to store.
      */
-    GAMECORE_API struct FStringAppender_UObjectBaseUtility_GetPathName
+    template
+        <
+        class TFunctor,
+        class = typename TEnableIf
+            <
+            TIsInvocable<TFunctor, FStringBuilderBase&>::Value
+            >::Type
+        >
+    struct TStringBuilderAppender
     {
     public:
 
-        // Note: Friend only so that we can define the free function right here in the class definition.
-        friend FStringBuilderBase& operator<<(FStringBuilderBase& inStringBuilder,
-            const FStringAppender_UObjectBaseUtility_GetPathName& inStringAppender)
+        /**
+         * @brief Construct from a callback functor.
+         * @param inCallbackFunctor Functor to be called on in the string builder append
+         *                          operator overload.
+         */
+        TStringBuilderAppender(TFunctor&& inCallbackFunctor)
+            : CallbackFunctor(Forward<TFunctor>(inCallbackFunctor))
         {
-            inStringAppender.Object.GetPathName(
-                inStringAppender.StopOuter,
-                inStringBuilder);
-            return inStringBuilder;
         }
 
     public:
 
-        const UObject& Object;
-        const UObject* StopOuter = nullptr;
+        friend FStringBuilderBase& operator<<(FStringBuilderBase& inStringBuilder,
+            const TStringBuilderAppender& inStringBuilderAppender)
+        {
+            return inStringBuilderAppender.CallbackFunctor(inStringBuilder);
+        }
+
+    protected:
+
+        TFunctor CallbackFunctor;
     };
+
+    typedef TFunctionRef<void(FStringBuilderBase&)> FStringBuilderCallback;
 
     /**
-     * @brief Utility struct for using `UObjectBaseUtility::GetFullName()` in the string
-     *        builder's EInPlace constructor.
+     * @brief Makes a prvalue string builder initialized with the given callback.
+     * @param inInitializationCallback Callback function for initializing the string builder as however needed.
+     * @return String builder constructed in place (copy-elided) and initialized based on the callback.
      */
-    GAMECORE_API struct FStringAppender_UObjectBaseUtility_GetFullName
-    {
-    public:
-
-        // Note: Friend only so that we can define the free function right here in the class definition.
-        friend FStringBuilderBase& operator<<(FStringBuilderBase& inStringBuilder,
-            const FStringAppender_UObjectBaseUtility_GetFullName& inStringAppender)
-        {
-            inStringAppender.Object.GetFullName(
-                inStringBuilder,
-                inStringAppender.StopOuter,
-                inStringAppender.Flags);
-            return inStringBuilder;
-        }
-
-    public:
-
-        const UObject& Object;
-        const UObject* StopOuter = nullptr;
-        EObjectFullNameFlags Flags = EObjectFullNameFlags::None;
-    };
-
-    GAMECORE_API constexpr const FStringView BoolToString(const bool inBool);
+    template <int32 BufferSize, class TCharType = TCHAR>
+    TStringBuilderWithBuffer<TCharType, BufferSize> MakeStringBuilder(const FStringBuilderCallback& inInitializationCallback);
 
     template <int32 BufferSize = 256>
     TStringBuilder<BufferSize> GetUObjectNameSafe(const UObject* inUObject);
@@ -134,11 +132,30 @@ namespace GCUtils::String
      */
     GAMECORE_API const FStringView GetIsControllerLocalString(const UObject* inControllerContextObject);
 
+    GAMECORE_API constexpr const FStringView BoolToString(const bool inBool);
+
     constexpr FStringView StringNull = PREPROCESSOR_JOIN(GC_STRING_LITERAL_NULL, _PrivateSV);
 
     constexpr FStringView StringTrue = PREPROCESSOR_JOIN(GC_STRING_LITERAL_TRUE, _PrivateSV);
 
     constexpr FStringView StringFalse = PREPROCESSOR_JOIN(GC_STRING_LITERAL_FALSE, _PrivateSV);
+}
+
+template <int32 BufferSize, class TCharType>
+TStringBuilderWithBuffer<TCharType, BufferSize> GCUtils::String::MakeStringBuilder(const FStringBuilderCallback& inInitializationCallback)
+{
+    // Note: String builders are not copyable so we must return a prvalue to elide the copy. This is
+    // a good idea anyway because we want to be wary of possibly large buffer sizes.
+    return TStringBuilderWithBuffer<TCharType, BufferSize>(
+        EInPlace::InPlace,
+        TStringBuilderAppender(
+            [&inInitializationCallback](FStringBuilderBase& inStringBuilder) -> FStringBuilderBase&
+            {
+                inInitializationCallback(inStringBuilder);
+                return inStringBuilder;
+            }
+            )
+        );
 }
 
 template <int32 BufferSize>
@@ -178,14 +195,10 @@ TStringBuilder<BufferSize> GCUtils::String::GetUObjectPathName(
     const UObject& inUObject,
     const UObject* inStopOuter)
 {
-    // Note: String builders are not copyable so we must return a prvalue to elide the copy. This is
-    // a good idea anyway because we want to be wary of possibly large buffer sizes.
-    return TStringBuilder<BufferSize>(
-        EInPlace::InPlace,
-        FStringAppender_UObjectBaseUtility_GetPathName
+    return MakeStringBuilder<BufferSize>(
+        [&inUObject, inStopOuter](FStringBuilderBase& inStringBuilder) -> void
         {
-            .Object = inUObject,
-            .StopOuter = inStopOuter
+            inUObject.GetPathName(inStopOuter, inStringBuilder);
         }
         );
 }
@@ -210,15 +223,10 @@ TStringBuilder<BufferSize> GCUtils::String::GetUObjectFullName(
     const UObject* inStopOuter,
     EObjectFullNameFlags inFlags)
 {
-    // Note: String builders are not copyable so we must return a prvalue to elide the copy. This is
-    // a good idea anyway because we want to be wary of possibly large buffer sizes.
-    return TStringBuilder<BufferSize>(
-        EInPlace::InPlace,
-        FStringAppender_UObjectBaseUtility_GetFullName
+    return MakeStringBuilder<BufferSize>(
+        [&inUObject, inStopOuter, inFlags](FStringBuilderBase& inStringBuilder) -> void
         {
-            .Object = inUObject,
-            .StopOuter = inStopOuter,
-            .Flags = inFlags
+            inUObject.GetFullName(inStopOuter, inStringBuilder, inFlags);
         }
         );
 }

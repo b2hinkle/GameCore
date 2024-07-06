@@ -42,11 +42,6 @@ const TCHAR* LexToString(ENetRole inNetRole)
     return TEXT("Unknown");
 }
 
-constexpr const FStringView GCUtils::String::BoolToString(const bool inBool)
-{
-    return inBool ? StringTrue : StringFalse;
-}
-
 const FStringView GCUtils::String::GetWorldNetModeString(const UObject* inWorldContextObject)
 {
     if (!inWorldContextObject)
@@ -95,4 +90,9 @@ const FStringView GCUtils::String::GetIsControllerLocalString(const UObject* inC
     }
 
     return BoolToString(controller->IsLocalController());
+}
+
+constexpr const FStringView GCUtils::String::BoolToString(const bool inBool)
+{
+    return inBool ? StringTrue : StringFalse;
 }
