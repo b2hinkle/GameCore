@@ -51,9 +51,10 @@ namespace GCUtils::String
     template
         <
         class TFunctor,
+        class TCharType = TCHAR,
         class = typename TEnableIf
             <
-            TIsInvocable<TFunctor, FStringBuilderBase&>::Value
+            TIsInvocable<TFunctor, TStringBuilderBase<TCharType>&>::Value
             >::Type
         >
     struct TStringBuilderAppender
@@ -72,7 +73,7 @@ namespace GCUtils::String
 
     public:
 
-        friend FStringBuilderBase& operator<<(FStringBuilderBase& inStringBuilder,
+        friend TStringBuilderBase<TCharType>& operator<<(TStringBuilderBase<TCharType>& inStringBuilder,
             const TStringBuilderAppender& inStringBuilderAppender)
         {
             return inStringBuilderAppender.CallbackFunctor(inStringBuilder);
@@ -83,7 +84,8 @@ namespace GCUtils::String
         TFunctor CallbackFunctor;
     };
 
-    typedef TFunctionRef<void(FStringBuilderBase&)> FStringBuilderCallback;
+    template <class TCharType = TCHAR>
+    using TStringBuilderCallback = TFunctionRef<void(TStringBuilderBase<TCharType>&)>;
 
     /**
      * @brief Makes a prvalue string builder initialized with the given callback.
@@ -91,7 +93,7 @@ namespace GCUtils::String
      * @return String builder constructed in place (copy-elided) and initialized based on the callback.
      */
     template <int32 BufferSize, class TCharType = TCHAR>
-    TStringBuilderWithBuffer<TCharType, BufferSize> MakeStringBuilder(const FStringBuilderCallback& inInitializationCallback);
+    TStringBuilderWithBuffer<TCharType, BufferSize> MakeStringBuilder(const TStringBuilderCallback<TCharType>& inInitializationCallback);
 
     template <int32 BufferSize = 256, class TCharType = TCHAR>
     TStringBuilderWithBuffer<TCharType, BufferSize> GetUObjectNameSafe(const UObject* inUObject);
@@ -99,22 +101,38 @@ namespace GCUtils::String
     template <int32 BufferSize = 256, class TCharType = TCHAR>
     TStringBuilderWithBuffer<TCharType, BufferSize> GetUObjectName(const UObject& inUObject);
 
+    /**
+     * @note UObjectBaseUtility::GetPathName() only supports TCHAR at the moment. You will
+     *       get an error if you try using this function with other char types.
+     */
     template <int32 BufferSize = 512, class TCharType = TCHAR>
     TStringBuilderWithBuffer<TCharType, BufferSize> GetUObjectPathNameSafe(
         const UObject* inUObject,
         const UObject* inStopOuter = nullptr);
 
+    /**
+     * @note UObjectBaseUtility::GetPathName() only supports TCHAR at the moment. You will
+     *       get an error if you try using this function with other char types.
+     */
     template <int32 BufferSize = 512, class TCharType = TCHAR>
     TStringBuilderWithBuffer<TCharType, BufferSize> GetUObjectPathName(
         const UObject& inUObject,
         const UObject* inStopOuter = nullptr);
 
+    /**
+     * @note UObjectBaseUtility::GetFullName() only supports TCHAR at the moment. You will
+     *       get an error if you try using this function with other char types.
+     */
     template <int32 BufferSize = 512, class TCharType = TCHAR>
     TStringBuilderWithBuffer<TCharType, BufferSize> GetUObjectFullNameSafe(
         const UObject* inUObject,
         const UObject* inStopOuter = nullptr,
         EObjectFullNameFlags inFlags = EObjectFullNameFlags::None);
 
+    /**
+     * @note UObjectBaseUtility::GetFullName() only supports TCHAR at the moment. You will
+     *       get an error if you try using this function with other char types.
+     */
     template <int32 BufferSize = 512, class TCharType = TCHAR>
     TStringBuilderWithBuffer<TCharType, BufferSize> GetUObjectFullName(
         const UObject& inUObject,
@@ -142,14 +160,14 @@ namespace GCUtils::String
 }
 
 template <int32 BufferSize, class TCharType>
-TStringBuilderWithBuffer<TCharType, BufferSize> GCUtils::String::MakeStringBuilder(const FStringBuilderCallback& inInitializationCallback)
+TStringBuilderWithBuffer<TCharType, BufferSize> GCUtils::String::MakeStringBuilder(const TStringBuilderCallback<TCharType>& inInitializationCallback)
 {
     // Note: String builders are not copyable so we must return a prvalue to elide the copy. This is
     // a good idea anyway because we want to be wary of possibly large buffer sizes.
     return TStringBuilderWithBuffer<TCharType, BufferSize>(
         EInPlace::InPlace,
         TStringBuilderAppender(
-            [&inInitializationCallback](FStringBuilderBase& inStringBuilder) -> FStringBuilderBase&
+            [&inInitializationCallback](TStringBuilderBase<TCharType>& inStringBuilder) -> TStringBuilderBase<TCharType>&
             {
                 inInitializationCallback(inStringBuilder);
                 return inStringBuilder;
@@ -196,7 +214,7 @@ TStringBuilderWithBuffer<TCharType, BufferSize> GCUtils::String::GetUObjectPathN
     const UObject* inStopOuter)
 {
     return MakeStringBuilder<BufferSize, TCharType>(
-        [&inUObject, inStopOuter](FStringBuilderBase& inStringBuilder) -> void
+        [&inUObject, inStopOuter](TStringBuilderBase<TCharType>& inStringBuilder) -> void
         {
             inUObject.GetPathName(inStopOuter, inStringBuilder);
         }
@@ -224,7 +242,7 @@ TStringBuilderWithBuffer<TCharType, BufferSize> GCUtils::String::GetUObjectFullN
     EObjectFullNameFlags inFlags)
 {
     return MakeStringBuilder<BufferSize, TCharType>(
-        [&inUObject, inStopOuter, inFlags](FStringBuilderBase& inStringBuilder) -> void
+        [&inUObject, inStopOuter, inFlags](TStringBuilderBase<TCharType>& inStringBuilder) -> void
         {
             inUObject.GetFullName(inStopOuter, inStringBuilder, inFlags);
         }
