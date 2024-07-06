@@ -166,7 +166,7 @@ TStringBuilderWithBuffer<TCharType, BufferSize> GCUtils::String::GetUObjectNameS
         return TStringBuilderWithBuffer<TCharType, BufferSize>(EInPlace::InPlace, StringNull);
     }
 
-    return GetUObjectName(*inUObject);
+    return GetUObjectName<BufferSize, TCharType>(*inUObject);
 }
 
 template <int32 BufferSize, class TCharType>
@@ -187,7 +187,7 @@ TStringBuilderWithBuffer<TCharType, BufferSize> GCUtils::String::GetUObjectPathN
         return TStringBuilderWithBuffer<TCharType, BufferSize>(EInPlace::InPlace, StringNull);
     }
 
-    return GetUObjectPathName(*inUObject, inStopOuter);
+    return GetUObjectPathName<BufferSize, TCharType>(*inUObject, inStopOuter);
 }
 
 template <int32 BufferSize, class TCharType>
@@ -200,7 +200,7 @@ TStringBuilderWithBuffer<TCharType, BufferSize> GCUtils::String::GetUObjectPathN
         {
             inUObject.GetPathName(inStopOuter, inStringBuilder);
         }
-    );
+        );
 }
 
 template <int32 BufferSize, class TCharType>
@@ -214,7 +214,7 @@ TStringBuilderWithBuffer<TCharType, BufferSize> GCUtils::String::GetUObjectFullN
         return TStringBuilderWithBuffer<TCharType, BufferSize>(EInPlace::InPlace, StringNull);
     }
 
-    return GetUObjectFullName(*inUObject, inStopOuter, inFlags);
+    return GetUObjectFullName<BufferSize, TCharType>(*inUObject, inStopOuter, inFlags);
 }
 
 template <int32 BufferSize, class TCharType>
