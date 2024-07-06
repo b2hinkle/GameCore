@@ -3,7 +3,7 @@
 #include "GCUtils_Asset.h"
 
 #include "Engine/AssetManager.h"
-#include "GCLog.h"
+#include "GCUtils_Log.h"
 
 DEFINE_LOG_CATEGORY(LogGCUtils_Asset);
 
