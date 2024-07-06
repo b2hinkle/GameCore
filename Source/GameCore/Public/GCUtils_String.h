@@ -93,30 +93,30 @@ namespace GCUtils::String
     template <int32 BufferSize, class TCharType = TCHAR>
     TStringBuilderWithBuffer<TCharType, BufferSize> MakeStringBuilder(const FStringBuilderCallback& inInitializationCallback);
 
-    template <int32 BufferSize = 256>
-    TStringBuilder<BufferSize> GetUObjectNameSafe(const UObject* inUObject);
+    template <int32 BufferSize = 256, class TCharType = TCHAR>
+    TStringBuilderWithBuffer<TCharType, BufferSize> GetUObjectNameSafe(const UObject* inUObject);
 
-    template <int32 BufferSize = 256>
-    TStringBuilder<BufferSize> GetUObjectName(const UObject& inUObject);
+    template <int32 BufferSize = 256, class TCharType = TCHAR>
+    TStringBuilderWithBuffer<TCharType, BufferSize> GetUObjectName(const UObject& inUObject);
 
-    template <int32 BufferSize = 512>
-    TStringBuilder<BufferSize> GetUObjectPathNameSafe(
+    template <int32 BufferSize = 512, class TCharType = TCHAR>
+    TStringBuilderWithBuffer<TCharType, BufferSize> GetUObjectPathNameSafe(
         const UObject* inUObject,
         const UObject* inStopOuter = nullptr);
 
-    template <int32 BufferSize = 512>
-    TStringBuilder<BufferSize> GetUObjectPathName(
+    template <int32 BufferSize = 512, class TCharType = TCHAR>
+    TStringBuilderWithBuffer<TCharType, BufferSize> GetUObjectPathName(
         const UObject& inUObject,
         const UObject* inStopOuter = nullptr);
 
-    template <int32 BufferSize = 512>
-    TStringBuilder<BufferSize> GetUObjectFullNameSafe(
+    template <int32 BufferSize = 512, class TCharType = TCHAR>
+    TStringBuilderWithBuffer<TCharType, BufferSize> GetUObjectFullNameSafe(
         const UObject* inUObject,
         const UObject* inStopOuter = nullptr,
         EObjectFullNameFlags inFlags = EObjectFullNameFlags::None);
 
-    template <int32 BufferSize = 512>
-    TStringBuilder<BufferSize> GetUObjectFullName(
+    template <int32 BufferSize = 512, class TCharType = TCHAR>
+    TStringBuilderWithBuffer<TCharType, BufferSize> GetUObjectFullName(
         const UObject& inUObject,
         const UObject* inStopOuter = nullptr,
         EObjectFullNameFlags inFlags = EObjectFullNameFlags::None);
@@ -158,40 +158,40 @@ TStringBuilderWithBuffer<TCharType, BufferSize> GCUtils::String::MakeStringBuild
         );
 }
 
-template <int32 BufferSize>
-TStringBuilder<BufferSize> GCUtils::String::GetUObjectNameSafe(const UObject* inUObject)
+template <int32 BufferSize, class TCharType>
+TStringBuilderWithBuffer<TCharType, BufferSize> GCUtils::String::GetUObjectNameSafe(const UObject* inUObject)
 {
     if (!inUObject)
     {
-        return TStringBuilder<BufferSize>(EInPlace::InPlace, StringNull);
+        return TStringBuilderWithBuffer<TCharType, BufferSize>(EInPlace::InPlace, StringNull);
     }
 
     return GetUObjectName(*inUObject);
 }
 
-template <int32 BufferSize>
-TStringBuilder<BufferSize> GCUtils::String::GetUObjectName(const UObject& inUObject)
+template <int32 BufferSize, class TCharType>
+TStringBuilderWithBuffer<TCharType, BufferSize> GCUtils::String::GetUObjectName(const UObject& inUObject)
 {
     // Avoid `UObjectBaseUtility::GetName()` which does an unnecessary free-store string
     // allocation. Use the FName instead.
-    return TStringBuilder<BufferSize>(EInPlace::InPlace, inUObject.GetFName());
+    return TStringBuilderWithBuffer<TCharType, BufferSize>(EInPlace::InPlace, inUObject.GetFName());
 }
 
-template <int32 BufferSize>
-TStringBuilder<BufferSize> GCUtils::String::GetUObjectPathNameSafe(
+template <int32 BufferSize, class TCharType>
+TStringBuilderWithBuffer<TCharType, BufferSize> GCUtils::String::GetUObjectPathNameSafe(
     const UObject* inUObject,
     const UObject* inStopOuter)
 {
     if (!inUObject)
     {
-        return TStringBuilder<BufferSize>(EInPlace::InPlace, StringNull);
+        return TStringBuilderWithBuffer<TCharType, BufferSize>(EInPlace::InPlace, StringNull);
     }
 
     return GetUObjectPathName(*inUObject, inStopOuter);
 }
 
-template <int32 BufferSize>
-TStringBuilder<BufferSize> GCUtils::String::GetUObjectPathName(
+template <int32 BufferSize, class TCharType>
+TStringBuilderWithBuffer<TCharType, BufferSize> GCUtils::String::GetUObjectPathName(
     const UObject& inUObject,
     const UObject* inStopOuter)
 {
@@ -200,25 +200,25 @@ TStringBuilder<BufferSize> GCUtils::String::GetUObjectPathName(
         {
             inUObject.GetPathName(inStopOuter, inStringBuilder);
         }
-        );
+    );
 }
 
-template <int32 BufferSize>
-TStringBuilder<BufferSize> GCUtils::String::GetUObjectFullNameSafe(
+template <int32 BufferSize, class TCharType>
+TStringBuilderWithBuffer<TCharType, BufferSize> GCUtils::String::GetUObjectFullNameSafe(
     const UObject* inUObject,
     const UObject* inStopOuter,
     EObjectFullNameFlags inFlags)
 {
     if (!inUObject)
     {
-        return TStringBuilder<BufferSize>(EInPlace::InPlace, StringNull);
+        return TStringBuilderWithBuffer<TCharType, BufferSize>(EInPlace::InPlace, StringNull);
     }
 
     return GetUObjectFullName(*inUObject, inStopOuter, inFlags);
 }
 
-template <int32 BufferSize>
-TStringBuilder<BufferSize> GCUtils::String::GetUObjectFullName(
+template <int32 BufferSize, class TCharType>
+TStringBuilderWithBuffer<TCharType, BufferSize> GCUtils::String::GetUObjectFullName(
     const UObject& inUObject,
     const UObject* inStopOuter,
     EObjectFullNameFlags inFlags)
