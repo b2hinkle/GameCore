@@ -195,7 +195,7 @@ TStringBuilderWithBuffer<TCharType, BufferSize> GCUtils::String::GetUObjectPathN
     const UObject& inUObject,
     const UObject* inStopOuter)
 {
-    return MakeStringBuilder<BufferSize>(
+    return MakeStringBuilder<BufferSize, TCharType>(
         [&inUObject, inStopOuter](FStringBuilderBase& inStringBuilder) -> void
         {
             inUObject.GetPathName(inStopOuter, inStringBuilder);
@@ -223,7 +223,7 @@ TStringBuilderWithBuffer<TCharType, BufferSize> GCUtils::String::GetUObjectFullN
     const UObject* inStopOuter,
     EObjectFullNameFlags inFlags)
 {
-    return MakeStringBuilder<BufferSize>(
+    return MakeStringBuilder<BufferSize, TCharType>(
         [&inUObject, inStopOuter, inFlags](FStringBuilderBase& inStringBuilder) -> void
         {
             inUObject.GetFullName(inStopOuter, inStringBuilder, inFlags);
