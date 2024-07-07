@@ -1,13 +1,13 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "BlueprintFunctionLibraries/CollisionQuery/GCBlueprintFunctionLibrary_CollisionQueries.h"
+#include "BlueprintFunctionLibraries/CollisionQuery/GCUtils_CollisionQuery.h"
 
-#include "BlueprintFunctionLibraries/GCBlueprintFunctionLibrary_MathHelpers.h"
-#include "BlueprintFunctionLibraries/GCBlueprintFunctionLibrary_ArrayHelpers.h"
-#include "BlueprintFunctionLibraries/Debugging/GCBlueprintFunctionLibrary_DrawDebugHelpers.h"
+#include "BlueprintFunctionLibraries/GCUtils_Math.h"
+#include "BlueprintFunctionLibraries/GCUtils_Array.h"
+#include "BlueprintFunctionLibraries/Debugging/GCUtils_DrawDebug.h"
 #include "DrawDebugHelpers.h"
-#include "BlueprintFunctionLibraries/GCBlueprintFunctionLibrary_HitResultHelpers.h"
+#include "BlueprintFunctionLibraries/GCUtils_HitResult.h"
 
 
 

@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "BlueprintFunctionLibraries/Debugging/GCBlueprintFunctionLibrary_DrawDebugHelpers.h"
+#include "BlueprintFunctionLibraries/Debugging/GCUtils_DrawDebug.h"
 
 #include "DrawDebugHelpers.h"
 

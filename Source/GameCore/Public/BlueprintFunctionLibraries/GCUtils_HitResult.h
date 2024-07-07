@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 
-#include "GCBlueprintFunctionLibrary_HitResultHelpers.generated.h"
+#include "GCUtils_HitResult.generated.h"
 
 
 

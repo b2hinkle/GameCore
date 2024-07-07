@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 
-#include "GCBlueprintFunctionLibrary_CollisionQueries.generated.h"
+#include "GCUtils_CollisionQuery.generated.h"
 
 /**
  * Extension of FHitResult for indicating whether it's an entrance or an exit

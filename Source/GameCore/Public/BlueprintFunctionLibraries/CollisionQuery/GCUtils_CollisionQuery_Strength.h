@@ -4,9 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
-#include "BlueprintFunctionLibraries/CollisionQuery/GCBlueprintFunctionLibrary_CollisionQueries.h"
+#include "BlueprintFunctionLibraries/CollisionQuery/GCUtils_CollisionQuery.h"
 
-#include "GCBlueprintFunctionLibrary_StrengthCollisionQueries.generated.h"
+#include "GCUtils_CollisionQuery_Strength.generated.h"
 
 
 

@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 
-#include "GCBlueprintFunctionLibrary_DrawDebugHelpersStrengthCollisionQueries.generated.h"
+#include "GCUtils_CollisionQuery_Strength_Debug.generated.h"
 
 
 struct FPenetrationSceneCastWithExitHitsUsingStrengthResult;

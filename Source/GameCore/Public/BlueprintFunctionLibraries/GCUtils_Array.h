@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 
-#include "GCBlueprintFunctionLibrary_ArrayHelpers.generated.h"
+#include "GCUtils_Array.generated.h"
 
 
 

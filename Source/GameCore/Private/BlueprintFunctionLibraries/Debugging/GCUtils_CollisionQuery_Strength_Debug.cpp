@@ -1,10 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "BlueprintFunctionLibraries/Debugging/GCBlueprintFunctionLibrary_DrawDebugHelpersStrengthCollisionQueries.h"
+#include "BlueprintFunctionLibraries/Debugging/GCUtils_CollisionQuery_Strength_Debug.h"
 
-#include "BlueprintFunctionLibraries/CollisionQuery/GCBlueprintFunctionLibrary_StrengthCollisionQueries.h"
-#include "BlueprintFunctionLibraries/Debugging/GCBlueprintFunctionLibrary_DrawDebugHelpers.h"
+#include "BlueprintFunctionLibraries/CollisionQuery/GCUtils_CollisionQuery_Strength.h"
+#include "BlueprintFunctionLibraries/Debugging/GCUtils_DrawDebug.h"
 #include "DrawDebugHelpers.h"
 
 
