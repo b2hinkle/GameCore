@@ -1,15 +1,17 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "BlueprintFunctionLibraries/Debugging/GCUtils_CollisionQuery_Strength_Debug.h"
 
 #include "BlueprintFunctionLibraries/CollisionQuery/GCUtils_CollisionQuery_Strength.h"
 #include "BlueprintFunctionLibraries/Debugging/GCUtils_DrawDebug.h"
 #include "DrawDebugHelpers.h"
 
+namespace GCUtils::CollisionQuery::Strength::Debug
+{
+    static FLinearColor GetDebugColorForStrength(const float InStrength, const float InInitialStrength, const FLinearColor& InFullStrengthColor = FLinearColor::Green, const FLinearColor& InNoStrengthColor = FLinearColor::Red);
+}
 
-
-void UGCBlueprintFunctionLibrary_DrawDebugHelpersStrengthCollisionQueries::DrawStrengthDebugLine(const UWorld* InWorld, const FPenetrationSceneCastWithExitHitsUsingStrengthResult& InResult, const float InInitialStrength, const bool bInPersistentLines, const float InLifeTime, const uint8 InDepthPriority, const float InThickness, const float InSegmentsLength, const float InSegmentsSpacingLength, const FLinearColor& InFullStrengthColor, const FLinearColor& InNoStrengthColor)
+void GCUtils::CollisionQuery::Strength::Debug::DrawStrengthDebugLine(const UWorld* InWorld, const FPenetrationSceneCastWithExitHitsUsingStrengthResult& InResult, const float InInitialStrength, const bool bInPersistentLines, const float InLifeTime, const uint8 InDepthPriority, const float InThickness, const float InSegmentsLength, const float InSegmentsSpacingLength, const FLinearColor& InFullStrengthColor, const FLinearColor& InNoStrengthColor)
 {
 #if ENABLE_DRAW_DEBUG
     const float SceneCastTravelDistance = InResult.StrengthSceneCastInfo.DistanceToStop;
@@ -116,7 +118,8 @@ void UGCBlueprintFunctionLibrary_DrawDebugHelpersStrengthCollisionQueries::DrawS
     }
 #endif // ENABLE_DRAW_DEBUG
 }
-void UGCBlueprintFunctionLibrary_DrawDebugHelpersStrengthCollisionQueries::DrawStrengthDebugText(const UWorld* InWorld, const FPenetrationSceneCastWithExitHitsUsingStrengthResult& InResult, const float InInitialStrength, const float InLifeTime, const FLinearColor& InFullStrengthColor, const FLinearColor& InNoStrengthColor)
+
+void GCUtils::CollisionQuery::Strength::Debug::DrawStrengthDebugText(const UWorld* InWorld, const FPenetrationSceneCastWithExitHitsUsingStrengthResult& InResult, const float InInitialStrength, const float InLifeTime, const FLinearColor& InFullStrengthColor, const FLinearColor& InNoStrengthColor)
 {
 #if ENABLE_DRAW_DEBUG
     TArray<TPair<FVector, float>> LocationsWithStrengths;
@@ -140,7 +143,8 @@ void UGCBlueprintFunctionLibrary_DrawDebugHelpersStrengthCollisionQueries::DrawS
     }
 #endif // ENABLE_DRAW_DEBUG
 }
-void UGCBlueprintFunctionLibrary_DrawDebugHelpersStrengthCollisionQueries::DrawCollisionShapeDebug(const UWorld* InWorld, const FPenetrationSceneCastWithExitHitsUsingStrengthResult& InResult, const float InInitialStrength, const bool bInPersistentLines, const float InLifeTime, const uint8 InDepthPriority, const float InThickness, const FLinearColor& InFullStrengthColor, const FLinearColor& InNoStrengthColor)
+
+void GCUtils::CollisionQuery::Strength::Debug::DrawCollisionShapeDebug(const UWorld* InWorld, const FPenetrationSceneCastWithExitHitsUsingStrengthResult& InResult, const float InInitialStrength, const bool bInPersistentLines, const float InLifeTime, const uint8 InDepthPriority, const float InThickness, const FLinearColor& InFullStrengthColor, const FLinearColor& InNoStrengthColor)
 {
 #if ENABLE_DRAW_DEBUG
     TArray<TPair<FVector, float>> LocationsWithStrengths;
@@ -159,12 +163,12 @@ void UGCBlueprintFunctionLibrary_DrawDebugHelpersStrengthCollisionQueries::DrawC
         const FColor StrengthDebugColor = GetDebugColorForStrength(LocationWithStrength.Value, InInitialStrength, InFullStrengthColor, InNoStrengthColor).ToFColor(true);
 
         const FVector ShapeLocation = LocationWithStrength.Key;
-        UGCBlueprintFunctionLibrary_DrawDebugHelpers::DrawDebugCollisionShape(InWorld, ShapeLocation, InResult.StrengthSceneCastInfo.CollisionShapeCasted, InResult.StrengthSceneCastInfo.CollisionShapeCastedRotation, StrengthDebugColor, 16, bInPersistentLines, InLifeTime, InDepthPriority, InThickness);
+        DrawDebug::DrawDebugCollisionShape(InWorld, ShapeLocation, InResult.StrengthSceneCastInfo.CollisionShapeCasted, InResult.StrengthSceneCastInfo.CollisionShapeCastedRotation, StrengthDebugColor, 16, bInPersistentLines, InLifeTime, InDepthPriority, InThickness);
     }
 #endif // ENABLE_DRAW_DEBUG
 }
 
-void UGCBlueprintFunctionLibrary_DrawDebugHelpersStrengthCollisionQueries::DrawStrengthDebugLine(const UWorld* InWorld, const FRicochetingPenetrationSceneCastWithExitHitsUsingStrengthResult& InResult, const float InInitialStrength, const bool bInPersistentLines, const float InLifeTime, const uint8 InDepthPriority, const float InThickness, const float InSegmentsLength, const float InSegmentsSpacingLength, const FLinearColor& InFullStrengthColor, const FLinearColor& InNoStrengthColor)
+void GCUtils::CollisionQuery::Strength::Debug::DrawStrengthDebugLine(const UWorld* InWorld, const FRicochetingPenetrationSceneCastWithExitHitsUsingStrengthResult& InResult, const float InInitialStrength, const bool bInPersistentLines, const float InLifeTime, const uint8 InDepthPriority, const float InThickness, const float InSegmentsLength, const float InSegmentsSpacingLength, const FLinearColor& InFullStrengthColor, const FLinearColor& InNoStrengthColor)
 {
 #if ENABLE_DRAW_DEBUG
     for (const FPenetrationSceneCastWithExitHitsUsingStrengthResult& PenetrationSceneCastWithExitHitsUsingStrengthResult : InResult.PenetrationSceneCastWithExitHitsUsingStrengthResults)
@@ -173,7 +177,8 @@ void UGCBlueprintFunctionLibrary_DrawDebugHelpersStrengthCollisionQueries::DrawS
     }
 #endif // ENABLE_DRAW_DEBUG
 }
-void UGCBlueprintFunctionLibrary_DrawDebugHelpersStrengthCollisionQueries::DrawStrengthDebugText(const UWorld* InWorld, const FRicochetingPenetrationSceneCastWithExitHitsUsingStrengthResult& InResult, const float InInitialStrength, const float InLifeTime, const FLinearColor& InFullStrengthColor, const FLinearColor& InNoStrengthColor)
+
+void GCUtils::CollisionQuery::Strength::Debug::DrawStrengthDebugText(const UWorld* InWorld, const FRicochetingPenetrationSceneCastWithExitHitsUsingStrengthResult& InResult, const float InInitialStrength, const float InLifeTime, const FLinearColor& InFullStrengthColor, const FLinearColor& InNoStrengthColor)
 {
 #if ENABLE_DRAW_DEBUG
     FVector PreviousRicochetTextOffsetDirection = FVector::ZeroVector;
@@ -250,7 +255,7 @@ void UGCBlueprintFunctionLibrary_DrawDebugHelpersStrengthCollisionQueries::DrawS
 #endif // ENABLE_DRAW_DEBUG
 }
 
-void UGCBlueprintFunctionLibrary_DrawDebugHelpersStrengthCollisionQueries::DrawCollisionShapeDebug(const UWorld* InWorld, const FRicochetingPenetrationSceneCastWithExitHitsUsingStrengthResult& InResult, const float InInitialStrength, const bool bInPersistentLines, const float InLifeTime, const uint8 InDepthPriority, const float InThickness, const FLinearColor& InFullStrengthColor, const FLinearColor& InNoStrengthColor)
+void GCUtils::CollisionQuery::Strength::Debug::DrawCollisionShapeDebug(const UWorld* InWorld, const FRicochetingPenetrationSceneCastWithExitHitsUsingStrengthResult& InResult, const float InInitialStrength, const bool bInPersistentLines, const float InLifeTime, const uint8 InDepthPriority, const float InThickness, const FLinearColor& InFullStrengthColor, const FLinearColor& InNoStrengthColor)
 {
 #if ENABLE_DRAW_DEBUG
     for (const FPenetrationSceneCastWithExitHitsUsingStrengthResult& PenetrationSceneCastWithExitHitsUsingStrengthResult : InResult.PenetrationSceneCastWithExitHitsUsingStrengthResults)
@@ -265,15 +270,14 @@ void UGCBlueprintFunctionLibrary_DrawDebugHelpersStrengthCollisionQueries::DrawC
         {
             const FColor StrengthDebugColor = GetDebugColorForStrength(InResult.StrengthSceneCastInfo.StopStrength, InInitialStrength, InFullStrengthColor, InNoStrengthColor).ToFColor(true);
 
-            const FVector ShapeDebugLocation = InResult.StrengthSceneCastInfo.StopLocation + (InResult.PenetrationSceneCastWithExitHitsUsingStrengthResults.Last().StrengthSceneCastInfo.CastDirection * UGCBlueprintFunctionLibrary_CollisionQueries::SceneCastStartWallAvoidancePadding);
-            UGCBlueprintFunctionLibrary_DrawDebugHelpers::DrawDebugCollisionShape(InWorld, ShapeDebugLocation, InResult.StrengthSceneCastInfo.CollisionShapeCasted, InResult.StrengthSceneCastInfo.CollisionShapeCastedRotation, StrengthDebugColor, 16, bInPersistentLines, InLifeTime, InDepthPriority, InThickness);
+            const FVector ShapeDebugLocation = InResult.StrengthSceneCastInfo.StopLocation + (InResult.PenetrationSceneCastWithExitHitsUsingStrengthResults.Last().StrengthSceneCastInfo.CastDirection * SceneCastStartWallAvoidancePadding);
+            DrawDebug::DrawDebugCollisionShape(InWorld, ShapeDebugLocation, InResult.StrengthSceneCastInfo.CollisionShapeCasted, InResult.StrengthSceneCastInfo.CollisionShapeCastedRotation, StrengthDebugColor, 16, bInPersistentLines, InLifeTime, InDepthPriority, InThickness);
         }
     }
 #endif // ENABLE_DRAW_DEBUG
 }
 
-
-FLinearColor UGCBlueprintFunctionLibrary_DrawDebugHelpersStrengthCollisionQueries::GetDebugColorForStrength(const float InStrength, const float InInitialStrength, const FLinearColor& InFullStrengthColor, const FLinearColor& InNoStrengthColor)
+FLinearColor GCUtils::CollisionQuery::Strength::Debug::GetDebugColorForStrength(const float InStrength, const float InInitialStrength, const FLinearColor& InFullStrengthColor, const FLinearColor& InNoStrengthColor)
 {
     return FLinearColor::LerpUsingHSV(InFullStrengthColor, InNoStrengthColor, 1 - (InStrength / InInitialStrength));
 }

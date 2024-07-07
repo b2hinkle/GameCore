@@ -1,11 +1,8 @@
-    // Fill out your copyright notice in the Description page of Project Settings.
-
+// Fill out your copyright notice in the Description page of Project Settings.
 
 #include "BlueprintFunctionLibraries/GCUtils_HitResult.h"
 
-
-
-bool UGCBlueprintFunctionLibrary_HitResultHelpers::AreHitsFromSameTrace(const FHitResult& HitA, const FHitResult& HitB)
+bool GCUtils::HitResult::AreHitsFromSameTrace(const FHitResult& HitA, const FHitResult& HitB)
 {
     const bool bSameTraceStart = (HitA.TraceStart == HitB.TraceStart);
     const bool bSameTraceEnd = (HitA.TraceEnd == HitB.TraceEnd);
@@ -15,7 +12,7 @@ bool UGCBlueprintFunctionLibrary_HitResultHelpers::AreHitsFromSameTrace(const FH
     return bSameTrace;
 }
 
-float UGCBlueprintFunctionLibrary_HitResultHelpers::CheapCalculateTraceLength(const FHitResult& InHit)
+float GCUtils::HitResult::CheapCalculateTraceLength(const FHitResult& InHit)
 {
     if (InHit.TraceStart == InHit.TraceEnd)
     {
@@ -32,7 +29,7 @@ float UGCBlueprintFunctionLibrary_HitResultHelpers::CheapCalculateTraceLength(co
     return InHit.Distance * (1 / InHit.Time);
 }
 
-void UGCBlueprintFunctionLibrary_HitResultHelpers::AdjustTraceDataBySlidingTraceStartAndEndByTime(FHitResult& InOutHit, const float InTimeAtNewTraceStart, const float InTimeAtNewTraceEnd)
+void GCUtils::HitResult::AdjustTraceDataBySlidingTraceStartAndEndByTime(FHitResult& InOutHit, const float InTimeAtNewTraceStart, const float InTimeAtNewTraceEnd)
 {
     const float OriginalTraceLength = CheapCalculateTraceLength(InOutHit);
 

@@ -1,19 +1,21 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "BlueprintFunctionLibraries/CollisionQuery/GCUtils_CollisionQuery_Strength.h"
 
 #include "BlueprintFunctionLibraries/CollisionQuery/GCUtils_CollisionQuery.h"
 #include "BlueprintFunctionLibraries/GCUtils_HitResult.h"
 
+namespace GCUtils::CollisionQuery::Strength
+{
+    static float NerfStrengthPerCm(float& InOutStrength, const float InDistanceToTravel, const float InNerfPerCm);
+}
 
-
-const FGetPerCmPenetrationNerfDelegate UGCBlueprintFunctionLibrary_StrengthCollisionQueries::DefaultGetPerCmPenetrationNerf = FGetPerCmPenetrationNerfDelegate::CreateStatic([](const FHitResult&) { return 0.f; });
-const FGetRicochetNerfDelegate UGCBlueprintFunctionLibrary_StrengthCollisionQueries::DefaultGetRicochetNerf = FGetRicochetNerfDelegate::CreateStatic([](const FHitResult&) { return 0.f; });
-const FIsHitRicochetableDelegate UGCBlueprintFunctionLibrary_StrengthCollisionQueries::DefaultIsHitRicochetable = FIsHitRicochetableDelegate::CreateStatic([](const FHitResult&) { return false; });
+const FGetPerCmPenetrationNerfDelegate GCUtils::CollisionQuery::Strength::DefaultGetPerCmPenetrationNerf = FGetPerCmPenetrationNerfDelegate::CreateStatic([](const FHitResult&) { return 0.f; });
+const FGetRicochetNerfDelegate GCUtils::CollisionQuery::Strength::DefaultGetRicochetNerf = FGetRicochetNerfDelegate::CreateStatic([](const FHitResult&) { return 0.f; });
+const FIsHitRicochetableDelegate GCUtils::CollisionQuery::Strength::DefaultIsHitRicochetable = FIsHitRicochetableDelegate::CreateStatic([](const FHitResult&) { return false; });
 
 //  BEGIN Custom query
-FStrengthHitResult* UGCBlueprintFunctionLibrary_StrengthCollisionQueries::PenetrationSceneCastWithExitHitsUsingStrength(const float InInitialStrength, TArray<float>& InOutPerCmNerfStack, const UWorld* InWorld, FPenetrationSceneCastWithExitHitsUsingStrengthResult& OutResult, const FVector& InStart, const FVector& InEnd, const FQuat& InRotation, const ECollisionChannel InTraceChannel, const FCollisionShape& InCollisionShape, const FCollisionQueryParams& InCollisionQueryParams, const FCollisionResponseParams& InCollisionResponseParams,
+FStrengthHitResult* GCUtils::CollisionQuery::Strength::PenetrationSceneCastWithExitHitsUsingStrength(const float InInitialStrength, TArray<float>& InOutPerCmNerfStack, const UWorld* InWorld, FPenetrationSceneCastWithExitHitsUsingStrengthResult& OutResult, const FVector& InStart, const FVector& InEnd, const FQuat& InRotation, const ECollisionChannel InTraceChannel, const FCollisionShape& InCollisionShape, const FCollisionQueryParams& InCollisionQueryParams, const FCollisionResponseParams& InCollisionResponseParams,
     FGetPerCmPenetrationNerfDelegate GetPerCmPenetrationNerf,
     FIsHitImpenetrableDelegate IsHitImpenetrable)
 {
@@ -30,11 +32,11 @@ FStrengthHitResult* UGCBlueprintFunctionLibrary_StrengthCollisionQueries::Penetr
     OutResult.StrengthSceneCastInfo.CastDirection = (InEnd - InStart).GetSafeNormal();
 
     TArray<FExitAwareHitResult> HitResults;
-    FExitAwareHitResult* ImpenetrableHit = UGCBlueprintFunctionLibrary_CollisionQueries::PenetrationSceneCastWithExitHits(InWorld, HitResults, InStart, InEnd, InRotation, InTraceChannel, InCollisionShape, InCollisionQueryParams, InCollisionResponseParams, IsHitImpenetrable, true);
+    FExitAwareHitResult* ImpenetrableHit = PenetrationSceneCastWithExitHits(InWorld, HitResults, InStart, InEnd, InRotation, InTraceChannel, InCollisionShape, InCollisionQueryParams, InCollisionResponseParams, IsHitImpenetrable, true);
 
 
     const FVector SceneCastDirection = (InEnd - InStart).GetSafeNormal();
-    const float SceneCastDistance = HitResults.Num() > 0 ? UGCBlueprintFunctionLibrary_HitResultHelpers::CheapCalculateTraceLength(HitResults.Last()) : FVector::Distance(InStart, InEnd);
+    const float SceneCastDistance = HitResults.Num() > 0 ? HitResult::CheapCalculateTraceLength(HitResults.Last()) : FVector::Distance(InStart, InEnd);
 
     float CurrentStrength = InInitialStrength;
 
@@ -163,7 +165,7 @@ FStrengthHitResult* UGCBlueprintFunctionLibrary_StrengthCollisionQueries::Penetr
     OutResult.StrengthSceneCastInfo.StopStrength = CurrentStrength;
     return nullptr;
 }
-FStrengthHitResult* UGCBlueprintFunctionLibrary_StrengthCollisionQueries::PenetrationSceneCastWithExitHitsUsingStrength(const float InInitialStrength, const float InRangeFalloffNerf, const UWorld* InWorld, FPenetrationSceneCastWithExitHitsUsingStrengthResult& OutResult, const FVector& InStart, const FVector& InEnd, const FQuat& InRotation, const ECollisionChannel InTraceChannel, const FCollisionShape& InCollisionShape, const FCollisionQueryParams& InCollisionQueryParams, const FCollisionResponseParams& InCollisionResponseParams,
+FStrengthHitResult* GCUtils::CollisionQuery::Strength::PenetrationSceneCastWithExitHitsUsingStrength(const float InInitialStrength, const float InRangeFalloffNerf, const UWorld* InWorld, FPenetrationSceneCastWithExitHitsUsingStrengthResult& OutResult, const FVector& InStart, const FVector& InEnd, const FQuat& InRotation, const ECollisionChannel InTraceChannel, const FCollisionShape& InCollisionShape, const FCollisionQueryParams& InCollisionQueryParams, const FCollisionResponseParams& InCollisionResponseParams,
     FGetPerCmPenetrationNerfDelegate GetPerCmPenetrationNerf,
     FIsHitImpenetrableDelegate IsHitImpenetrable)
 {
@@ -174,7 +176,7 @@ FStrengthHitResult* UGCBlueprintFunctionLibrary_StrengthCollisionQueries::Penetr
 //  END Custom query
 
 //  BEGIN Custom query
-void UGCBlueprintFunctionLibrary_StrengthCollisionQueries::RicochetingPenetrationSceneCastWithExitHitsUsingStrength(const float InInitialStrength, TArray<float>& InOutPerCmStrengthNerfStack, const UWorld* InWorld, FRicochetingPenetrationSceneCastWithExitHitsUsingStrengthResult& OutResult, const FVector& InStart, const FVector& InDirection, const float InDistanceCap, const FQuat& InRotation, const ECollisionChannel InTraceChannel, const FCollisionShape& InCollisionShape, const FCollisionQueryParams& InCollisionQueryParams, const FCollisionResponseParams& InCollisionResponseParams, const int32 InRicochetCap,
+void GCUtils::CollisionQuery::Strength::RicochetingPenetrationSceneCastWithExitHitsUsingStrength(const float InInitialStrength, TArray<float>& InOutPerCmStrengthNerfStack, const UWorld* InWorld, FRicochetingPenetrationSceneCastWithExitHitsUsingStrengthResult& OutResult, const FVector& InStart, const FVector& InDirection, const float InDistanceCap, const FQuat& InRotation, const ECollisionChannel InTraceChannel, const FCollisionShape& InCollisionShape, const FCollisionQueryParams& InCollisionQueryParams, const FCollisionResponseParams& InCollisionResponseParams, const int32 InRicochetCap,
     FGetPerCmPenetrationNerfDelegate GetPerCmPenetrationNerf,
     FGetRicochetNerfDelegate GetRicochetNerf,
     FIsHitRicochetableDelegate IsHitRicochetable)
@@ -263,7 +265,7 @@ void UGCBlueprintFunctionLibrary_StrengthCollisionQueries::RicochetingPenetratio
         // SETUP FOR OUR NEXT SCENE CAST
         // Next ricochet cast needs a new direction and start location
         CurrentSceneCastDirection = CurrentSceneCastDirection.MirrorByVector(RicochetableHit->ImpactNormal);
-        CurrentSceneCastStart = RicochetableHit->Location + (CurrentSceneCastDirection * UGCBlueprintFunctionLibrary_CollisionQueries::SceneCastStartWallAvoidancePadding);
+        CurrentSceneCastStart = RicochetableHit->Location + (CurrentSceneCastDirection * SceneCastStartWallAvoidancePadding);
     }
 
     OutResult.StrengthSceneCastInfo.StopStrength = CurrentStrength;
@@ -279,7 +281,7 @@ void UGCBlueprintFunctionLibrary_StrengthCollisionQueries::RicochetingPenetratio
         OutResult.StrengthSceneCastInfo.StopLocation = OutResult.StrengthSceneCastInfo.StartLocation;
     }
 }
-void UGCBlueprintFunctionLibrary_StrengthCollisionQueries::RicochetingPenetrationSceneCastWithExitHitsUsingStrength(const float InInitialStrength, const float InRangeFalloffNerf, const UWorld* InWorld, FRicochetingPenetrationSceneCastWithExitHitsUsingStrengthResult& OutResult, const FVector& InStart, const FVector& InDirection, const float InDistanceCap, const FQuat& InRotation, const ECollisionChannel InTraceChannel, const FCollisionShape& InCollisionShape, const FCollisionQueryParams& InCollisionQueryParams, const FCollisionResponseParams& InCollisionResponseParams, const int32 InRicochetCap,
+void GCUtils::CollisionQuery::Strength::RicochetingPenetrationSceneCastWithExitHitsUsingStrength(const float InInitialStrength, const float InRangeFalloffNerf, const UWorld* InWorld, FRicochetingPenetrationSceneCastWithExitHitsUsingStrengthResult& OutResult, const FVector& InStart, const FVector& InDirection, const float InDistanceCap, const FQuat& InRotation, const ECollisionChannel InTraceChannel, const FCollisionShape& InCollisionShape, const FCollisionQueryParams& InCollisionQueryParams, const FCollisionResponseParams& InCollisionResponseParams, const int32 InRicochetCap,
     FGetPerCmPenetrationNerfDelegate GetPerCmPenetrationNerf,
     FGetRicochetNerfDelegate GetRicochetNerf,
     FIsHitRicochetableDelegate IsHitRicochetable)
@@ -290,7 +292,7 @@ void UGCBlueprintFunctionLibrary_StrengthCollisionQueries::RicochetingPenetratio
 }
 //  END Custom query
 
-float UGCBlueprintFunctionLibrary_StrengthCollisionQueries::NerfStrengthPerCm(float& InOutStrength, const float InCentimetersToTravel, const float InNerfPerCm)
+float GCUtils::CollisionQuery::Strength::NerfStrengthPerCm(float& InOutStrength, const float InCentimetersToTravel, const float InNerfPerCm)
 {
     const float StrengthToTakeAway = (InCentimetersToTravel * InNerfPerCm);
     const float OldStrength = InOutStrength;

@@ -1,11 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "BlueprintFunctionLibraries/GCUtils_Math.h"
 
-
-
-float UGCBlueprintFunctionLibrary_MathHelpers::GetCollisionShapeBoundingSphereRadius(const FCollisionShape& CollisionShape)
+float GCUtils::Math::GetCollisionShapeBoundingSphereRadius(const FCollisionShape& CollisionShape)
 {
     switch (CollisionShape.ShapeType)
     {
@@ -32,7 +29,7 @@ float UGCBlueprintFunctionLibrary_MathHelpers::GetCollisionShapeBoundingSphereRa
     return 0.f;
 }
 
-float UGCBlueprintFunctionLibrary_MathHelpers::GetBoxBoundingSphereRadius(const FVector& BoxExtent)
+float GCUtils::Math::GetBoxBoundingSphereRadius(const FVector& BoxExtent)
 {
     const float LengthSquared = (BoxExtent.X * BoxExtent.X);
     const float WidthSquared  = (BoxExtent.Y * BoxExtent.Y);
@@ -46,8 +43,7 @@ float UGCBlueprintFunctionLibrary_MathHelpers::GetBoxBoundingSphereRadius(const 
     return Diameter / 2;
 }
 
-
-bool UGCBlueprintFunctionLibrary_MathHelpers::DirectionIsBetween(const FVector& InA, const FVector& InB, const bool bInInclusive, const FVector& InDirection, const float InErrorTolerance)
+bool GCUtils::Math::DirectionIsBetween(const FVector& InA, const FVector& InB, const bool bInInclusive, const FVector& InDirection, const float InErrorTolerance)
 {
     // Get the normals
     //
@@ -84,7 +80,7 @@ bool UGCBlueprintFunctionLibrary_MathHelpers::DirectionIsBetween(const FVector& 
     return bSameNormals;
 }
 
-bool UGCBlueprintFunctionLibrary_MathHelpers::PointLiesOnSegment(const FVector& InSegmentStart, const FVector& InSegmentEnd, const FVector& InPoint, const float InErrorTolerance)
+bool GCUtils::Math::PointLiesOnSegment(const FVector& InSegmentStart, const FVector& InSegmentEnd, const FVector& InPoint, const float InErrorTolerance)
 {
     if (PointsAreCollinear({ InSegmentStart, InSegmentEnd, InPoint }, InErrorTolerance))
     {
@@ -99,7 +95,7 @@ bool UGCBlueprintFunctionLibrary_MathHelpers::PointLiesOnSegment(const FVector& 
     return false;
 }
 
-bool UGCBlueprintFunctionLibrary_MathHelpers::PointsAreCollinear(const TArray<FVector>& InPoints, const float InErrorTolerance)
+bool GCUtils::Math::PointsAreCollinear(const TArray<FVector>& InPoints, const float InErrorTolerance)
 {
     if (InPoints.Num() <= 2)
     {
@@ -127,7 +123,7 @@ bool UGCBlueprintFunctionLibrary_MathHelpers::PointsAreCollinear(const TArray<FV
     return true;
 }
 
-bool UGCBlueprintFunctionLibrary_MathHelpers::PointLiesOnTriangle(const FVector& InA, const FVector& InB, const FVector& InC, const FVector& InPoint, const float InErrorTolerance)
+bool GCUtils::Math::PointLiesOnTriangle(const FVector& InA, const FVector& InB, const FVector& InC, const FVector& InPoint, const float InErrorTolerance)
 {
     // Whether the point is within A's angle
     const FVector AToPoint = (InPoint - InA);
@@ -169,8 +165,7 @@ bool UGCBlueprintFunctionLibrary_MathHelpers::PointLiesOnTriangle(const FVector&
     return false;
 }
 
-
-FVector UGCBlueprintFunctionLibrary_MathHelpers::GetLocationAimDirection(const UWorld* World, const FCollisionQueryParams& QueryParams, const FVector& AimPoint, const FVector& AimDir, const float& MaxRange, const FVector& Location)
+FVector GCUtils::Math::GetLocationAimDirection(const UWorld* World, const FCollisionQueryParams& QueryParams, const FVector& AimPoint, const FVector& AimDir, const float& MaxRange, const FVector& Location)
 {
     if (Location.Equals(AimPoint))
     {
