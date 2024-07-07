@@ -1,6 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "BlueprintFunctionLibraries/GCUtils_Math.h"
+#include "GCUtils_Math.h"
 
 float GCUtils::Math::GetCollisionShapeBoundingSphereRadius(const FCollisionShape& CollisionShape)
 {

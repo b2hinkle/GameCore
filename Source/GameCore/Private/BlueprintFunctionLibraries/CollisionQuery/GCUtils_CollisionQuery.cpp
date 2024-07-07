@@ -2,8 +2,8 @@
 
 #include "BlueprintFunctionLibraries/CollisionQuery/GCUtils_CollisionQuery.h"
 
-#include "BlueprintFunctionLibraries/GCUtils_Math.h"
-#include "BlueprintFunctionLibraries/GCUtils_Array.h"
+#include "GCUtils_Math.h"
+#include "GCUtils_Array.h"
 #include "BlueprintFunctionLibraries/Debugging/GCUtils_DrawDebug.h"
 #include "DrawDebugHelpers.h"
 #include "BlueprintFunctionLibraries/GCUtils_HitResult.h"
