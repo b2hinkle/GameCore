@@ -4,48 +4,58 @@
 
 #include "CoreMinimal.h"
 #include "GCUtils.h"
+#include "GCUtils_String.h"
 
 /**
- * A collection of helpful functions related to TArrays
+ * @brief Array utils.
  */
 namespace GCUtils::Array
 {
-    /** Removes all items at and after the given index */
-    template <class T>
-    void RemoveTheRestAt(TArray<T>& InOutArray, const int32& Index);
+    /**
+     * @brief Removes all items at and after the given index.
+     */
+    template <class TElement, class TAllocator>
+    void RemoveTheRestAtInclusive(TArray<TElement, TAllocator>& array, const int32 index);
 
-    /** Removes all items from one index to another */
-    template <class T>
-    void RemoveInRange(TArray<T>& InOutArray, const int32& FromIndex, const int32& ToIndex);
+    /**
+     * @brief Removes all items from one index to another, inclusively.
+     */
+    template <class TElement, class TAllocator>
+    void RemoveInRangeInclusive(TArray<TElement, TAllocator>& array, const int32 fromIndex, const int32 toIndex);
 }
 
-template <class T>
-void GCUtils::Array::RemoveTheRestAt(TArray<T>& InOutArray, const int32& Index)
+template <class TElement, class TAllocator>
+void GCUtils::Array::RemoveTheRestAtInclusive(TArray<TElement, TAllocator>& array, const int32 index)
 {
-    if (InOutArray.IsValidIndex(Index) == false)
-    {
-        UE_LOG(LogGCArrayHelpers, Error, TEXT("%s() was given an invalid index [%d]"), ANSI_TO_TCHAR(__FUNCTION__), Index);
-        check(0);
-    }
+    checkf(array.IsValidIndex(index),
+        TEXT("The ") GC_STRING_LITERALIZE(index) TEXT(" %d is not valid for the ") GC_STRING_LITERALIZE(array) TEXT(" of size %d."),
+        index,
+        array.Num());
 
-    const int32 LastIndex = InOutArray.Num() - 1;
-    RemoveInRange(InOutArray, Index, LastIndex);
+    const int32 lastIndex = array.Num() - 1;
+    RemoveInRangeInclusive(array, index, lastIndex);
 }
 
-template <class T>
-void GCUtils::Array::RemoveInRange(TArray<T>& InOutArray, const int32& FromIndex, const int32& ToIndex)
+template <class TElement, class TAllocator>
+void GCUtils::Array::RemoveInRangeInclusive(TArray<TElement, TAllocator>& array, const int32 fromIndex, const int32 toIndex)
 {
-    if (InOutArray.IsValidIndex(FromIndex) == false)
-    {
-        UE_LOG(LogGCArrayHelpers, Error, TEXT("%s() was given an invalid FromIndex [%d]"), ANSI_TO_TCHAR(__FUNCTION__), FromIndex);
-        check(0);
-    }
-    if (InOutArray.IsValidIndex(ToIndex) == false)
-    {
-        UE_LOG(LogGCArrayHelpers, Error, TEXT("%s() was given an invalid ToIndex [%d]"), ANSI_TO_TCHAR(__FUNCTION__), ToIndex);
-        check(0);
-    }
+    checkf(array.IsValidIndex(fromIndex),
+        TEXT("The ") GC_STRING_LITERALIZE(fromIndex) TEXT(" %d is not valid for the ") GC_STRING_LITERALIZE(array) TEXT(" of size %d."),
+        fromIndex,
+        array.Num());
+    checkf(array.IsValidIndex(toIndex),
+        TEXT("The ") GC_STRING_LITERALIZE(toIndex) TEXT(" %d is not valid for the ") GC_STRING_LITERALIZE(array) TEXT(" of size %d."),
+        toIndex,
+        array.Num());
 
-    const int AmountToRemove = ToIndex - (FromIndex - 1);
-    InOutArray.RemoveAt(FromIndex, AmountToRemove);
+    checkf(fromIndex <= toIndex,
+        TEXT("The ") GC_STRING_LITERALIZE(fromIndex) TEXT(" %d is less than the ") GC_STRING_LITERALIZE(toIndex) TEXT(" %d."),
+        fromIndex,
+        toIndex);
+
+    const int32 count = (toIndex - fromIndex) + 1;
+    check(count >= 0);
+    check(fromIndex + count <= array.Num());
+
+    array.RemoveAt(fromIndex, count);
 }

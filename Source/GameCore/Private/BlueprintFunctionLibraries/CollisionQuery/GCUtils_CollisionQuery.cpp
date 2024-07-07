@@ -140,7 +140,7 @@ FHitResult* GCUtils::CollisionQuery::PenetrationSceneCast(const UWorld* InWorld,
             // Remove the rest if there are any
             if (OutHits.IsValidIndex(i + 1))
             {
-                Array::RemoveTheRestAt(OutHits, i + 1);
+                Array::RemoveTheRestAtInclusive(OutHits, i + 1);
             }
 
             return &OutHits[i];
