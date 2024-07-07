@@ -5,11 +5,18 @@
 #include "CoreMinimal.h"
 #include "GCUtils.h"
 
+class UStaticMeshComponent;
+
 /**
- * A collection of helper functions related to Materials
+ * @brief Material utilities.
  */
 namespace GCUtils::Material
 {
-    /** Returns the MaterialIndex given the material's section index */
-    GAMECORE_API int32 GetMaterialIndexFromSectionIndex(const UStaticMeshComponent* StaticMeshComponent, const int32 SectionIndex);
+    /**
+     * @brief Returns the material index given the material's section index.
+     * @note This is an old function who's behavior hasn't been reviewed or improved.
+     */
+    GAMECORE_API int32 GetMaterialIndexFromSectionIndex(
+        const UStaticMeshComponent& staticMeshComponent,
+        const int32 sectionIndex);
 }

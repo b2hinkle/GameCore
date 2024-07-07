@@ -2,23 +2,43 @@
 
 #include "GCUtils_Material.h"
 
-int32 GCUtils::Material::GetMaterialIndexFromSectionIndex(const UStaticMeshComponent* StaticMeshComponent, const int32 SectionIndex)
+int32 GCUtils::Material::GetMaterialIndexFromSectionIndex(
+    const UStaticMeshComponent& staticMeshComponent,
+    const int32 sectionIndex)
 {
-    // Adapted from GetMaterialFromCollisionFaceIndex()
-    const UStaticMesh* Mesh = StaticMeshComponent->GetStaticMesh();
-    const FStaticMeshRenderData* RenderData = Mesh->GetRenderData();
-    if (Mesh && RenderData && SectionIndex >= 0)
+    // Adapted from UStaticMeshComponent::GetMaterialFromCollisionFaceIndex().
+
+    if (sectionIndex < 0)
     {
-        const int32 LODIndex = Mesh->LODForCollision;
-        if (RenderData->LODResources.IsValidIndex(LODIndex))
-        {
-            const FStaticMeshLODResources& LODResource = RenderData->LODResources[LODIndex];
-            if (SectionIndex < LODResource.Sections.Num())
-            {
-                return LODResource.Sections[SectionIndex].MaterialIndex;
-            }
-        }
+        return INDEX_NONE;
     }
 
-    return -1;
+    const UStaticMesh* staticMesh = staticMeshComponent.GetStaticMesh();
+    if (!staticMesh)
+    {
+        return INDEX_NONE;
+    }
+
+    const FStaticMeshRenderData* staticMeshRenderData = staticMesh->GetRenderData();
+    if (!staticMeshRenderData)
+    {
+        return INDEX_NONE;
+    }
+
+    const FStaticMeshLODResourcesArray& lodResourcesArray = staticMeshRenderData->LODResources;
+
+    const int32 lodIndex = staticMesh->LODForCollision;
+    if (lodResourcesArray.IsValidIndex(lodIndex) == false)
+    {
+        return INDEX_NONE;
+    }
+
+    const FStaticMeshLODResources& lodResource = lodResourcesArray[lodIndex];
+
+    if (sectionIndex >= lodResource.Sections.Num())
+    {
+        return INDEX_NONE;
+    }
+
+    return lodResource.Sections[sectionIndex].MaterialIndex;
 }
