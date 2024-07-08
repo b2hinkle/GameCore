@@ -48,6 +48,17 @@ namespace GCUtils::String
     using TStringBuilderCallback = TFunctionRef<void(TStringBuilderBase<TCharType>&)>;
 
     /**
+     * @brief Writes and returns a created string builder of a template character type. This
+     *        is a generalized version of engine's "WriteToString" functions that takes in the
+     *        string builder's char type as a template parameter.
+     * @tparam TCharType The character type for the string builder to be created.
+     * @tparam BufferSize The buffer length for the string builder to be created.
+     * @param inArgs The arguments to write into the string builder.
+     */
+    template <class TCharType, int32 BufferSize, class... TArgs>
+    TStringBuilderWithBuffer<TCharType, BufferSize> WriteToStringGeneric(TArgs&&... inArgs);
+
+    /**
      * @brief Makes a prvalue string builder initialized with the given callback.
      * @param inInitializationCallback Callback function for initializing the string builder as however needed.
      * @return String builder constructed in place (copy-elided) and initialized based on the callback.
@@ -119,13 +130,18 @@ namespace GCUtils::String
     constexpr FStringView StringFalse = PREPROCESSOR_JOIN(GC_STRING_LITERAL_FALSE, _PrivateSV);
 }
 
+template <class TCharType, int32 BufferSize, class... TArgs>
+TStringBuilderWithBuffer<TCharType, BufferSize> GCUtils::String::WriteToStringGeneric<BufferSize, TCharType>(TArgs&&... inArgs)
+{
+    return TStringBuilderWithBuffer<TCharType, BufferSize>(EInPlace::InPlace, Forward<TArgs...>(inArgs...));
+}
+
 template <int32 BufferSize, class TCharType>
 TStringBuilderWithBuffer<TCharType, BufferSize> GCUtils::String::MakeStringBuilder(const TStringBuilderCallback<TCharType>& inInitializationCallback)
 {
     // Note: String builders are not copyable so we must return a prvalue to elide the copy. This is
     // a good idea anyway because we want to be wary of possibly large buffer sizes.
-    return TStringBuilderWithBuffer<TCharType, BufferSize>(
-        EInPlace::InPlace,
+    return WriteToStringGeneric<TCharType, BufferSize>(
         TStringBuilderAppender(
             [&inInitializationCallback](TStringBuilderBase<TCharType>& inStringBuilder) -> TStringBuilderBase<TCharType>&
             {
@@ -141,7 +157,7 @@ TStringBuilderWithBuffer<TCharType, BufferSize> GCUtils::String::GetUObjectNameS
 {
     if (!inUObject)
     {
-        return TStringBuilderWithBuffer<TCharType, BufferSize>(EInPlace::InPlace, StringNull);
+        return WriteToStringGeneric<TCharType, BufferSize>(StringNull);
     }
 
     return GetUObjectName<BufferSize, TCharType>(*inUObject);
@@ -152,7 +168,7 @@ TStringBuilderWithBuffer<TCharType, BufferSize> GCUtils::String::GetUObjectName(
 {
     // Avoid `UObjectBaseUtility::GetName()` which does an unnecessary free-store string
     // allocation. Use the FName instead.
-    return TStringBuilderWithBuffer<TCharType, BufferSize>(EInPlace::InPlace, inUObject.GetFName());
+    return WriteToStringGeneric<TCharType, BufferSize>(inUObject.GetFName());
 }
 
 template <int32 BufferSize, class TCharType>
@@ -162,7 +178,7 @@ TStringBuilderWithBuffer<TCharType, BufferSize> GCUtils::String::GetUObjectPathN
 {
     if (!inUObject)
     {
-        return TStringBuilderWithBuffer<TCharType, BufferSize>(EInPlace::InPlace, StringNull);
+        return WriteToStringGeneric<TCharType, BufferSize>(StringNull);
     }
 
     return GetUObjectPathName<BufferSize, TCharType>(*inUObject, inStopOuter);
@@ -189,7 +205,7 @@ TStringBuilderWithBuffer<TCharType, BufferSize> GCUtils::String::GetUObjectFullN
 {
     if (!inUObject)
     {
-        return TStringBuilderWithBuffer<TCharType, BufferSize>(EInPlace::InPlace, StringNull);
+        return WriteToStringGeneric<TCharType, BufferSize>(StringNull);
     }
 
     return GetUObjectFullName<BufferSize, TCharType>(*inUObject, inStopOuter, inFlags);
