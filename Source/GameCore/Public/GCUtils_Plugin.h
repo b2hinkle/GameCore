@@ -7,23 +7,32 @@
 class IPlugin;
 
 /**
- * Tools for working with content.
+ * @brief Utilities for project plugins.
+ *
+ * TODO: Revisit these utilities and maybe improve intended behavior and documentation.
  */
 namespace GCUtils::Plugin
 {
-    /**
-     * Set up using content from plugins that "opt in" to us doing so. "Opting in" means that they list us as a dependency.
-     *
-     * @param  InSelfPluginName           Name of the plugin that wants to use content of its dependent plugins.
-     * @param  InOnPluginAddContent       Executed when there is content for us to use.
-     * @param  InOnPluginRemoveContent    Executed when there is content for us to stop using.
-     */
-    GAMECORE_API void UseContentFromDependentPlugins(const FString& InSelfPluginName, const TDelegate<void(const IPlugin&)>& InOnPluginAddContent, const TDelegate<void(const IPlugin&)>& InOnPluginRemoveContent);
+    DECLARE_DELEGATE_OneParam(FPluginRefNativeDelegate, TSharedRef<IPlugin>);
 
     /**
-     * Returns if a plugin "opts in" to us using their content. Plugins that depend on us "opt in".
-     *
-     * NOTE: Does not check whether the plugin content is mounted or not, e.g., via FPackageName::MountPointExists().
+     * @brief Set up using content from plugins that "opt in" to us doing so. "Opting in" means
+     *        they list us as a dependency.
+     * @param inSelfPluginNameString Name of the plugin that wants to use content of its dependent plugins.
+     * @param inOnPluginAddContent Executed when there is content for us to use.
+     * @param inOnPluginRemoveContent Executed when there is content for us to stop using.
      */
-    GAMECORE_API bool PluginUsesUs(const FString& InSelfPluginName, const IPlugin& InPlugin);
+    GAMECORE_API void UseContentFromDependentPlugins(
+        const FStringView& inSelfPluginNameString,
+        FPluginRefNativeDelegate inOnPluginAddContentCallback,
+        FPluginRefNativeDelegate inOnPluginRemoveContentCallback);
+
+    /**
+     * @brief Determine whether a plugin "opts in" to us using their content. Plugins that depend on us "opt in".
+     * @note Is unconcerned of whether the plugin content is mounted or not, e.g., via FPackageName::MountPointExists().
+     * @return Whether the plugin "opts in" to us using their content.
+     */
+    GAMECORE_API bool DoesPluginUseUs(
+        const FStringView& inSelfPluginNameString,
+        const TSharedRef<const IPlugin>& inPlugin);
 }

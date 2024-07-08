@@ -1,76 +1,109 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "GCUtils_Plugin.h"
 
 #include "Interfaces/IPluginManager.h"
 #include "PluginDescriptor.h"
+#include "PluginReferenceDescriptor.h"
 
-
-
-void GCUtils::Plugin::UseContentFromDependentPlugins(const FString& InSelfPluginName, const TDelegate<void(const IPlugin&)>& InOnPluginAddContent, const TDelegate<void(const IPlugin&)>& InOnPluginRemoveContent)
+void GCUtils::Plugin::UseContentFromDependentPlugins(
+    const FStringView& inSelfPluginNameString,
+    FPluginRefNativeDelegate inOnPluginAddContentCallback,
+    FPluginRefNativeDelegate inOnPluginRemoveContentCallback)
 {
-    // Look for plugins that have content for us to use
-    for (const TSharedRef<IPlugin>& Plugin : IPluginManager::Get().GetEnabledPluginsWithContent())
+    // Look for plugins that have content for us to use.
+    for (const TSharedRef<IPlugin>& plugin : IPluginManager::Get().GetEnabledPluginsWithContent())
     {
-        if (FPackageName::MountPointExists(Plugin->GetMountedAssetPath())) // if the plugin's content is mounted
+        if (FPackageName::MountPointExists(plugin->GetMountedAssetPath()) == false)
         {
-            if (PluginUsesUs(InSelfPluginName, Plugin.Get()))
-            {
-                // Use this plugin's content
-                InOnPluginAddContent.Execute(Plugin.Get());
-            }
+            // This plugin's content is not currently mounted.
+            continue;
+        }
+
+        if (DoesPluginUseUs(inSelfPluginNameString, plugin))
+        {
+            // Use this plugin's content.
+            inOnPluginAddContentCallback.ExecuteIfBound(plugin);
         }
     }
 
-    // Listen for dynamically loaded and unloaded plugins, e.g., Game Features
+    // Listen for dynamically loaded and unloaded plugins, e.g., game features.
+
+    constexpr int32 pluginNameStringBufferLength = 64;
+
     FPackageName::OnContentPathMounted().AddLambda(
-        [InOnPluginAddContent, InSelfPluginName](const FString& InAssetPath, const FString& InContentPath)
+        [onPluginAddContentCallback = MoveTemp(inOnPluginAddContentCallback),
+        selfPluginNameCharArray = TArray<TCHAR, TInlineAllocator<pluginNameStringBufferLength>>(
+            TArrayView<const TCHAR>(inSelfPluginNameString))]
+        (const FString& inAssetPath, const FString& inContentPath)
         {
-            if (const IPlugin* Plugin = IPluginManager::Get().FindPluginFromPath(InAssetPath).Get())
+            TSharedPtr<IPlugin> pluginPtr = IPluginManager::Get().FindPluginFromPath(inAssetPath);
+            if (pluginPtr.IsValid() == false)
             {
-                if (PluginUsesUs(InSelfPluginName, *Plugin))
-                {
-                    // Use this plugin's content
-                    InOnPluginAddContent.ExecuteIfBound(*Plugin);
-                }
+                // No plugin found.
+                return;
+            }
+
+            TSharedRef<IPlugin> pluginRef = MoveTemp(pluginPtr).ToSharedRef();
+
+            if (DoesPluginUseUs(selfPluginNameCharArray, pluginRef))
+            {
+                // Use this plugin's content.
+                onPluginAddContentCallback.ExecuteIfBound(MoveTemp(pluginRef));
             }
         }
-    );
+        );
 
     FPackageName::OnContentPathDismounted().AddLambda(
-        [InOnPluginRemoveContent, InSelfPluginName](const FString& InAssetPath, const FString& InContentPath)
+        [onPluginRemoveContentCallback = MoveTemp(inOnPluginRemoveContentCallback),
+        selfPluginNameCharArray = TArray<TCHAR, TInlineAllocator<pluginNameStringBufferLength>>(
+            TArrayView<const TCHAR>(inSelfPluginNameString))]
+        (const FString& inAssetPath, const FString& inContentPath)
         {
-            if (const IPlugin* Plugin = IPluginManager::Get().FindPluginFromPath(InAssetPath).Get())
+            TSharedPtr<IPlugin> pluginPtr = IPluginManager::Get().FindPluginFromPath(inAssetPath);
+            if (pluginPtr.IsValid() == false)
             {
-                if (PluginUsesUs(InSelfPluginName, *Plugin))
-                {
-                    // Stop using this plugin's content
-                    InOnPluginRemoveContent.ExecuteIfBound(*Plugin);
-                }
+                // No plugin found.
+                return;
+            }
+
+            TSharedRef<IPlugin> pluginRef = MoveTemp(pluginPtr).ToSharedRef();
+
+            if (DoesPluginUseUs(selfPluginNameCharArray, pluginRef))
+            {
+                // Use this plugin's content.
+                onPluginRemoveContentCallback.ExecuteIfBound(MoveTemp(pluginRef));
             }
         }
-    );
+        );
 }
 
-bool GCUtils::Plugin::PluginUsesUs(const FString& InSelfPluginName, const IPlugin& InPlugin)
+bool GCUtils::Plugin::DoesPluginUseUs(
+    const FStringView& inSelfPluginNameString,
+    const TSharedRef<const IPlugin>& inPlugin)
 {
-    if (InPlugin.GetName() == InSelfPluginName)
+    if (inPlugin->GetName() == inSelfPluginNameString)
     {
-        // We are the plugin
+        // We are the plugin.
         return true;
     }
 
-    if (InPlugin.GetDescriptor().Plugins.ContainsByPredicate(
-                [&InSelfPluginName](const FPluginReferenceDescriptor& InPluginReferenceDescriptor)
+    if (inPlugin->GetDescriptor().Plugins.ContainsByPredicate(
+            [&inSelfPluginNameString](const FPluginReferenceDescriptor& inPluginReferenceDescriptor)
+            {
+                if (inPluginReferenceDescriptor.bEnabled == false)
                 {
-                    // If this plugin dependency is us
-                    return (InPluginReferenceDescriptor.Name == InSelfPluginName) && (InPluginReferenceDescriptor.bEnabled);
+                    // This plugin is disabled. Ignore it.
+                    return false;
                 }
+
+                // Return whether this plugin is us.
+                return inPluginReferenceDescriptor.Name == inSelfPluginNameString;
+            }
             )
         )
     {
-        // The plugin depends on us
+        // The plugin depends on us.
         return true;
     }
 
