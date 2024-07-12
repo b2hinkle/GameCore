@@ -43,6 +43,12 @@ namespace GCUtils::String
             return inStringBuilderAppender.CallbackFunctor(inStringBuilder);
         }
 
+        friend TStringBuilderBase<TCharType>& operator<<(TStringBuilderBase<TCharType>& inStringBuilder,
+            TStringBuilderAppender&& inStringBuilderAppender)
+        {
+            return MoveTemp(inStringBuilderAppender.CallbackFunctor)(inStringBuilder);
+        }
+
     protected:
 
         TFunctor CallbackFunctor;
