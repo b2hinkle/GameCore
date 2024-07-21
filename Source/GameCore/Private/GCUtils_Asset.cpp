@@ -254,8 +254,9 @@ FAssetData GCUtils::Asset::GetAssetByObjectPathUnloaded(const FSoftObjectPath& p
         GC_LOG_NO_CONTEXT(
             LogGCUtils_Asset,
             Warning,
-            TEXT("The path given is expected to be unresolvable but that was not the case. Path: {%s}. Please try resolving the object before resorting to this function."),
-            path.ToString().GetCharArray().GetData());
+            TEXT("The path given is expected to be unresolvable but that was not the case. Path: '%s'. Please try resolving the object before resorting to this function."),
+            WriteToString<256>(path).ToString()
+            );
     }
 #endif // !NO_LOGGING || DO_ENSURE
 
@@ -275,7 +276,7 @@ FAssetData GCUtils::Asset::GetAssetByObjectPathUnloaded(const FSoftObjectPath& p
         return FAssetData();
     }
 
-    TStringBuilder<256> packageNameString(EInPlace::InPlace, packageName);
+    FStringBuilderBase&& packageNameString = WriteToString<256>(packageName);
 
     if (FPackageName::IsScriptPackage(packageNameString))
     {
@@ -310,8 +311,9 @@ UClass* GCUtils::Asset::ResolveClass(const FSoftObjectPath& classPath)
             GC_LOG_NO_CONTEXT(
                 LogGCUtils_Asset,
                 Error,
-                TEXT("The path given is not a class path. ") GC_STRING_LITERALIZE(classPath) TEXT(": {%s}. Expect side-effects."),
-                classPath.ToString().GetCharArray().GetData());
+                TEXT("The path given is not a class path. ") GC_STRING_LITERALIZE(classPath) TEXT(": '%s'. Expect side effects."),
+                WriteToString<256>(classPath).ToString()
+                );
         }
     }
 #endif // !NO_LOGGING || DO_ENSURE
@@ -330,8 +332,9 @@ UClass* GCUtils::Asset::ResolveClass(const FSoftObjectPath& classPath)
         GC_LOG_NO_CONTEXT(
             LogGCUtils_Asset,
             Error,
-            TEXT("Resolved object is supposed to be a class. NULL will be returned. ") GC_STRING_LITERALIZE(classPath) TEXT(": {%s}."),
-            classPath.ToString().GetCharArray().GetData());
+            TEXT("Resolved object is supposed to be a class. NULL will be returned. ") GC_STRING_LITERALIZE(classPath) TEXT(": '%s'."),
+            WriteToString<256>(classPath).ToString()
+            );
     }
 #endif // !NO_LOGGING || DO_ENSURE
 
@@ -349,7 +352,7 @@ bool GCUtils::Asset::IsNativeClassPath(const FSoftObjectPath& path)
 {
     TRACE_CPUPROFILER_EVENT_SCOPE(GCUtils::Asset::IsNativeClassPath);
 
-    // Goal: We make an effort to reliably determine this without using FSoftObjectPath::ResolveObject().
+    // Goal: We make an effort to reliably determine this without using `FSoftObjectPath::ResolveObject()`.
 
     if (path.IsValid() == false)
     {
@@ -378,7 +381,7 @@ bool GCUtils::Asset::IsNativeClassPath(const FSoftObjectPath& path)
         return false;
     }
 
-    TStringBuilder<256> packageNameString(EInPlace::InPlace, packageName);
+    FStringBuilderBase&& packageNameString = WriteToString<256>(packageName);
 
     if (FPackageName::IsScriptPackage(packageNameString) == false)
     {
@@ -414,7 +417,7 @@ bool GCUtils::Asset::IsBlueprintGeneratedClassPath(const FSoftObjectPath& path)
         return false;
     }
 
-    TStringBuilder<256> packageNameString(EInPlace::InPlace, packageName);
+    FStringBuilderBase&& packageNameString = WriteToString<256>(packageName);
 
     if (FPackageName::IsScriptPackage(packageNameString))
     {
@@ -435,7 +438,7 @@ bool GCUtils::Asset::IsBlueprintGeneratedClassName(const FName& name)
         return false;
     }
 
-    TStringBuilder<128> nameString(EInPlace::InPlace, name);
+    FStringBuilderBase&& nameString = WriteToString<128>(name);
     return FStringView(nameString).EndsWith(BlueprintGeneratedClassPostfixString);
 }
 
@@ -443,7 +446,7 @@ bool GCUtils::Asset::IsClassDefaultObjectName(const FName& name)
 {
     TRACE_CPUPROFILER_EVENT_SCOPE(GCUtils::Asset::IsClassDefaultObjectName);
 
-    TStringBuilder<128> nameString(EInPlace::InPlace, name);
+    FStringBuilderBase&& nameString = WriteToString<128>(name);
     return FStringView(nameString).StartsWith(ClassDefaultObjectPrefixString);
 }
 
@@ -498,7 +501,7 @@ FSoftObjectPath GCUtils::Asset::GetNextClassPathTowardsTargetParentUnloaded(
     }
 
     const FName& nextClassPathName = assetData.GetTagValueRef<FName>(assetTagNameForNextClass);
-    TStringBuilder<256> nextClassPathString(EInPlace::InPlace, nextClassPathName);
+    FStringBuilderBase&& nextClassPathString = WriteToString<256>(nextClassPathName);
 
     return FSoftObjectPath(MoveTemp(nextClassPathString));
 }
