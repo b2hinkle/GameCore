@@ -44,7 +44,7 @@ GAMECORE_API const TCHAR* LexToString(ENetRole inNetRole);
 
 namespace GCUtils::String
 {
-    template <class TCharType = TCHAR>
+    template <class TCharType>
     using TStringBuilderCallback = TFunctionRef<void(TStringBuilderBase<TCharType>&)>;
 
     /**
@@ -131,7 +131,7 @@ namespace GCUtils::String
 }
 
 template <class TCharType, int32 BufferSize, class... TArgs>
-TStringBuilderWithBuffer<TCharType, BufferSize> GCUtils::String::WriteToStringGeneric<BufferSize, TCharType>(TArgs&&... inArgs)
+TStringBuilderWithBuffer<TCharType, BufferSize> GCUtils::String::WriteToStringGeneric(TArgs&&... inArgs)
 {
     return TStringBuilderWithBuffer<TCharType, BufferSize>(EInPlace::InPlace, Forward<TArgs...>(inArgs...));
 }

@@ -53,15 +53,15 @@ namespace GCUtils::Log
 template <int32 bufferLength>
 TStringBuilder<bufferLength> GCUtils::Log::GetObjectLogInfoString(const UObject* object)
 {
-    return TStringBuilder<bufferLength>(EInPlace::InPlace,
-        TEXT("[Context Object: "), GCUtils::String::GetUObjectNameSafe(object).ToString(), TEXT(']'),
+    return WriteToString<bufferLength>(
+        TEXT("[Context Object: "), GCUtils::String::GetUObjectNameSafe(object), TEXT(']'),
         TEXT(' '),
-        TEXT("[Context Object NetMode: "), GCUtils::String::GetWorldNetModeString(object).GetData(), TEXT(']'),
+        TEXT("[Context Object NetMode: "), GCUtils::String::GetWorldNetModeString(object), TEXT(']'),
         TEXT(' '),
-        TEXT("[Context Object NetRole: "), GCUtils::String::GetObjectLocalRoleString(object).GetData(), TEXT(']'),
+        TEXT("[Context Object NetRole: "), GCUtils::String::GetObjectLocalRoleString(object), TEXT(']'),
         TEXT(' '),
-        TEXT("[Context Object Controller: "), GCUtils::String::GetUObjectNameSafe(GCUtils::GetController(object)).ToString(), TEXT(']'),
+        TEXT("[Context Object Controller: "), GCUtils::String::GetUObjectNameSafe(GCUtils::GetController(object)), TEXT(']'),
         TEXT(' '),
-        TEXT("[Context Object Controller Is Local: "), GCUtils::String::GetIsControllerLocalString(object).GetData(), TEXT(']')
+        TEXT("[Context Object Controller Is Local: "), GCUtils::String::GetIsControllerLocalString(object), TEXT(']')
     );
 }

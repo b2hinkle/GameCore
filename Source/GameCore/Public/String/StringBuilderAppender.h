@@ -79,11 +79,16 @@ namespace GCUtils::String
      * @return A prvalue of the constructed `TStringBuilderAppender<>`.
      */
     template <class TCharType, class TFunctorRef>
-    TStringBuilderAppender<TCharType, typename TRemoveReference<TFunctorRef>::Type> ConstructStringBuilderAppender(TFunctorRef&& inCallbackFunctor)
-    {
-        // Note: `TFunctorRef` has a reference baked into it since `TFunctorRef&&` is a forwarding reference. We
-        // make sure to remove that when passing it in as the `TFunctor` argument.
-        return TStringBuilderAppender<TCharType, typename TRemoveReference<TFunctorRef>::Type>(
-            Forward<TFunctorRef>(inCallbackFunctor));
-    }
+    TStringBuilderAppender<TCharType, typename TRemoveReference<TFunctorRef>::Type>
+        ConstructStringBuilderAppender(TFunctorRef&& inCallbackFunctor);
+}
+
+template <class TCharType, class TFunctorRef>
+GCUtils::String::TStringBuilderAppender<TCharType, typename TRemoveReference<TFunctorRef>::Type>
+    GCUtils::String::ConstructStringBuilderAppender(TFunctorRef&& inCallbackFunctor)
+{
+    // Note: `TFunctorRef` has a reference baked into it since `TFunctorRef&&` is a forwarding reference. We
+    // make sure to remove that when passing it in as the `TFunctor` argument.
+    return TStringBuilderAppender<TCharType, typename TRemoveReference<TFunctorRef>::Type>(
+        Forward<TFunctorRef>(inCallbackFunctor));
 }
