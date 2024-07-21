@@ -142,7 +142,7 @@ TStringBuilderWithBuffer<TCharType, BufferSize> GCUtils::String::MakeStringBuild
     // Note: String builders are not copyable so we must return a prvalue to elide the copy. This is
     // a good idea anyway because we want to be wary of possibly large buffer sizes.
     return WriteToStringGeneric<TCharType, BufferSize>(
-        TStringBuilderAppender(
+        ConstructStringBuilderAppender<TCharType>(
             [&inInitializationCallback](TStringBuilderBase<TCharType>& inStringBuilder) -> TStringBuilderBase<TCharType>&
             {
                 inInitializationCallback(inStringBuilder);
