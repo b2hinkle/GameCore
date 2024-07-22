@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GCUtils.h"
+#include <type_traits>
 
 namespace GCUtils::String
 {
@@ -27,6 +28,8 @@ namespace GCUtils::String
     public:
 
         static_assert(TIsReferenceType<TFunctor>::Value == false, "The type template argument of the functor must not be a reference.");
+        static_assert(std::is_const_v<TFunctor> == false, "The type template argument of the functor must not be const.");
+        static_assert(std::is_volatile_v<TFunctor> == false, "The type template argument of the functor must not be volatile.");
 
     public:
 
@@ -74,21 +77,25 @@ namespace GCUtils::String
      *        template deduction rules when constructing the template class.
      * @tparam TCharType Type of character in the string builders to support.
      * @tparam TFunctorRef Reference to the type of the callback functor to store.
-     * @param inCallbackFunctor Forwarding reference to the functor to be called on in the string
-     *                          builder append operator overload.
+     * @param inCallbackFunctorRef A forwarding reference to the functor to be called on in the
+     *                             string builder append operator overload.
      * @return A prvalue of the constructed `TStringBuilderAppender<>`.
      */
-    template <class TCharType, class TFunctorRef>
-    TStringBuilderAppender<TCharType, typename TRemoveReference<TFunctorRef>::Type>
-        ConstructStringBuilderAppender(TFunctorRef&& inCallbackFunctor);
+    template
+        <
+        class TCharType,
+        class TFunctorRef,
+        // Notice that `TFunctorRef&&` is a forwarding reference. This entails `TFunctorRef` has a reference
+        // baked into it and possibly cv-qualifiers as well. We make sure to remove those when passing it in as
+        // the `TFunctor` template argument of the `TStringBuilderAppender<>` class.
+        class TFunctor = std::remove_cv_t<std::remove_reference_t<TFunctorRef>>
+        >
+    TStringBuilderAppender<TCharType, TFunctor> ConstructStringBuilderAppender(TFunctorRef&& inCallbackFunctorRef);
 }
 
-template <class TCharType, class TFunctorRef>
-GCUtils::String::TStringBuilderAppender<TCharType, typename TRemoveReference<TFunctorRef>::Type>
-    GCUtils::String::ConstructStringBuilderAppender(TFunctorRef&& inCallbackFunctor)
+template <class TCharType, class TFunctorRef, class TFunctor>
+GCUtils::String::TStringBuilderAppender<TCharType, TFunctor> GCUtils::String::ConstructStringBuilderAppender(
+    TFunctorRef&& inCallbackFunctorRef)
 {
-    // Note: `TFunctorRef` has a reference baked into it since `TFunctorRef&&` is a forwarding reference. We
-    // make sure to remove that when passing it in as the `TFunctor` argument.
-    return TStringBuilderAppender<TCharType, typename TRemoveReference<TFunctorRef>::Type>(
-        Forward<TFunctorRef>(inCallbackFunctor));
+    return TStringBuilderAppender<TCharType, TFunctor>(Forward<TFunctorRef>(inCallbackFunctorRef));
 }
