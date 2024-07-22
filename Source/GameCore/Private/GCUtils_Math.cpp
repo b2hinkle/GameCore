@@ -2,162 +2,181 @@
 
 #include "GCUtils_Math.h"
 
-float GCUtils::Math::GetCollisionShapeBoundingSphereRadius(const FCollisionShape& CollisionShape)
+DEFINE_LOG_CATEGORY(LogGCUtils_Math);
+
+namespace GCUtils::Math
 {
-    switch (CollisionShape.ShapeType)
+    template <bool shouldBeInclusive>
+    static bool IsDirectionBetween(
+        const FVector& inBoundDirA,
+        const FVector& inBoundDirB,
+        const FVector& inTestDir,
+        const FVector::FReal inErrorTolerance);
+}
+
+float GCUtils::Math::GetCollisionShapeBoundingSphereRadius(const FCollisionShape& inCollisionShape)
+{
+    switch (inCollisionShape.ShapeType)
     {
-        case ECollisionShape::Box:
-        {
-            const FVector BoxExtent = FVector(CollisionShape.Box.HalfExtentX * 2, CollisionShape.Box.HalfExtentY * 2, CollisionShape.Box.HalfExtentZ * 2);
-            return GetBoxBoundingSphereRadius(BoxExtent);
-        }
-        case  ECollisionShape::Sphere:
-        {
-            return CollisionShape.Sphere.Radius;
-        }
-        case ECollisionShape::Capsule:
-        {
-            return CollisionShape.Capsule.HalfHeight;
-        }
-        case ECollisionShape::Line:
-        {
-            // A LineShape is just a point
-            return 0.f;
-        }
+    case ECollisionShape::Box:
+        return GetBoxExtentBoundingSphereRadius(
+            FVector3f(
+                inCollisionShape.Box.HalfExtentX * 2.f,
+                inCollisionShape.Box.HalfExtentY * 2.f,
+                inCollisionShape.Box.HalfExtentZ * 2.f
+                )
+            );
+    case ECollisionShape::Sphere:
+        return inCollisionShape.Sphere.Radius;
+    case ECollisionShape::Capsule:
+        return inCollisionShape.Capsule.HalfHeight;
+    case ECollisionShape::Line:
+        return 0.f; // A LineShape is just a point.
     }
 
     return 0.f;
 }
 
-float GCUtils::Math::GetBoxBoundingSphereRadius(const FVector& BoxExtent)
+constexpr float GCUtils::Math::GetBoxExtentBoundingSphereRadius(const FVector3f& inBoxExtent)
 {
-    const float LengthSquared = (BoxExtent.X * BoxExtent.X);
-    const float WidthSquared  = (BoxExtent.Y * BoxExtent.Y);
-    const float HeightSquared = (BoxExtent.Z * BoxExtent.Z);
-
-    float Diameter = FMath::Sqrt(LengthSquared + WidthSquared + HeightSquared); // 3d pythagorean theorem
-
-    // Or you can get the distance across opposite corners
-    // float Diameter = FVector::Distance(FVector(0.f, 0.f, 0.f), BoxExtent)
-
-    return Diameter / 2;
+    const float diameter = GetVectorSize(inBoxExtent);
+    return diameter / 2.f;
 }
 
-bool GCUtils::Math::DirectionIsBetween(const FVector& InA, const FVector& InB, const bool bInInclusive, const FVector& InDirection, const float InErrorTolerance)
+bool GCUtils::Math::IsDirectionBetweenInclusive(
+    const FVector& inBoundDirA,
+    const FVector& inBoundDirB,
+    const FVector& inTestDir,
+    const FVector::FReal inErrorTolerance)
 {
-    // Get the normals
-    //
-    // InA ^
-    //     |        InDirection
-    //     |          ^
-    //     | NormalA /
-    //     |        /
-    //     |       /
-    //     |      /
-    //     |     /
-    //     |    /
-    //     |   /  NormalB
-    //     |  /
-    //     | /
-    //     |/_____________>
-    //                    InB
-    //
-    const FVector NormalA = FVector::CrossProduct(InA, InDirection).GetSafeNormal();
-    const FVector NormalB = FVector::CrossProduct(InDirection, InB).GetSafeNormal();
+    constexpr bool shouldBeInclusive = true;
+    return IsDirectionBetween<shouldBeInclusive>(inBoundDirA, inBoundDirB, inTestDir, inErrorTolerance);
+}
 
-    // If we are inclusive, check if the direction is on one of the bounding directions
-    if (bInInclusive)
+bool GCUtils::Math::IsDirectionBetweenExclusive(
+    const FVector& inBoundDirA,
+    const FVector& inBoundDirB,
+    const FVector& inTestDir,
+    const FVector::FReal inErrorTolerance)
+{
+    constexpr bool shouldBeInclusive = false;
+    return IsDirectionBetween<shouldBeInclusive>(inBoundDirA, inBoundDirB, inTestDir, inErrorTolerance);
+}
+
+bool GCUtils::Math::DoesPointLieOnSegment(
+    const FVector& inEndpointA,
+    const FVector& inEndpointB,
+    const FVector& inTestPoint,
+    const FVector::FReal inErrorTolerance)
+{
+    if (!ArePointsCollinear({ inEndpointA, inEndpointB, inTestPoint }, inErrorTolerance))
     {
-        // Cross product of zero means that the direction is on the bound
-        if (NormalA.IsNearlyZero(InErrorTolerance) || NormalB.IsNearlyZero(InErrorTolerance))
-        {
-            return true;
-        }
+        // The test point is not on the line that the two endpoints are on.
+        return false;
     }
 
-    // If the two normals are not opposites, then we are within the bounding directions
-    const bool bSameNormals = FMath::IsNearlyEqual(FVector::DotProduct(NormalA, NormalB), 1.f, InErrorTolerance);
-    return bSameNormals;
+    const FVector endpointAToTestPoint = inTestPoint - inEndpointA;
+    const FVector endpointBToTestPoint = inTestPoint - inEndpointB;
+
+    // Return true if the two deltas point in opposite directions.
+    return FVector::DotProduct(endpointAToTestPoint, endpointBToTestPoint) <= 0;
 }
 
-bool GCUtils::Math::PointLiesOnSegment(const FVector& InSegmentStart, const FVector& InSegmentEnd, const FVector& InPoint, const float InErrorTolerance)
+bool GCUtils::Math::ArePointsCollinear(
+    const TArrayView<const FVector>& inPoints,
+    const FVector::FReal inErrorTolerance)
 {
-    if (PointsAreCollinear({ InSegmentStart, InSegmentEnd, InPoint }, InErrorTolerance))
+    if (inPoints.Num() <= 2)
     {
-        // The point is on the line that start and end is on
-
-        const FVector StartToPoint = (InPoint - InSegmentStart);
-        const FVector EndToPoint = (InPoint - InSegmentEnd);
-        return (FVector::DotProduct(StartToPoint, EndToPoint) <= 0); // true if they are opposite directions
-    }
-
-    // Point is not on the segment
-    return false;
-}
-
-bool GCUtils::Math::PointsAreCollinear(const TArray<FVector>& InPoints, const float InErrorTolerance)
-{
-    if (InPoints.Num() <= 2)
-    {
-        // Two points are always collinear
+        // Two points or less are considered collinear.
         return true;
     }
 
-    const FVector LineDirection = (InPoints[1] - InPoints[0]).GetSafeNormal();
+    // The first two points make our line.
+    const FVector lineDirection = (inPoints[1] - inPoints[0]).GetSafeNormal();
 
-    for (int32 i = 2; i < InPoints.Num(); ++i) // skip the first two points
+    // For each of the rest of the points, see if any are not on the line.
+    for (int32 i = 2; i < inPoints.Num(); ++i)
     {
-        const FVector DirectionToPoint = (InPoints[i] - InPoints[0]).GetSafeNormal();
+        const FVector directionFromStartPointToCurrentPoint = (inPoints[i] - inPoints[0]).GetSafeNormal();
 
-        const bool bSameDirection = FMath::IsNearlyEqual(FVector::DotProduct(DirectionToPoint, LineDirection), 1, InErrorTolerance);
-        const bool bOppositeDirection = FMath::IsNearlyEqual(FVector::DotProduct(DirectionToPoint, LineDirection), -1, InErrorTolerance);
-        const bool bParallel = (bSameDirection || bOppositeDirection);
-        if (!bParallel)
+        const FVector::FReal dotOfCurrentDirectionAndLineDirection = FVector::DotProduct(directionFromStartPointToCurrentPoint, lineDirection);
+
+        const bool isSameDirection = FMath::IsNearlyEqual(dotOfCurrentDirectionAndLineDirection, 1.0, inErrorTolerance);
+        const bool isOppositeDirection = FMath::IsNearlyEqual(dotOfCurrentDirectionAndLineDirection, -1.0, inErrorTolerance);
+
+        const bool isParallel = isSameDirection || isOppositeDirection;
+        if (!isParallel)
         {
-            // Not collinear
+            // Not collinear.
             return false;
         }
     }
 
-    // All points lie on the same line
+    // Collinear. All points lie on the same line.
     return true;
 }
 
-bool GCUtils::Math::PointLiesOnTriangle(const FVector& InA, const FVector& InB, const FVector& InC, const FVector& InPoint, const float InErrorTolerance)
+bool GCUtils::Math::DoesPointLieOnTriangle(
+    const FVector& inEdgeA,
+    const FVector& inEdgeB,
+    const FVector& inEdgeC,
+    const FVector& inTestPoint,
+    const FVector::FReal inErrorTolerance)
 {
-    // Whether the point is within A's angle
-    const FVector AToPoint = (InPoint - InA);
-    const FVector AToB = (InB - InA);
-    const FVector AToC = (InC - InA);
-    const bool bPointIsBetweenBAndC = DirectionIsBetween(AToB, AToC, true, AToPoint, InErrorTolerance);
-
-    // Whether the point is within B's angle
-    const FVector BToPoint = (InPoint - InB);
-    const FVector BToA = (InA - InB);
-    const FVector BToC = (InC - InB);
-    const bool bPointIsBetweenAAndC = DirectionIsBetween(BToA, BToC, true, BToPoint, InErrorTolerance);
-
-    if (bPointIsBetweenBAndC && bPointIsBetweenAAndC)
     {
-        // Point is on the triangle
-        //
-        //          C
-        //         / \
-        //        /   \
-        //       / o   \
-        //      /       \
-        //     /         \
-        //    A _________ B
-        //
-        return true;
+        const FVector edgeAToTestPoint = inTestPoint - inEdgeA;
+        const FVector edgeAToEdgeB = inEdgeB - inEdgeA;
+        const FVector edgeAToEdgeC = inEdgeC - inEdgeA;
+        const bool isTestPointWithinAngleA = IsDirectionBetweenInclusive(edgeAToEdgeB, edgeAToEdgeC, edgeAToTestPoint, inErrorTolerance);
+
+        if (!isTestPointWithinAngleA)
+        {
+            //
+            // Point is not on the triangle.
+            //
+            //          C
+            //         / \
+            //      o /   \
+            //       /     \
+            //      /       \
+            //     /         \
+            //    A _________ B
+            //
+            return false;
+        }
     }
 
-    // Point is not on the triangle
+    {
+        const FVector edgeBToTestPoint = inTestPoint - inEdgeB;
+        const FVector edgeBToEdgeA = inEdgeA - inEdgeB;
+        const FVector edgeBToEdgeC = inEdgeC - inEdgeB;
+        const bool isTestPointWithinAngleB = IsDirectionBetweenInclusive(edgeBToEdgeA, edgeBToEdgeC, edgeBToTestPoint, inErrorTolerance);
+
+        if (!isTestPointWithinAngleB)
+        {
+            //
+            // Point is not on the triangle.
+            //
+            //          C
+            //         / \
+            //        /   \ o
+            //       /     \
+            //      /       \
+            //     /         \
+            //    A _________ B
+            //
+            return true;
+        }
+    }
+
+    //
+    // Point is on the triangle.
     //
     //          C
     //         / \
-    //      o /   \
-    //       /     \
+    //        /   \
+    //       / o   \
     //      /       \
     //     /         \
     //    A _________ B
@@ -165,29 +184,106 @@ bool GCUtils::Math::PointLiesOnTriangle(const FVector& InA, const FVector& InB, 
     return false;
 }
 
-FVector GCUtils::Math::GetLocationAimDirection(const UWorld* World, const FCollisionQueryParams& QueryParams, const FVector& AimPoint, const FVector& AimDir, const float& MaxRange, const FVector& Location)
+FVector GCUtils::Math::GetLocationAimDirection(
+    const UWorld& inWorld,
+    FCollisionQueryParams inCollisionQueryParams,
+    const FVector& inAimPoint,
+    const FVector& inAimDir,
+    const FVector::FReal inMaxRange,
+    const FVector& inNewAimPoint)
 {
-    if (Location.Equals(AimPoint))
+    TRACE_CPUPROFILER_EVENT_SCOPE(GCUtils::Math::GetLocationAimDirection);
+
+    if (inNewAimPoint.Equals(inAimPoint))
     {
-        // The Location is the same as the AimPoint so we can skip the camera trace and just return the AimDir as the muzzle's direction
-        return AimDir;
+        // The new aim point is the same as the aim point. We can skip the camera trace and just return the aim
+        // direction as the muzzle's direction.
+        return inAimDir;
     }
 
-    // Line trace from the Location to the point that AimDir is looking at
-    FCollisionQueryParams CollisionQueryParams = QueryParams;
-    CollisionQueryParams.bIgnoreTouches = true;
+    // Perform line trace from `inNewAimPoint` to the point that `inAimDir` is looking at.
 
-    FVector TraceEnd = AimPoint + (AimDir * MaxRange);
+    inCollisionQueryParams.bIgnoreTouches = true;
 
-    FHitResult HitResult;
-    const bool bSuccess = World->LineTraceSingleByChannel(HitResult, AimPoint, TraceEnd, ECollisionChannel::ECC_Visibility, CollisionQueryParams);
+    const FVector traceStart = inAimPoint;
+    const FVector traceEnd = inAimPoint + (inAimDir * inMaxRange);
 
-    if (!bSuccess)
+    constexpr ECollisionChannel traceChannel = ECollisionChannel::ECC_Visibility;
+
+    FHitResult hitResult;
+    const bool didHitBlockingHit = inWorld.LineTraceSingleByChannel(
+        hitResult,
+        traceStart,
+        traceEnd,
+        traceChannel,
+        inCollisionQueryParams);
+
+    if (!didHitBlockingHit)
     {
-        // AimDir is not looking at anything for our Location to point to
-        return (TraceEnd - Location).GetSafeNormal();
+        // The aim direction is not looking at anything for our new aim point to point towards.
+        return (traceEnd - inNewAimPoint).GetSafeNormal();
     }
 
-    // Return the direction from the Location to the point that the Player is looking at
-    return (HitResult.Location - Location).GetSafeNormal();
+    // Return the direction from the new aim point to the point that the player is looking at.
+    return (hitResult.Location - inNewAimPoint).GetSafeNormal();
+}
+
+template <bool shouldBeInclusive>
+bool GCUtils::Math::IsDirectionBetween(
+    const FVector& inBoundDirA,
+    const FVector& inBoundDirB,
+    const FVector& inTestDir,
+    const FVector::FReal inErrorTolerance)
+{
+    //
+    // Get the normals.
+    //
+    // inBoundDirA ^
+    //             |        inTestDir
+    //             |          ^
+    //             | normalA /
+    //             |        /
+    //             |       /
+    //             |      /
+    //             |     /
+    //             |    /
+    //             |   /  normalB
+    //             |  /
+    //             | /
+    //             |/_____________>
+    //                        inBoundDirB
+    //
+
+    FVector normalA = FVector::CrossProduct(inBoundDirA, inTestDir);
+    if (normalA.IsNormalized() == false)
+    {
+        normalA.Normalize();
+    }
+
+    FVector normalB = FVector::CrossProduct(inTestDir, inBoundDirB);
+    if (normalB.IsNormalized() == false)
+    {
+        normalB.Normalize();
+    }
+
+    if constexpr (shouldBeInclusive)
+    {
+        // Return true if the test direction lies on one of the bounding directions.
+
+        if (normalA.IsNearlyZero(inErrorTolerance))
+        {
+            // Cross product with bounding direction A is zero. Means we are on direction A.
+            return true;
+        }
+
+        if (normalB.IsNearlyZero(inErrorTolerance))
+        {
+            // Cross product with bounding direction B is zero. Means we are on direction B.
+            return true;
+        }
+    }
+
+    // Return whether the normals point in the same direction. If they are not opposites of each
+    // other, that means the test direction lies between them.
+    return normalA.Equals(normalB, inErrorTolerance);
 }
