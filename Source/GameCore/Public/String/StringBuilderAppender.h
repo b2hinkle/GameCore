@@ -33,6 +33,11 @@ namespace GCUtils::String
 
     public:
 
+        typedef TCharType FCharType;
+        typedef TFunctor FFunctor;
+
+    public:
+
         /**
          * @brief Construct from a callback functor.
          * @param inCallbackFunctor Functor to be called on in the string builder append
