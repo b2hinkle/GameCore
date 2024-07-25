@@ -16,6 +16,22 @@ DECLARE_LOG_CATEGORY_EXTERN(LogGCUtils_Asset, Log, All);
 namespace GCUtils::Asset
 {
     /**
+     * @brief Get an rvalue reference to the `FSoftObjectPath` stored by the `TSoftObjectPtr<>`.
+     * @param inSoftObjectPtr Soft object ptr to move from.
+     * @return Rvalue reference to the soft object ptr's stored `FSoftObjectPath`.
+     */
+    template <class T>
+    FSoftObjectPath&& ToSoftObjectPathMoved(TSoftObjectPtr<T>&& inSoftObjectPtr);
+
+    /**
+     * @brief Get an rvalue reference to the `FSoftObjectPath` stored by the `TSoftClassPtr<>`.
+     * @param inSoftClassPtr Soft class ptr to move from.
+     * @return Rvalue reference to the soft class ptr's stored `FSoftObjectPath`.
+     */
+    template <class T>
+    FSoftObjectPath&& ToSoftObjectPathMoved(TSoftClassPtr<T>&& inSoftClassPtr);
+
+    /**
      * @brief Convert the soft object ptr to another type and return null if not of that type.
      * @note This is still expensive. The function may resolve object paths, get on-disk asset data,
      *       and get weak object ptrs. It may be preferable for you, the caller, to perform these
@@ -172,6 +188,22 @@ namespace GCUtils::Asset
      * @brief Convenient string view of the engine's `DEFAULT_OBJECT_PREFIX` string literal.
      */
     constexpr FStringView ClassDefaultObjectPrefixString = PREPROCESSOR_JOIN(DEFAULT_OBJECT_PREFIX, _PrivateSV);
+}
+
+template <class T>
+FSoftObjectPath&& GCUtils::Asset::ToSoftObjectPathMoved(TSoftObjectPtr<T>&& inSoftObjectPtr)
+{
+    // Get a mutable reference to the `FSoftObjectPath` stored and move it.
+    FSoftObjectPath& pathMutable = const_cast<FSoftObjectPath&>(inSoftObjectPtr.ToSoftObjectPath());
+    return MoveTemp(pathMutable);
+}
+
+template <class T>
+FSoftObjectPath&& GCUtils::Asset::ToSoftObjectPathMoved(TSoftClassPtr<T>&& inSoftClassPtr)
+{
+    // Get a mutable reference to the `FSoftObjectPath` stored and move it.
+    FSoftObjectPath& pathMutable = const_cast<FSoftObjectPath&>(inSoftClassPtr.ToSoftObjectPath());
+    return MoveTemp(pathMutable);
 }
 
 template <class TTo, class TFrom>
