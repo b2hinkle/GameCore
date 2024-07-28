@@ -16,15 +16,14 @@ namespace GCUtils
     GAMECORE_API AController* GetController(UObject* inObject);
 
     /**
-     * @brief Materialize a prvalue to an xvalue and get an lvalue reference to it.
-     * @tparam Type of temporary to materialize. Automatically deduced but may be manually
-     *         specified by the caller in order to implicitly convert the prvalue to another type.
-     * @param inValueMaterialized The caller's prvalue argument, materialized to an xvalue temporary when
-     *                            first bound, and lifetime-extended to an lvalue during this function.
+     * @brief Materialize a prvalue to a temporary and get an lvalue reference to it.
+     * @tparam T Type of temporary to materialize. Automatically deduced but may be specified
+     *         manually in order to implicitly convert the prvalue to another type.
+     * @param inTemporary The caller's prvalue argument materialized to temporary.
      * @return Lvalue reference to the temporary.
      */
     template <class T, typename = std::enable_if_t<!std::is_lvalue_reference_v<T>>>
-    T& MaterializeGetRef(T&& inValueMaterialized);
+    T& Materialize(T&& inTemporary);
 
     /**
      * If inObject is already guaranteed to be a TTo.
@@ -74,9 +73,11 @@ namespace GCUtils
 }
 
 template <class T, class>
-T& GCUtils::MaterializeGetRef(T&& inValue)
+T& GCUtils::Materialize(T&& inTemporary)
 {
-    return static_cast<T&>(inValue);
+    // Note that the temporary gets promoted to an lvalue for the scope of this function. It
+    // will revert to its original lifetime of temporary when this function is exited.
+    return static_cast<T&>(inTemporary);
 }
 
 template
