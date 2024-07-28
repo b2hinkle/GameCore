@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Templates/GCIsUObjectOrIInterface.h"
 #include "Templates/GCRemovePtrOrRef.h"
+#include "type_traits"
 
 namespace GCUtils
 {
@@ -13,6 +14,15 @@ namespace GCUtils
      */
     GAMECORE_API const AController* GetController(const UObject* inObject);
     GAMECORE_API AController* GetController(UObject* inObject);
+
+    /**
+     * @brief Materialize a prvalue to an xvalue and get an lvalue reference to it.
+     * @param inValueMaterialized The caller's prvalue argument, materialized to an xvalue temporary when first
+                                  bound, and lifetime-extended to an lvalue during this function.
+     * @return Lvalue reference to the temporary.
+     */
+    template <class T, typename = typename TEnableIf<std::is_rvalue_reference_v<T>>::Type>
+    T& MaterializeGetRef(T&& inValueMaterialized);
 
     /**
      * If inObject is already guaranteed to be a TTo.
@@ -59,6 +69,12 @@ namespace GCUtils
             >::Type
         >
     FORCEINLINE_DEBUGGABLE TTo ReinterpretCastChecked(TFrom&& inObject);
+}
+
+template <class T, class>
+T& GCUtils::MaterializeGetRef(T&& inValue)
+{
+    return static_cast<T&>(inValue);
 }
 
 template
