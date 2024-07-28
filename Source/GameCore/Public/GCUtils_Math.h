@@ -148,7 +148,7 @@ constexpr TValue GCUtils::Math::LerpMultiple(const TArrayView<const TValue>& inV
 {
     if (inValues.Num() <= 0)
     {
-        GC_LOG_NO_CONTEXT(
+        GC_LOG_STR_NO_CONTEXT(
             LogGCUtils_Math,
             Warning,
             TEXT("Not given any values to lerp between! Returning a default value.")

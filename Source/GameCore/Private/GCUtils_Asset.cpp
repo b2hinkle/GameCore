@@ -251,11 +251,13 @@ FAssetData GCUtils::Asset::GetAssetByObjectPathUnloaded(const FSoftObjectPath& p
 #if !NO_LOGGING || DO_ENSURE
     if (!ensureAlways(path.ResolveObject() == nullptr))
     {
-        GC_LOG_NO_CONTEXT(
+        GC_LOG_STR_NO_CONTEXT(
             LogGCUtils_Asset,
             Warning,
-            TEXT("The path given is expected to be unresolvable but that was not the case. Path: '%s'. Please try resolving the object before resorting to this function."),
-            WriteToString<256>(path).ToString()
+            GCUtils::Materialize(TStringBuilder<512>())
+                << TEXT("The path given is expected to be unresolvable but that was not the case. Path: '")
+                << path
+                << TEXT("'. Please try resolving the object before resorting to this function.")
             );
     }
 #endif // !NO_LOGGING || DO_ENSURE
@@ -308,11 +310,13 @@ UClass* GCUtils::Asset::ResolveClass(const FSoftObjectPath& classPath)
     {
         if (!ensureAlways(IsClassPath(classPath)))
         {
-            GC_LOG_NO_CONTEXT(
+            GC_LOG_STR_NO_CONTEXT(
                 LogGCUtils_Asset,
                 Error,
-                TEXT("The path given is not a class path. ") GC_STRING_LITERALIZE(classPath) TEXT(": '%s'. Expect side effects."),
-                WriteToString<256>(classPath).ToString()
+                GCUtils::Materialize(TStringBuilder<512>())
+                    << TEXT("The path given is not a class path. `classPath`: '")
+                    << classPath
+                    << TEXT("'. Expect side effects.")
                 );
         }
     }
@@ -329,11 +333,13 @@ UClass* GCUtils::Asset::ResolveClass(const FSoftObjectPath& classPath)
 #if !NO_LOGGING || DO_ENSURE
     if (!ensureAlways(resolvedClass))
     {
-        GC_LOG_NO_CONTEXT(
+        GC_LOG_STR_NO_CONTEXT(
             LogGCUtils_Asset,
             Error,
-            TEXT("Resolved object is supposed to be a class. NULL will be returned. ") GC_STRING_LITERALIZE(classPath) TEXT(": '%s'."),
-            WriteToString<256>(classPath).ToString()
+            GCUtils::Materialize(TStringBuilder<512>())
+                << TEXT("Resolved object is supposed to be a class. NULL will be returned. `classPath`: '")
+                << classPath
+                << TEXT("'.")
             );
     }
 #endif // !NO_LOGGING || DO_ENSURE
