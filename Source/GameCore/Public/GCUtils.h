@@ -17,11 +17,13 @@ namespace GCUtils
 
     /**
      * @brief Materialize a prvalue to an xvalue and get an lvalue reference to it.
-     * @param inValueMaterialized The caller's prvalue argument, materialized to an xvalue temporary when first
-                                  bound, and lifetime-extended to an lvalue during this function.
+     * @tparam Type of temporary to materialize. Automatically deduced but may be manually
+     *         specified by the caller in order to implicitly convert the prvalue to another type.
+     * @param inValueMaterialized The caller's prvalue argument, materialized to an xvalue temporary when
+     *                            first bound, and lifetime-extended to an lvalue during this function.
      * @return Lvalue reference to the temporary.
      */
-    template <class T, typename = typename TEnableIf<std::is_rvalue_reference_v<T>>::Type>
+    template <class T, typename = std::enable_if_t<!std::is_lvalue_reference_v<T>>>
     T& MaterializeGetRef(T&& inValueMaterialized);
 
     /**
