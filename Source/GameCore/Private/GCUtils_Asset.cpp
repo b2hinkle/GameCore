@@ -278,7 +278,7 @@ FAssetData GCUtils::Asset::GetAssetByObjectPathUnloaded(const FSoftObjectPath& p
         return FAssetData();
     }
 
-    FStringBuilderBase&& packageNameString = WriteToString<256>(packageName);
+    const FStringBuilderBase& packageNameString = WriteToString<256>(packageName);
 
     if (FPackageName::IsScriptPackage(packageNameString))
     {
@@ -387,7 +387,7 @@ bool GCUtils::Asset::IsNativeClassPath(const FSoftObjectPath& path)
         return false;
     }
 
-    FStringBuilderBase&& packageNameString = WriteToString<256>(packageName);
+    const FStringBuilderBase& packageNameString = WriteToString<256>(packageName);
 
     if (FPackageName::IsScriptPackage(packageNameString) == false)
     {
@@ -423,7 +423,7 @@ bool GCUtils::Asset::IsBlueprintGeneratedClassPath(const FSoftObjectPath& path)
         return false;
     }
 
-    FStringBuilderBase&& packageNameString = WriteToString<256>(packageName);
+    const FStringBuilderBase& packageNameString = WriteToString<256>(packageName);
 
     if (FPackageName::IsScriptPackage(packageNameString))
     {
@@ -444,7 +444,7 @@ bool GCUtils::Asset::IsBlueprintGeneratedClassName(const FName& name)
         return false;
     }
 
-    FStringBuilderBase&& nameString = WriteToString<128>(name);
+    const FStringBuilderBase& nameString = WriteToString<128>(name);
     return FStringView(nameString).EndsWith(BlueprintGeneratedClassPostfixString);
 }
 
@@ -452,7 +452,7 @@ bool GCUtils::Asset::IsClassDefaultObjectName(const FName& name)
 {
     TRACE_CPUPROFILER_EVENT_SCOPE(GCUtils::Asset::IsClassDefaultObjectName);
 
-    FStringBuilderBase&& nameString = WriteToString<128>(name);
+    const FStringBuilderBase& nameString = WriteToString<128>(name);
     return FStringView(nameString).StartsWith(ClassDefaultObjectPrefixString);
 }
 
