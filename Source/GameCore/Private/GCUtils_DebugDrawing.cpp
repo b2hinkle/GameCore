@@ -1,10 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "BlueprintFunctionLibraries/Debugging/GCUtils_DrawDebug.h"
+#include "GCUtils_DebugDrawing.h"
 
 #include "DrawDebugHelpers.h"
 
-void GCUtils::DrawDebug::DrawDebugCollisionShape(const UWorld* InWorld, const FVector& InCenter, const FCollisionShape& InCollisionShape, const FQuat& InRotation, const FColor& InColor, const int32 InSegments, const bool bInPersistentLines, const float InLifeTime, const uint8 InDepthPriority, const float InThickness)
+void GCUtils::DebugDrawing::DrawDebugCollisionShape(const UWorld* InWorld, const FVector& InCenter, const FCollisionShape& InCollisionShape, const FQuat& InRotation, const FColor& InColor, const int32 InSegments, const bool bInPersistentLines, const float InLifeTime, const uint8 InDepthPriority, const float InThickness)
 {
 #if ENABLE_DRAW_DEBUG
     switch (InCollisionShape.ShapeType)
@@ -34,7 +34,7 @@ void GCUtils::DrawDebug::DrawDebugCollisionShape(const UWorld* InWorld, const FV
 #endif // ENABLE_DRAW_DEBUG
 }
 
-void GCUtils::DrawDebug::DrawDebugLineDotted(const UWorld* InWorld, const FVector& InStart, const FVector& InEnd, const FColor& InColor, const bool bInPersistentLines, const float InLifeTime, const uint8 InDepthPriority, const float InThickness, const float InSegmentsLength, const float InSegmentsSpacingLength)
+void GCUtils::DebugDrawing::DrawDebugLineDotted(const UWorld* InWorld, const FVector& InStart, const FVector& InEnd, const FColor& InColor, const bool bInPersistentLines, const float InLifeTime, const uint8 InDepthPriority, const float InThickness, const float InSegmentsLength, const float InSegmentsSpacingLength)
 {
 #if ENABLE_DRAW_DEBUG
     const FVector Direction = (InEnd - InStart).GetSafeNormal();

@@ -1,12 +1,12 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "BlueprintFunctionLibraries/CollisionQuery/GCUtils_CollisionQuery.h"
+#include "GCUtils_CollisionQuery.h"
 
 #include "GCUtils_Math.h"
 #include "GCUtils_Array.h"
-#include "BlueprintFunctionLibraries/Debugging/GCUtils_DrawDebug.h"
+#include "GCUtils_DebugDrawing.h"
 #include "DrawDebugHelpers.h"
-#include "BlueprintFunctionLibraries/GCUtils_HitResult.h"
+#include "GCUtils_HitResult.h"
 
 namespace GCUtils::CollisionQuery
 {
@@ -445,7 +445,7 @@ void GCUtils::CollisionQuery::DrawDebugForBackwardsStart(const UWorld* InWorld, 
     if (InCollisionShape.IsLine() == false)
     {
         // Draw scene cast shape
-        DrawDebug::DrawDebugCollisionShape(InWorld, InBackwardsStart, InCollisionShape, InRotation, DebugColor, 16, false, DebugLifetime, 0, 1.f);
+        DebugDrawing::DrawDebugCollisionShape(InWorld, InBackwardsStart, InCollisionShape, InRotation, DebugColor, 16, false, DebugLifetime, 0, 1.f);
     }
 
     // Draw backwards arrow

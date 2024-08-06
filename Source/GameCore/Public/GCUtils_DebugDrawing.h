@@ -8,7 +8,7 @@
 /**
  *
  */
-namespace GCUtils::DrawDebug
+namespace GCUtils::DebugDrawing
 {
     /** Accepts a generic FCollisionShape to draw */
     GAMECORE_API void DrawDebugCollisionShape(const UWorld* InWorld, const FVector& InCenter, const FCollisionShape& InCollisionShape, const FQuat& InRotation, const FColor& InColor, const int32 InSegments = 16, const bool bInPersistentLines = false, const float InLifeTime = -1.f, const uint8 InDepthPriority = 0, const float InThickness = 0.f);

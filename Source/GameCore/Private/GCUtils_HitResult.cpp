@@ -1,6 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "BlueprintFunctionLibraries/GCUtils_HitResult.h"
+#include "GCUtils_HitResult.h"
 
 bool GCUtils::HitResult::AreHitsFromSameTrace(const FHitResult& HitA, const FHitResult& HitB)
 {

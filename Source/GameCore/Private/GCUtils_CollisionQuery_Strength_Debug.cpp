@@ -1,9 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "BlueprintFunctionLibraries/Debugging/GCUtils_CollisionQuery_Strength_Debug.h"
+#include "GCUtils_CollisionQuery_Strength_Debug.h"
 
-#include "BlueprintFunctionLibraries/CollisionQuery/GCUtils_CollisionQuery_Strength.h"
-#include "BlueprintFunctionLibraries/Debugging/GCUtils_DrawDebug.h"
+#include "GCUtils_CollisionQuery_Strength.h"
+#include "GCUtils_DebugDrawing.h"
 #include "DrawDebugHelpers.h"
 
 namespace GCUtils::CollisionQuery::Strength::Debug
@@ -163,7 +163,7 @@ void GCUtils::CollisionQuery::Strength::Debug::DrawCollisionShapeDebug(const UWo
         const FColor StrengthDebugColor = GetDebugColorForStrength(LocationWithStrength.Value, InInitialStrength, InFullStrengthColor, InNoStrengthColor).ToFColor(true);
 
         const FVector ShapeLocation = LocationWithStrength.Key;
-        DrawDebug::DrawDebugCollisionShape(InWorld, ShapeLocation, InResult.StrengthSceneCastInfo.CollisionShapeCasted, InResult.StrengthSceneCastInfo.CollisionShapeCastedRotation, StrengthDebugColor, 16, bInPersistentLines, InLifeTime, InDepthPriority, InThickness);
+        DebugDrawing::DrawDebugCollisionShape(InWorld, ShapeLocation, InResult.StrengthSceneCastInfo.CollisionShapeCasted, InResult.StrengthSceneCastInfo.CollisionShapeCastedRotation, StrengthDebugColor, 16, bInPersistentLines, InLifeTime, InDepthPriority, InThickness);
     }
 #endif // ENABLE_DRAW_DEBUG
 }
@@ -271,7 +271,7 @@ void GCUtils::CollisionQuery::Strength::Debug::DrawCollisionShapeDebug(const UWo
             const FColor StrengthDebugColor = GetDebugColorForStrength(InResult.StrengthSceneCastInfo.StopStrength, InInitialStrength, InFullStrengthColor, InNoStrengthColor).ToFColor(true);
 
             const FVector ShapeDebugLocation = InResult.StrengthSceneCastInfo.StopLocation + (InResult.PenetrationSceneCastWithExitHitsUsingStrengthResults.Last().StrengthSceneCastInfo.CastDirection * SceneCastStartWallAvoidancePadding);
-            DrawDebug::DrawDebugCollisionShape(InWorld, ShapeDebugLocation, InResult.StrengthSceneCastInfo.CollisionShapeCasted, InResult.StrengthSceneCastInfo.CollisionShapeCastedRotation, StrengthDebugColor, 16, bInPersistentLines, InLifeTime, InDepthPriority, InThickness);
+            DebugDrawing::DrawDebugCollisionShape(InWorld, ShapeDebugLocation, InResult.StrengthSceneCastInfo.CollisionShapeCasted, InResult.StrengthSceneCastInfo.CollisionShapeCastedRotation, StrengthDebugColor, 16, bInPersistentLines, InLifeTime, InDepthPriority, InThickness);
         }
     }
 #endif // ENABLE_DRAW_DEBUG

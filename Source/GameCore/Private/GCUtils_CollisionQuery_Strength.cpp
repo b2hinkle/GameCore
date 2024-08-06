@@ -1,9 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "BlueprintFunctionLibraries/CollisionQuery/GCUtils_CollisionQuery_Strength.h"
+#include "GCUtils_CollisionQuery_Strength.h"
 
-#include "BlueprintFunctionLibraries/CollisionQuery/GCUtils_CollisionQuery.h"
-#include "BlueprintFunctionLibraries/GCUtils_HitResult.h"
+#include "GCUtils_CollisionQuery.h"
+#include "GCUtils_HitResult.h"
 
 namespace GCUtils::CollisionQuery::Strength
 {

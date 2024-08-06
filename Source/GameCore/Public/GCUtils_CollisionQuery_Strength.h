@@ -3,8 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Kismet/BlueprintFunctionLibrary.h"
-#include "BlueprintFunctionLibraries/CollisionQuery/GCUtils_CollisionQuery.h"
+#include "GCUtils_CollisionQuery.h"
 
 #include "GCUtils_CollisionQuery_Strength.generated.h"
 
