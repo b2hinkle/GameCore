@@ -7,6 +7,8 @@
 
 #include "GCUtils_CollisionQuery.generated.h"
 
+DECLARE_LOG_CATEGORY_EXTERN(LogGCUtils_CollisionQuery, Log, All);
+
 /**
  * Extension of FHitResult for indicating whether it's an entrance or an exit
  */

@@ -2,6 +2,8 @@
 
 #include "GCUtils_HitResult.h"
 
+DEFINE_LOG_CATEGORY(LogGCUtils_HitResult);
+
 bool GCUtils::HitResult::AreHitsFromSameTrace(const FHitResult& HitA, const FHitResult& HitB)
 {
     const bool bSameTraceStart = (HitA.TraceStart == HitB.TraceStart);
@@ -21,7 +23,7 @@ float GCUtils::HitResult::CheapCalculateTraceLength(const FHitResult& InHit)
 
     if (InHit.Time == 0.f)
     {
-        UE_LOG(LogGCHitResultHelpers, Verbose, TEXT("%s() Cannot cheaply calculate trace length from a hit result with time of 0. Fall back on normal (more expensive) method for calculating"), ANSI_TO_TCHAR(__FUNCTION__));
+        UE_LOG(LogGCUtils_HitResult, Verbose, TEXT("%s() Cannot cheaply calculate trace length from a hit result with time of 0. Fall back on normal (more expensive) method for calculating"), ANSI_TO_TCHAR(__FUNCTION__));
         return FVector::Distance(InHit.TraceStart, InHit.TraceEnd);
     }
 
@@ -61,7 +63,7 @@ void GCUtils::HitResult::AdjustTraceDataBySlidingTraceStartAndEndByTime(FHitResu
 
     if (InOutHit.Time < 0.f || InOutHit.Time > 1.f)
     {
-        UE_LOG(LogGCHitResultHelpers, Error, TEXT("%s(): The new TraceStart and TraceEnd has put the hit out of range of the trace"), ANSI_TO_TCHAR(__FUNCTION__));
+        UE_LOG(LogGCUtils_HitResult, Error, TEXT("%s(): The new TraceStart and TraceEnd has put the hit out of range of the trace"), ANSI_TO_TCHAR(__FUNCTION__));
         check(0);
     }
 }

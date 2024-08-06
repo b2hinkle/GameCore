@@ -8,6 +8,8 @@
 #include "DrawDebugHelpers.h"
 #include "GCUtils_HitResult.h"
 
+DEFINE_LOG_CATEGORY(LogGCUtils_CollisionQuery);
+
 namespace GCUtils::CollisionQuery
 {
     /**
@@ -101,7 +103,7 @@ bool GCUtils::CollisionQuery::LineTraceMultiWithExitHits(const UWorld* InWorld, 
 
 bool GCUtils::CollisionQuery::SweepMultiWithExitHits(const UWorld* InWorld, TArray<FExitAwareHitResult>& OutHits, const FVector& InSweepStart, const FVector& InSweepEnd, const FQuat& InRotation, const ECollisionChannel InTraceChannel, const FCollisionShape& InCollisionShape, const FCollisionQueryParams& InCollisionQueryParams, const FCollisionResponseParams& InCollisionResponseParams, const bool bOptimizeBackwardsSceneCastLength, const bool bDrawDebugForBackwardsStart)
 {
-    UE_CLOG(InCollisionShape.IsLine(), LogGCCollisionQueries, Warning, TEXT("%s() was used with a FCollisionShape::LineShape. Use the linetrace version if you want a line traces."), ANSI_TO_TCHAR(__FUNCTION__));
+    UE_CLOG(InCollisionShape.IsLine(), LogGCUtils_CollisionQuery, Warning, TEXT("%s() was used with a FCollisionShape::LineShape. Use the linetrace version if you want a line traces."), ANSI_TO_TCHAR(__FUNCTION__));
     return SceneCastMultiWithExitHits(InWorld, OutHits, InSweepStart, InSweepEnd, InRotation, InTraceChannel, InCollisionShape, InCollisionQueryParams, InCollisionResponseParams, bOptimizeBackwardsSceneCastLength, bDrawDebugForBackwardsStart);
 }
 //  END Custom query
@@ -161,7 +163,7 @@ FHitResult* GCUtils::CollisionQuery::PenetrationLineTrace(const UWorld* InWorld,
 FHitResult* GCUtils::CollisionQuery::PenetrationSweep(const UWorld* InWorld, TArray<FHitResult>& OutHits, const FVector& InSweepStart, const FVector& InSweepEnd, const FQuat& InRotation, const ECollisionChannel InTraceChannel, const FCollisionShape& InCollisionShape, const FCollisionQueryParams& InCollisionQueryParams, const FCollisionResponseParams& InCollisionResponseParams,
     FIsHitImpenetrableDelegate IsHitImpenetrable)
 {
-    UE_CLOG(InCollisionShape.IsLine(), LogGCCollisionQueries, Warning, TEXT("%s() was used with a FCollisionShape::LineShape. Use the linetrace version if you want a line traces."), ANSI_TO_TCHAR(__FUNCTION__));
+    UE_CLOG(InCollisionShape.IsLine(), LogGCUtils_CollisionQuery, Warning, TEXT("%s() was used with a FCollisionShape::LineShape. Use the linetrace version if you want a line traces."), ANSI_TO_TCHAR(__FUNCTION__));
     return PenetrationSceneCast(InWorld, OutHits, InSweepStart, InSweepEnd, InRotation, InTraceChannel, InCollisionShape, InCollisionQueryParams, InCollisionResponseParams, IsHitImpenetrable);
 }
 //  END Custom query
@@ -222,7 +224,7 @@ FExitAwareHitResult* GCUtils::CollisionQuery::PenetrationSweepWithExitHits(const
     const bool bOptimizeBackwardsSceneCastLength,
     const bool bDrawDebugForBackwardsStart)
 {
-    UE_CLOG(InCollisionShape.IsLine(), LogGCCollisionQueries, Warning, TEXT("%s() was used with a FCollisionShape::LineShape. Use the linetrace version if you want a line traces."), ANSI_TO_TCHAR(__FUNCTION__));
+    UE_CLOG(InCollisionShape.IsLine(), LogGCUtils_CollisionQuery, Warning, TEXT("%s() was used with a FCollisionShape::LineShape. Use the linetrace version if you want a line traces."), ANSI_TO_TCHAR(__FUNCTION__));
     return PenetrationSceneCastWithExitHits(InWorld, OutHits, InSweepStart, InSweepEnd, InRotation, InTraceChannel, InCollisionShape, InCollisionQueryParams, InCollisionResponseParams, IsHitImpenetrable, bOptimizeBackwardsSceneCastLength, bDrawDebugForBackwardsStart);
 }
 //  END Custom query

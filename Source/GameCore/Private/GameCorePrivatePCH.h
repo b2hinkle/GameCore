@@ -3,4 +3,3 @@
 #pragma once
 
 #include "EngineSharedPCH.h"
-#include "Utilities/GCLogCategories.h"

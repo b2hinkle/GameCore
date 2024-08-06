@@ -4,13 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "Net/Core/PushModel/PushModel.h"
-#include "GameCore/Private/Utilities/GCLogCategories.h"
 #include "Kismet/KismetSystemLibrary.h"
 
 #include "GCPropertyWrapperBase.generated.h"
 
-
-
+GAMECORE_API DECLARE_LOG_CATEGORY_EXTERN(LogGCPropertyWrapperBase, Log, All);
 
 /**
  * FGCPropertyWrapperBase
@@ -179,6 +177,6 @@ void GCPropertyWrapperOnChangePrintString(TPropertyWrapperType& InPropertyWrappe
 template <class TPropertyWrapperType, class TPropertyWrapperValueType>
 void GCPropertyWrapperOnChangeLog(TPropertyWrapperType& InPropertyWrapper, const TPropertyWrapperValueType& InOldValue, const TPropertyWrapperValueType& InNewValue)
 {
-    UE_LOG(LogGCPropertyWrapper, Log, InPropertyWrapper.GetDebugString());
+    UE_LOG(LogGCPropertyWrapperBase, Log, InPropertyWrapper.GetDebugString());
 }
 // END Property wrapper on change helpers

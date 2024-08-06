@@ -5,6 +5,8 @@
 #include "GCUtils_CollisionQuery.h"
 #include "GCUtils_HitResult.h"
 
+DEFINE_LOG_CATEGORY(LogGCUtils_CollisionQuery_Strength);
+
 namespace GCUtils::CollisionQuery::Strength
 {
     static float NerfStrengthPerCm(float& InOutStrength, const float InDistanceToTravel, const float InNerfPerCm);
@@ -88,7 +90,7 @@ FStrengthHitResult* GCUtils::CollisionQuery::Strength::PenetrationSceneCastWithE
             {
                 // Initial overlaps would mess up our PerCmStrengthNerfStack so skip it
                 // Btw this is only a thing for simple collision queries
-                UE_LOG(LogGCStrengthCollisionQueries, Verbose, TEXT("%s() Penetration strength query started inside of something. Make sure to not start this query inside of geometry. We will not consider this hit for the penetration strength nerf stack but it will still be included in the outputed hits. Hit Actor: [%s]."), ANSI_TO_TCHAR(__FUNCTION__), GetData(HitResults[i].GetActor()->GetName()));
+                UE_LOG(LogGCUtils_CollisionQuery_Strength, Verbose, TEXT("%s() Penetration strength query started inside of something. Make sure to not start this query inside of geometry. We will not consider this hit for the penetration strength nerf stack but it will still be included in the outputed hits. Hit Actor: [%s]."), ANSI_TO_TCHAR(__FUNCTION__), GetData(HitResults[i].GetActor()->GetName()));
                 continue;
             }
 
@@ -117,7 +119,7 @@ FStrengthHitResult* GCUtils::CollisionQuery::Strength::PenetrationSceneCastWithE
                 }
                 else
                 {
-                    UE_LOG(LogGCStrengthCollisionQueries, Error, TEXT("%s() Exited a penetration nerf that was never entered. This must be the callers fault by his GetPenetrationStrengthNerf() not having consistent strength nerfs for entrances and exits. Hit Actor: [%s]."), ANSI_TO_TCHAR(__FUNCTION__), GetData(AddedStrengthHit.GetActor()->GetName()));
+                    UE_LOG(LogGCUtils_CollisionQuery_Strength, Error, TEXT("%s() Exited a penetration nerf that was never entered. This must be the callers fault by his GetPenetrationStrengthNerf() not having consistent strength nerfs for entrances and exits. Hit Actor: [%s]."), ANSI_TO_TCHAR(__FUNCTION__), GetData(AddedStrengthHit.GetActor()->GetName()));
                 }
             }
 
