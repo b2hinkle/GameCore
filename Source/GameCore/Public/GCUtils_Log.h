@@ -8,29 +8,33 @@
 
 /**
  * @brief Plain log. Printf style.
- * @note Internal macro! Not intended for use.
+ * @note Prefer the contextual log macros over this one.
+ * @remark This is just a wrapper of the engine's log macro but it exists to show a writer's
+ *         intentions and to demonstrate consistency with the naming of our log macros.
  */
-#define GC_PRIVATE_LOG_FMT(categoryName, verbosity, format, ...) UE_LOG(categoryName, verbosity, format __VA_OPT__(,) __VA_ARGS__)
+#define GC_PLAIN_LOG_FMT(categoryName, verbosity, format, ...) UE_LOG(categoryName, verbosity, format __VA_OPT__(,) __VA_ARGS__)
 
 /**
  * @brief Plain log. From string.
- * @note Internal macro! Not intended for use.
+ * @note Prefer the contextual log macros over this one.
  * @param string String to output. Overloads of functions `::GetNum()` and `::GetData()` must exist for it.
  */
-#define GC_PRIVATE_LOG_STR(categoryName, verbosity, string) { const auto& stringBoundToReference = string; GC_PRIVATE_LOG_FMT(categoryName, verbosity, TEXT("%.*s"), GetNum(stringBoundToReference), GetData(stringBoundToReference)); }
+#define GC_PLAIN_LOG_STR(categoryName, verbosity, string) { const auto& refBoundString = string; GC_PLAIN_LOG_FMT(categoryName, verbosity, TEXT("%.*s"), GetNum(refBoundString), GetData(refBoundString)); }
 
 /**
  * @brief Plain conditional log. Printf style.
- * @note Internal macro! Not intended for use.
+ * @note Prefer the contextual log macros over this one.
+ * @remark This is just a wrapper of the engine's log macro but it exists to show a writer's
+ *         intentions and to demonstrate consistency with the naming of our log macros.
  */
-#define GC_PRIVATE_CLOG_FMT(condition, categoryName, verbosity, format, ...) UE_CLOG(condition, categoryName, verbosity, format __VA_OPT__(,) __VA_ARGS__)
+#define GC_PLAIN_CLOG_FMT(condition, categoryName, verbosity, format, ...) UE_CLOG(condition, categoryName, verbosity, format __VA_OPT__(,) __VA_ARGS__)
 
 /**
  * @brief Plain conditional log. From string.
- * @note Internal macro! Not intended for use.
+ * @note Prefer the contextual log macros over this one.
  * @param string String to output. Overloads of functions `::GetNum()` and `::GetData()` must exist for it.
  */
-#define GC_PRIVATE_CLOG_STR(condition, categoryName, verbosity, string) { const auto& stringBoundToReference = string; GC_PRIVATE_CLOG_FMT(condition, categoryName, verbosity, TEXT("%.*s"), GetNum(stringBoundToReference), GetData(stringBoundToReference)); }
+#define GC_PLAIN_CLOG_STR(condition, categoryName, verbosity, string) { const auto& refBoundString = string; GC_PLAIN_CLOG_FMT(condition, categoryName, verbosity, TEXT("%.*s"), GetNum(refBoundString), GetData(refBoundString)); }
 
 /**
  * @brief Extra format string literal used in no-context logs. For outputting info about the current context.
@@ -49,24 +53,24 @@
 /**
  * @brief Log with no extra context to output info for. Printf style.
  */
-#define GC_LOG_FMT_NO_CONTEXT(categoryName, verbosity, format, ...) GC_PRIVATE_LOG_FMT(categoryName, verbosity, GC_PRIVATE_INFO_NO_CONTEXT_FORMAT_STRING_LITERAL TEXT(" ") format, GC_PRIVATE_INFO_NO_CONTEXT_FORMAT_ARGS __VA_OPT__(,) __VA_ARGS__)
+#define GC_LOG_FMT_NO_CONTEXT(categoryName, verbosity, format, ...) GC_PLAIN_LOG_FMT(categoryName, verbosity, GC_PRIVATE_INFO_NO_CONTEXT_FORMAT_STRING_LITERAL TEXT(" ") format, GC_PRIVATE_INFO_NO_CONTEXT_FORMAT_ARGS __VA_OPT__(,) __VA_ARGS__)
 
 /**
  * @brief Log with no extra context to output info for. From string.
  * @param string String to output. Overloads of functions `::GetNum()` and `::GetData()` must exist for it.
  */
-#define GC_LOG_STR_NO_CONTEXT(categoryName, verbosity, string) { const auto& stringBoundToReference = string; GC_LOG_FMT_NO_CONTEXT(categoryName, verbosity, TEXT("%.*s"), GetNum(stringBoundToReference), GetData(stringBoundToReference)); }
+#define GC_LOG_STR_NO_CONTEXT(categoryName, verbosity, string) { const auto& refBoundString = string; GC_LOG_FMT_NO_CONTEXT(categoryName, verbosity, TEXT("%.*s"), GetNum(refBoundString), GetData(refBoundString)); }
 
 /**
  * @brief Conditional log with no extra context to output info for. Printf style.
  */
-#define GC_CLOG_FMT_NO_CONTEXT(condition, categoryName, verbosity, format, ...) GC_PRIVATE_CLOG_FMT(condition, categoryName, verbosity, GC_PRIVATE_INFO_NO_CONTEXT_FORMAT_STRING_LITERAL TEXT(" ") format, GC_PRIVATE_INFO_NO_CONTEXT_FORMAT_ARGS __VA_OPT__(,) __VA_ARGS__)
+#define GC_CLOG_FMT_NO_CONTEXT(condition, categoryName, verbosity, format, ...) GC_PLAIN_CLOG_FMT(condition, categoryName, verbosity, GC_PRIVATE_INFO_NO_CONTEXT_FORMAT_STRING_LITERAL TEXT(" ") format, GC_PRIVATE_INFO_NO_CONTEXT_FORMAT_ARGS __VA_OPT__(,) __VA_ARGS__)
 
 /**
  * @brief Conditional log with no extra context to output info for. From string.
  * @param string String to output. Overloads of functions `::GetNum()` and `::GetData()` must exist for it.
  */
-#define GC_CLOG_STR_NO_CONTEXT(condition, categoryName, verbosity, string) { const auto& stringBoundToReference = string; GC_CLOG_FMT_NO_CONTEXT(condition, categoryName, verbosity, TEXT("%.*s"), GetNum(stringBoundToReference), GetData(stringBoundToReference)); }
+#define GC_CLOG_STR_NO_CONTEXT(condition, categoryName, verbosity, string) { const auto& refBoundString = string; GC_CLOG_FMT_NO_CONTEXT(condition, categoryName, verbosity, TEXT("%.*s"), GetNum(refBoundString), GetData(refBoundString)); }
 
 /**
  * @brief Extra format string literal used in UObject-context logs. For outputting info about the current context.
@@ -85,7 +89,7 @@
  * @param contextObject The `UObject*` used to output extra info.
  * @param string String to output. Overloads of functions `::GetNum()` and `::GetData()` must exist for it.
  */
-#define GC_LOG_STR_UOBJECT(contextObject, categoryName, verbosity, string) { const auto& stringBoundToReference = string; GC_LOG_FMT_UOBJECT(contextObject, categoryName, verbosity, TEXT("%.*s"), GetNum(stringBoundToReference), GetData(stringBoundToReference)); }
+#define GC_LOG_STR_UOBJECT(contextObject, categoryName, verbosity, string) { const auto& refBoundString = string; GC_LOG_FMT_UOBJECT(contextObject, categoryName, verbosity, TEXT("%.*s"), GetNum(refBoundString), GetData(refBoundString)); }
 
 /**
  * @brief Conditional log with a `UObject` for context to output extra info for. Printf style.
@@ -99,7 +103,7 @@
  * @param contextObject The `UObject*` used to output extra info.
  * @param string String to output. Overloads of functions `::GetNum()` and `::GetData()` must exist for it.
  */
-#define GC_CLOG_STR_UOBJECT(contextObject, condition, categoryName, verbosity, string) { const auto& stringBoundToReference = string; GC_CLOG_FMT_UOBJECT(contextObject, condition, categoryName, verbosity, TEXT("%.*s"), GetNum(stringBoundToReference), GetData(stringBoundToReference)); }
+#define GC_CLOG_STR_UOBJECT(contextObject, condition, categoryName, verbosity, string) { const auto& refBoundString = string; GC_CLOG_FMT_UOBJECT(contextObject, condition, categoryName, verbosity, TEXT("%.*s"), GetNum(refBoundString), GetData(refBoundString)); }
 
 namespace GCUtils::Log
 {
