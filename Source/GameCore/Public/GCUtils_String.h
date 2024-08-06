@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GCUtils.h"
-#include "String/StringBuilderAppender.h"
+#include "Types/GCStringBuilderAppender.h"
 
 /**
  * Makes a string literal out of the given text.
