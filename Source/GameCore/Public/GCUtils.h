@@ -22,7 +22,7 @@ namespace GCUtils
      * @param inTemporary The caller's prvalue argument materialized to temporary.
      * @return Lvalue reference to the temporary.
      */
-    template <class T, typename = std::enable_if_t<!std::is_lvalue_reference_v<T>>>
+    template <class T, class = std::enable_if_t<!std::is_lvalue_reference_v<T>>>
     T& Materialize(T&& inTemporary);
 
     /**
