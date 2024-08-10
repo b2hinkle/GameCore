@@ -147,7 +147,7 @@ TTo GCUtils::ScriptStruct::CastScriptStruct(TFrom inValue)
     using FToStruct = std::remove_pointer_t<TTo>;
     using FFromStruct = std::remove_pointer_t<TFrom>;
 
-    constexpr bool isDowncasting = !std::is_same_v<FFromStruct, FToStruct> && !std::is_base_of_v<FFromStruct, FToStruct>;
+    constexpr bool isDowncasting = !std::is_same_v<FFromStruct, FToStruct> && std::is_base_of_v<FFromStruct, FToStruct>;
     if constexpr (!isDowncasting)
     {
         // Not a downcast. No need for runtime type testing.
@@ -168,7 +168,7 @@ TTo GCUtils::ScriptStruct::CastScriptStruct(TFrom&& inValue)
     using FToStruct = std::remove_pointer_t<TTo>;
     using FFromStruct = std::remove_reference_t<TFrom>;
 
-    constexpr bool isDowncasting = !std::is_same_v<FFromStruct, FToStruct> && !std::is_base_of_v<FFromStruct, FToStruct>;
+    constexpr bool isDowncasting = !std::is_same_v<FFromStruct, FToStruct> && std::is_base_of_v<FFromStruct, FToStruct>;
     if constexpr (!isDowncasting)
     {
         // Not a downcast. No need for runtime type testing.
@@ -198,7 +198,7 @@ TTo GCUtils::ScriptStruct::CastScriptStruct(TFrom inValue)
 
     check(inValue);
 
-    constexpr bool isDowncasting = !std::is_same_v<FFromStruct, FToStruct> && !std::is_base_of_v<FFromStruct, FToStruct>;
+    constexpr bool isDowncasting = !std::is_same_v<FFromStruct, FToStruct> && std::is_base_of_v<FFromStruct, FToStruct>;
     if constexpr (!isDowncasting)
     {
         // Not a downcast. No need for runtime type testing.
@@ -214,7 +214,7 @@ TTo GCUtils::ScriptStruct::CastScriptStruct(TFrom&& inValue)
     using FToStruct = std::remove_reference_t<TTo>;
     using FFromStruct = std::remove_reference_t<TFrom>;
 
-    constexpr bool isDowncasting = !std::is_same_v<FFromStruct, FToStruct> && !std::is_base_of_v<FFromStruct, FToStruct>;
+    constexpr bool isDowncasting = !std::is_same_v<FFromStruct, FToStruct> && std::is_base_of_v<FFromStruct, FToStruct>;
     if constexpr (!isDowncasting)
     {
         // Not a downcast. No need for runtime type testing.
