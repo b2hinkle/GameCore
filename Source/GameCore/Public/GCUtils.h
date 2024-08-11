@@ -6,6 +6,7 @@
 #include "Templates/GCIsUObjectOrIInterface.h"
 #include "Templates/GCRemovePtrOrRef.h"
 #include "type_traits"
+#include "GCConcepts.h"
 
 namespace GCUtils
 {
@@ -22,7 +23,7 @@ namespace GCUtils
      * @param inTemporary The caller's prvalue argument materialized to temporary.
      * @return Lvalue reference to the temporary.
      */
-    template <class T, class = std::enable_if_t<!std::is_lvalue_reference_v<T>>>
+    template <GCConcepts::NonLvalueReference T>
     T& Materialize(T&& inTemporary);
 
     /**
@@ -72,7 +73,7 @@ namespace GCUtils
     FORCEINLINE_DEBUGGABLE TTo ReinterpretCastChecked(TFrom&& inObject);
 }
 
-template <class T, class>
+template <GCConcepts::NonLvalueReference T>
 T& GCUtils::Materialize(T&& inTemporary)
 {
     // Note that the temporary gets promoted to an lvalue for the scope of this function. It
