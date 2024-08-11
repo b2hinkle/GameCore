@@ -131,10 +131,6 @@ struct GAMECORE_API FRicochetingPenetrationSceneCastWithExitHitsUsingStrengthRes
     TArray<FPenetrationSceneCastWithExitHitsUsingStrengthResult> PenetrationSceneCastWithExitHitsUsingStrengthResults;
 };
 
-DECLARE_DELEGATE_RetVal_OneParam(float, FGetPerCmPenetrationNerfDelegate, const FHitResult&)
-DECLARE_DELEGATE_RetVal_OneParam(float, FGetRicochetNerfDelegate, const FHitResult&)
-DECLARE_DELEGATE_RetVal_OneParam(bool, FIsHitRicochetableDelegate, const FHitResult&)
-
 /**
  *    A collection of specialized scene casts that rely on strength to keep it traveling. These are given an initial strength and lose strength from provided strength nerfs. The scene cast is stopped the moment its strength runs out.
  *
@@ -143,9 +139,13 @@ DECLARE_DELEGATE_RetVal_OneParam(bool, FIsHitRicochetableDelegate, const FHitRes
  */
 namespace GCUtils::CollisionQuery::Strength
 {
-    GAMECORE_API extern const FGetPerCmPenetrationNerfDelegate DefaultGetPerCmPenetrationNerf;
-    GAMECORE_API extern const FGetRicochetNerfDelegate DefaultGetRicochetNerf;
-    GAMECORE_API extern const FIsHitRicochetableDelegate DefaultIsHitRicochetable;
+    typedef TFunctionRef<float(const FHitResult&)> FGetPerCmPenetrationNerfFunctionRef;
+    typedef TFunctionRef<float(const FHitResult&)> FGetRicochetNerfFunctionRef;
+    typedef TFunctionRef<bool(const FHitResult&)> FIsHitRicochetableFunctionRef;
+
+    GAMECORE_API extern const FGetPerCmPenetrationNerfFunctionRef DefaultGetPerCmPenetrationNerfCallback;
+    GAMECORE_API extern const FGetRicochetNerfFunctionRef DefaultGetRicochetNerfCallback;
+    GAMECORE_API extern const FIsHitRicochetableFunctionRef DefaultIsHitRicochetableCallback;
 
     //  BEGIN Custom query
     /**
@@ -161,16 +161,16 @@ namespace GCUtils::CollisionQuery::Strength
      * @param  InTraceChannel                 The trace channel for this scene cast
      * @param  InCollisionShape               Generic collision shape for sweeps/traces (FCollisionShape::LineShape for a line trace)
      * @param  InCollisionQueryParams         Additional parameters used for the scene cast
-     * @param  GetPerCmPenetrationNerf        Delegate where caller indicates a per cm strength nerf to apply when entering geometry given a hit
-     * @param  IsHitImpenetrable              Delegate where caller indicates whether provided HitResult should stop us
+     * @param  GetPerCmPenetrationNerfCallback Callback where caller indicates a per cm strength nerf to apply when entering geometry given a hit
+     * @param  IsHitImpenetrableCallback      Callback where caller indicates whether provided HitResult should stop us
      * @return The impenetrable hit if we hit one
      */
     GAMECORE_API FStrengthHitResult* PenetrationSceneCastWithExitHitsUsingStrength(const float InInitialStrength, TArray<float>& InOutPerCmNerfStack, const UWorld* InWorld, FPenetrationSceneCastWithExitHitsUsingStrengthResult& OutResult, const FVector& InStart, const FVector& InEnd, const FQuat& InRotation, const ECollisionChannel InTraceChannel, const FCollisionShape& InCollisionShape, const FCollisionQueryParams& InCollisionQueryParams = FCollisionQueryParams::DefaultQueryParam, const FCollisionResponseParams& InCollisionResponseParams = FCollisionResponseParams::DefaultResponseParam,
-        FGetPerCmPenetrationNerfDelegate GetPerCmPenetrationNerf = DefaultGetPerCmPenetrationNerf,
-        FIsHitRicochetableDelegate IsHitImpenetrable = DefaultIsHitRicochetable);
+        const FGetPerCmPenetrationNerfFunctionRef& GetPerCmPenetrationNerfCallback = DefaultGetPerCmPenetrationNerfCallback,
+        const FIsHitImpenetrableFunctionRef& IsHitImpenetrableCallback = DefaultIsHitImpenetrableCallback);
     GAMECORE_API FStrengthHitResult* PenetrationSceneCastWithExitHitsUsingStrength(const float InInitialStrength, const float InRangeFalloffNerf, const UWorld* InWorld, FPenetrationSceneCastWithExitHitsUsingStrengthResult& OutResult, const FVector& InStart, const FVector& InEnd, const FQuat& InRotation, const ECollisionChannel InTraceChannel, const FCollisionShape& InCollisionShape, const FCollisionQueryParams& InCollisionQueryParams = FCollisionQueryParams::DefaultQueryParam, const FCollisionResponseParams& InCollisionResponseParams = FCollisionResponseParams::DefaultResponseParam,
-        FGetPerCmPenetrationNerfDelegate GetPerCmPenetrationNerf = DefaultGetPerCmPenetrationNerf,
-        FIsHitRicochetableDelegate IsHitImpenetrable = DefaultIsHitRicochetable);
+        const FGetPerCmPenetrationNerfFunctionRef& GetPerCmPenetrationNerfCallback = DefaultGetPerCmPenetrationNerfCallback,
+        const FIsHitImpenetrableFunctionRef& IsHitImpenetrableCallback = DefaultIsHitImpenetrableCallback);
     //  END Custom query
 
 
@@ -182,16 +182,16 @@ namespace GCUtils::CollisionQuery::Strength
      * @param  InStart                    Start location of the scene cast
      * @param  InDirection                The direction to scene cast
      * @param  InDistanceCap              The max distance to travel (performance wise, length of the cast will be this large and get smaller as we travel from ricochets)
-     * @param  GetRicochetNerf            Delegate where caller indicates strength nerf to apply when hitting a ricochetable hit
-     * @param  IsHitRicochetable          Delegate where caller indicates whether we should ricochet off of the HitResult
+     * @param  GetRicochetNerfCallback    Callback where caller indicates strength nerf to apply when hitting a ricochetable hit
+     * @param  IsHitRicochetableCallback  Callback where caller indicates whether we should ricochet off of the HitResult
      */
     GAMECORE_API void RicochetingPenetrationSceneCastWithExitHitsUsingStrength(const float InInitialStrength, TArray<float>& InOutPerCmNerfStack, const UWorld* InWorld, FRicochetingPenetrationSceneCastWithExitHitsUsingStrengthResult& OutResult, const FVector& InStart, const FVector& InDirection, const float InDistanceCap, const FQuat& InRotation, const ECollisionChannel InTraceChannel, const FCollisionShape& InCollisionShape, const FCollisionQueryParams& InCollisionQueryParams = FCollisionQueryParams::DefaultQueryParam, const FCollisionResponseParams& InCollisionResponseParams = FCollisionResponseParams::DefaultResponseParam, const int32 InRicochetCap = -1,
-        FGetPerCmPenetrationNerfDelegate GetPerCmPenetrationNerf = DefaultGetPerCmPenetrationNerf,
-        FGetRicochetNerfDelegate GetRicochetNerf = DefaultGetRicochetNerf,
-        FIsHitRicochetableDelegate IsHitRicochetable = DefaultIsHitRicochetable);
+        const FGetPerCmPenetrationNerfFunctionRef& GetPerCmPenetrationNerfCallback = DefaultGetPerCmPenetrationNerfCallback,
+        const FGetRicochetNerfFunctionRef& GetRicochetNerfCallback = DefaultGetRicochetNerfCallback,
+        const FIsHitRicochetableFunctionRef& IsHitRicochetableCallback = DefaultIsHitRicochetableCallback);
     GAMECORE_API void RicochetingPenetrationSceneCastWithExitHitsUsingStrength(const float InInitialStrength, const float InRangeFalloffNerf, const UWorld* InWorld, FRicochetingPenetrationSceneCastWithExitHitsUsingStrengthResult& OutResult, const FVector& InStart, const FVector& InDirection, const float InDistanceCap, const FQuat& InRotation, const ECollisionChannel InTraceChannel, const FCollisionShape& InCollisionShape, const FCollisionQueryParams& InCollisionQueryParams = FCollisionQueryParams::DefaultQueryParam, const FCollisionResponseParams& InCollisionResponseParams = FCollisionResponseParams::DefaultResponseParam, const int32 InRicochetCap = -1,
-        FGetPerCmPenetrationNerfDelegate GetPerCmPenetrationNerf = DefaultGetPerCmPenetrationNerf,
-        FGetRicochetNerfDelegate GetRicochetNerf = DefaultGetRicochetNerf,
-        FIsHitRicochetableDelegate IsHitRicochetable = DefaultIsHitRicochetable);
+        const FGetPerCmPenetrationNerfFunctionRef& GetPerCmPenetrationNerfCallback = DefaultGetPerCmPenetrationNerfCallback,
+        const FGetRicochetNerfFunctionRef& GetRicochetNerfCallback = DefaultGetRicochetNerfCallback,
+        const FIsHitRicochetableFunctionRef& IsHitRicochetableCallback = DefaultIsHitRicochetableCallback);
     //  END Custom query
 };

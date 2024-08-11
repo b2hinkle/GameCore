@@ -12,21 +12,30 @@ namespace GCUtils::CollisionQuery::Strength
     static float NerfStrengthPerCm(float& InOutStrength, const float InDistanceToTravel, const float InNerfPerCm);
 }
 
-const FGetPerCmPenetrationNerfDelegate GCUtils::CollisionQuery::Strength::DefaultGetPerCmPenetrationNerf = FGetPerCmPenetrationNerfDelegate::CreateStatic([](const FHitResult&) { return 0.f; });
-const FGetRicochetNerfDelegate GCUtils::CollisionQuery::Strength::DefaultGetRicochetNerf = FGetRicochetNerfDelegate::CreateStatic([](const FHitResult&) { return 0.f; });
-const FIsHitRicochetableDelegate GCUtils::CollisionQuery::Strength::DefaultIsHitRicochetable = FIsHitRicochetableDelegate::CreateStatic([](const FHitResult&) { return false; });
+const GCUtils::CollisionQuery::Strength::FGetPerCmPenetrationNerfFunctionRef GCUtils::CollisionQuery::Strength::DefaultGetPerCmPenetrationNerfCallback =
+    [](const FHitResult&) -> float
+    {
+        return 0.f;
+    };
+
+const GCUtils::CollisionQuery::Strength::FGetRicochetNerfFunctionRef GCUtils::CollisionQuery::Strength::DefaultGetRicochetNerfCallback =
+    [](const FHitResult&) -> float
+    {
+        return 0.f;
+    };
+
+const GCUtils::CollisionQuery::Strength::FIsHitRicochetableFunctionRef GCUtils::CollisionQuery::Strength::DefaultIsHitRicochetableCallback =
+    [](const FHitResult&) -> bool
+    {
+        return false;
+    };
+
 
 //  BEGIN Custom query
 FStrengthHitResult* GCUtils::CollisionQuery::Strength::PenetrationSceneCastWithExitHitsUsingStrength(const float InInitialStrength, TArray<float>& InOutPerCmNerfStack, const UWorld* InWorld, FPenetrationSceneCastWithExitHitsUsingStrengthResult& OutResult, const FVector& InStart, const FVector& InEnd, const FQuat& InRotation, const ECollisionChannel InTraceChannel, const FCollisionShape& InCollisionShape, const FCollisionQueryParams& InCollisionQueryParams, const FCollisionResponseParams& InCollisionResponseParams,
-    FGetPerCmPenetrationNerfDelegate GetPerCmPenetrationNerf,
-    FIsHitImpenetrableDelegate IsHitImpenetrable)
+    const FGetPerCmPenetrationNerfFunctionRef& GetPerCmPenetrationNerfCallback,
+    const FIsHitImpenetrableFunctionRef& IsHitImpenetrableCallback)
 {
-    if (GetPerCmPenetrationNerf.IsBound() == false || IsHitImpenetrable.IsBound() == false)
-    {
-        check(0)
-        return nullptr;
-    }
-
     OutResult.StrengthSceneCastInfo.CollisionShapeCasted = InCollisionShape;
     OutResult.StrengthSceneCastInfo.CollisionShapeCastedRotation = InRotation;
     OutResult.StrengthSceneCastInfo.StartLocation = InStart;
@@ -34,7 +43,7 @@ FStrengthHitResult* GCUtils::CollisionQuery::Strength::PenetrationSceneCastWithE
     OutResult.StrengthSceneCastInfo.CastDirection = (InEnd - InStart).GetSafeNormal();
 
     TArray<FExitAwareHitResult> HitResults;
-    FExitAwareHitResult* ImpenetrableHit = PenetrationSceneCastWithExitHits(InWorld, HitResults, InStart, InEnd, InRotation, InTraceChannel, InCollisionShape, InCollisionQueryParams, InCollisionResponseParams, IsHitImpenetrable, true);
+    FExitAwareHitResult* ImpenetrableHit = PenetrationSceneCastWithExitHits(InWorld, HitResults, InStart, InEnd, InRotation, InTraceChannel, InCollisionShape, InCollisionQueryParams, InCollisionResponseParams, IsHitImpenetrableCallback, true);
 
 
     const FVector SceneCastDirection = (InEnd - InStart).GetSafeNormal();
@@ -107,11 +116,11 @@ FStrengthHitResult* GCUtils::CollisionQuery::Strength::PenetrationSceneCastWithE
             // Update the InOutPerCmNerfStack with this hit
             if (AddedStrengthHit.bIsExitHit == false)        // Add new nerf if we are entering something
             {
-                InOutPerCmNerfStack.Push(GetPerCmPenetrationNerf.Execute(AddedStrengthHit));
+                InOutPerCmNerfStack.Push(GetPerCmPenetrationNerfCallback(AddedStrengthHit));
             }
             else                                        // Remove most recent nerf if we are exiting something
             {
-                const int32 IndexOfNerfThatWeAreExiting = InOutPerCmNerfStack.FindLast(GetPerCmPenetrationNerf.Execute(AddedStrengthHit));
+                const int32 IndexOfNerfThatWeAreExiting = InOutPerCmNerfStack.FindLast(GetPerCmPenetrationNerfCallback(AddedStrengthHit));
 
                 if (IndexOfNerfThatWeAreExiting != INDEX_NONE)
                 {
@@ -168,29 +177,24 @@ FStrengthHitResult* GCUtils::CollisionQuery::Strength::PenetrationSceneCastWithE
     return nullptr;
 }
 FStrengthHitResult* GCUtils::CollisionQuery::Strength::PenetrationSceneCastWithExitHitsUsingStrength(const float InInitialStrength, const float InRangeFalloffNerf, const UWorld* InWorld, FPenetrationSceneCastWithExitHitsUsingStrengthResult& OutResult, const FVector& InStart, const FVector& InEnd, const FQuat& InRotation, const ECollisionChannel InTraceChannel, const FCollisionShape& InCollisionShape, const FCollisionQueryParams& InCollisionQueryParams, const FCollisionResponseParams& InCollisionResponseParams,
-    FGetPerCmPenetrationNerfDelegate GetPerCmPenetrationNerf,
-    FIsHitImpenetrableDelegate IsHitImpenetrable)
+    const FGetPerCmPenetrationNerfFunctionRef& GetPerCmPenetrationNerfCallback,
+    const FIsHitImpenetrableFunctionRef& IsHitImpenetrableCallback)
 {
     TArray<float> PerCmStrengthNerfStack;
     PerCmStrengthNerfStack.Push(InRangeFalloffNerf);
-    return PenetrationSceneCastWithExitHitsUsingStrength(InInitialStrength, PerCmStrengthNerfStack, InWorld, OutResult, InStart, InEnd, InRotation, InTraceChannel, InCollisionShape, InCollisionQueryParams, InCollisionResponseParams, GetPerCmPenetrationNerf, IsHitImpenetrable);
+    return PenetrationSceneCastWithExitHitsUsingStrength(InInitialStrength, PerCmStrengthNerfStack, InWorld, OutResult, InStart, InEnd, InRotation, InTraceChannel, InCollisionShape, InCollisionQueryParams, InCollisionResponseParams, GetPerCmPenetrationNerfCallback, IsHitImpenetrableCallback);
 }
 //  END Custom query
 
 //  BEGIN Custom query
 void GCUtils::CollisionQuery::Strength::RicochetingPenetrationSceneCastWithExitHitsUsingStrength(const float InInitialStrength, TArray<float>& InOutPerCmStrengthNerfStack, const UWorld* InWorld, FRicochetingPenetrationSceneCastWithExitHitsUsingStrengthResult& OutResult, const FVector& InStart, const FVector& InDirection, const float InDistanceCap, const FQuat& InRotation, const ECollisionChannel InTraceChannel, const FCollisionShape& InCollisionShape, const FCollisionQueryParams& InCollisionQueryParams, const FCollisionResponseParams& InCollisionResponseParams, const int32 InRicochetCap,
-    FGetPerCmPenetrationNerfDelegate GetPerCmPenetrationNerf,
-    FGetRicochetNerfDelegate GetRicochetNerf,
-    FIsHitRicochetableDelegate IsHitRicochetable)
+    const FGetPerCmPenetrationNerfFunctionRef& GetPerCmPenetrationNerfCallback,
+    const FGetRicochetNerfFunctionRef& GetRicochetNerfCallback,
+    const FIsHitRicochetableFunctionRef& IsHitRicochetableCallback)
 {
     if (InDistanceCap <= 0.f)
     {
         check(0);
-        return;
-    }
-    if (GetPerCmPenetrationNerf.IsBound() == false || GetRicochetNerf.IsBound() == false || IsHitRicochetable.IsBound() == false)
-    {
-        check(0)
         return;
     }
 
@@ -211,7 +215,7 @@ void GCUtils::CollisionQuery::Strength::RicochetingPenetrationSceneCastWithExitH
         const FVector SceneCastEnd = CurrentSceneCastStart + (CurrentSceneCastDirection * (InDistanceCap - DistanceTraveled));
 
         FPenetrationSceneCastWithExitHitsUsingStrengthResult& PenetrationSceneCastWithExitHitsUsingStrengthResult = OutResult.PenetrationSceneCastWithExitHitsUsingStrengthResults.AddDefaulted_GetRef();
-        FStrengthHitResult* RicochetableHit = PenetrationSceneCastWithExitHitsUsingStrength(CurrentStrength, InOutPerCmStrengthNerfStack, InWorld, PenetrationSceneCastWithExitHitsUsingStrengthResult, CurrentSceneCastStart, SceneCastEnd, InRotation, InTraceChannel, InCollisionShape, InCollisionQueryParams, InCollisionResponseParams, GetPerCmPenetrationNerf, FIsHitImpenetrableDelegate(IsHitRicochetable));
+        FStrengthHitResult* RicochetableHit = PenetrationSceneCastWithExitHitsUsingStrength(CurrentStrength, InOutPerCmStrengthNerfStack, InWorld, PenetrationSceneCastWithExitHitsUsingStrengthResult, CurrentSceneCastStart, SceneCastEnd, InRotation, InTraceChannel, InCollisionShape, InCollisionQueryParams, InCollisionResponseParams, GetPerCmPenetrationNerfCallback, IsHitRicochetableCallback);
 
         DistanceTraveled += PenetrationSceneCastWithExitHitsUsingStrengthResult.StrengthSceneCastInfo.DistanceToStop;
         CurrentStrength = PenetrationSceneCastWithExitHitsUsingStrengthResult.StrengthSceneCastInfo.StopStrength;
@@ -235,7 +239,7 @@ void GCUtils::CollisionQuery::Strength::RicochetingPenetrationSceneCastWithExitH
         // Apply ricochet strength nerf
         if (RicochetableHit)
         {
-            CurrentStrength -= GetRicochetNerf.Execute(*RicochetableHit);
+            CurrentStrength -= GetRicochetNerfCallback(*RicochetableHit);
         }
 
         // Check if we should end here
@@ -284,13 +288,13 @@ void GCUtils::CollisionQuery::Strength::RicochetingPenetrationSceneCastWithExitH
     }
 }
 void GCUtils::CollisionQuery::Strength::RicochetingPenetrationSceneCastWithExitHitsUsingStrength(const float InInitialStrength, const float InRangeFalloffNerf, const UWorld* InWorld, FRicochetingPenetrationSceneCastWithExitHitsUsingStrengthResult& OutResult, const FVector& InStart, const FVector& InDirection, const float InDistanceCap, const FQuat& InRotation, const ECollisionChannel InTraceChannel, const FCollisionShape& InCollisionShape, const FCollisionQueryParams& InCollisionQueryParams, const FCollisionResponseParams& InCollisionResponseParams, const int32 InRicochetCap,
-    FGetPerCmPenetrationNerfDelegate GetPerCmPenetrationNerf,
-    FGetRicochetNerfDelegate GetRicochetNerf,
-    FIsHitRicochetableDelegate IsHitRicochetable)
+    const FGetPerCmPenetrationNerfFunctionRef& GetPerCmPenetrationNerfCallback,
+    const FGetRicochetNerfFunctionRef& GetRicochetNerfCallback,
+    const FIsHitRicochetableFunctionRef& IsHitRicochetableCallback)
 {
     TArray<float> PerCmStrengthNerfStack;
     PerCmStrengthNerfStack.Push(InRangeFalloffNerf);
-    return RicochetingPenetrationSceneCastWithExitHitsUsingStrength(InInitialStrength, PerCmStrengthNerfStack, InWorld, OutResult, InStart, InDirection, InDistanceCap, InRotation, InTraceChannel, InCollisionShape, InCollisionQueryParams, InCollisionResponseParams, InRicochetCap, GetPerCmPenetrationNerf, GetRicochetNerf, IsHitRicochetable);
+    return RicochetingPenetrationSceneCastWithExitHitsUsingStrength(InInitialStrength, PerCmStrengthNerfStack, InWorld, OutResult, InStart, InDirection, InDistanceCap, InRotation, InTraceChannel, InCollisionShape, InCollisionQueryParams, InCollisionResponseParams, InRicochetCap, GetPerCmPenetrationNerfCallback, GetRicochetNerfCallback, IsHitRicochetableCallback);
 }
 //  END Custom query
 
