@@ -118,17 +118,17 @@ namespace GCUtils::Math
         const FVector::FReal inMaxRange,
         const FVector& inNewAimPoint);
 
-    template <class TReal = FVector::FReal>
+    template <class T>
     bool IsVectorInDirectionDegrees(
-        const UE::Math::TVector<TReal>& a,
-        const UE::Math::TVector<TReal>& b,
-        const FVector::FReal degAngleTolerance = 15.0);
+        const UE::Math::TVector<T>& a,
+        const UE::Math::TVector<T>& b,
+        const T degAngleTolerance = 15.0);
 
-    template <class TReal = FVector::FReal>
+    template <class T>
     bool IsVectorInDirectionRadians(
-        const UE::Math::TVector<TReal>& a,
-        const UE::Math::TVector<TReal>& b,
-        const FVector::FReal radAngleTolerance = 15.0);
+        const UE::Math::TVector<T>& a,
+        const UE::Math::TVector<T>& b,
+        const T radAngleTolerance = 15.0);
 
     /**
      * @brief Perform linear interpolation on any number of values.
@@ -155,20 +155,20 @@ constexpr T GCUtils::Math::GetVectorSizeSquared(const UE::Math::TVector<T>& inVe
     return FMath::Square(inVector.X) + FMath::Square(inVector.Y) + FMath::Square(inVector.Z);
 }
 
-template <class TReal>
+template <class T>
 bool GCUtils::Math::IsVectorInDirectionDegrees(
-    const UE::Math::TVector<TReal>& a,
-    const UE::Math::TVector<TReal>& b,
-    const FVector::FReal degAngleTolerance)
+    const UE::Math::TVector<T>& a,
+    const UE::Math::TVector<T>& b,
+    const T degAngleTolerance)
 {
     return IsVectorInDirectionRadians(a, b, FMath::DegreesToRadians(degAngleTolerance));
 }
 
-template <class TReal>
+template <class T>
 bool GCUtils::Math::IsVectorInDirectionRadians(
-    const UE::Math::TVector<TReal>& a,
-    const UE::Math::TVector<TReal>& b,
-    const FVector::FReal radAngleTolerance)
+    const UE::Math::TVector<T>& a,
+    const UE::Math::TVector<T>& b,
+    const T radAngleTolerance)
 {
     const float dot = FVector::DotProduct(a.GetSafeNormal(), b.GetSafeNormal());
 
