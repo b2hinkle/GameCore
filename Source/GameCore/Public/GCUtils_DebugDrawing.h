@@ -3,15 +3,41 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GCUtils.h"
 
+#if UE_ENABLE_DEBUG_DRAWING
 /**
  *
  */
 namespace GCUtils::DebugDrawing
 {
-    /** Accepts a generic FCollisionShape to draw */
-    GAMECORE_API void DrawDebugCollisionShape(const UWorld* InWorld, const FVector& InCenter, const FCollisionShape& InCollisionShape, const FQuat& InRotation, const FColor& InColor, const int32 InSegments = 16, const bool bInPersistentLines = false, const float InLifeTime = -1.f, const uint8 InDepthPriority = 0, const float InThickness = 0.f);
+    /**
+     * @brief Draw a debug shape to represent the passed in `FCollisionShape`.
+     */
+    GAMECORE_API void DrawDebugCollisionShape(
+        const UWorld* inWorld,
+        const FVector& inCenter,
+        const FCollisionShape& inCollisionShape,
+        const FQuat& inRotation,
+        const FColor& inColor,
+        const int32 inNumSegments = 16,
+        const bool inShouldLinesPersistent = false,
+        const float inLifetime = -1.f,
+        const uint8 inDepthPriority = 0u,
+        const float inThickness = 0.f);
 
-    GAMECORE_API void DrawDebugLineDotted(const UWorld* InWorld, const FVector& InStart, const FVector& InEnd, const FColor& InColor, const bool bInPersistentLines = false, const float InLifeTime = -1.f, const uint8 InDepthPriority = 0, const float InThickness = 0.f, const float InSegmentsLength = 10.f, const float InSegmentsSpacingLength = 10.f);
+    /**
+     * @brief Draw a debug line formed by many smaller, spaced segments to appear as a dotted line.
+     */
+    GAMECORE_API void DrawDebugLineDotted(
+        const UWorld* inWorld,
+        const FVector& inStart,
+        const FVector& inEnd,
+        const FColor& inColor,
+        const bool inShouldLinesPersistent = false,
+        const float inLifetime = -1.f,
+        const uint8 inDepthPriority = 0u,
+        const float inThickness = 0.f,
+        const FVector::FReal inSegmentsLength = 10.0,
+        const FVector::FReal inSegmentsSpacingLength = 10.0);
 }
+#endif // UE_ENABLE_DEBUG_DRAWING

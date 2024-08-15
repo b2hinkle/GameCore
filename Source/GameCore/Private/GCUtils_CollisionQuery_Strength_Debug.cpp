@@ -13,7 +13,7 @@ namespace GCUtils::CollisionQuery::Strength::Debug
 
 void GCUtils::CollisionQuery::Strength::Debug::DrawStrengthDebugLine(const UWorld* InWorld, const FPenetrationSceneCastWithExitHitsUsingStrengthResult& InResult, const float InInitialStrength, const bool bInPersistentLines, const float InLifeTime, const uint8 InDepthPriority, const float InThickness, const float InSegmentsLength, const float InSegmentsSpacingLength, const FLinearColor& InFullStrengthColor, const FLinearColor& InNoStrengthColor)
 {
-#if ENABLE_DRAW_DEBUG
+#if UE_ENABLE_DEBUG_DRAWING
     const float SceneCastTravelDistance = InResult.StrengthSceneCastInfo.DistanceToStop;
 
     const float NumberOfLineSegments = FMath::CeilToInt(SceneCastTravelDistance / (InSegmentsLength + InSegmentsSpacingLength));
@@ -116,12 +116,12 @@ void GCUtils::CollisionQuery::Strength::Debug::DrawStrengthDebugLine(const UWorl
             }
         }
     }
-#endif // ENABLE_DRAW_DEBUG
+#endif // UE_ENABLE_DEBUG_DRAWING
 }
 
 void GCUtils::CollisionQuery::Strength::Debug::DrawStrengthDebugText(const UWorld* InWorld, const FPenetrationSceneCastWithExitHitsUsingStrengthResult& InResult, const float InInitialStrength, const float InLifeTime, const FLinearColor& InFullStrengthColor, const FLinearColor& InNoStrengthColor)
 {
-#if ENABLE_DRAW_DEBUG
+#if UE_ENABLE_DEBUG_DRAWING
     TArray<TPair<FVector, float>> LocationsWithStrengths;
 
     LocationsWithStrengths.Emplace(InResult.StrengthSceneCastInfo.StartLocation, InResult.StrengthSceneCastInfo.StartStrength);
@@ -141,12 +141,12 @@ void GCUtils::CollisionQuery::Strength::Debug::DrawStrengthDebugText(const UWorl
         const FString DebugString = FString::Printf(TEXT("%.2f"), LocationWithStrength.Value);
         DrawDebugString(InWorld, StringLocation, DebugString, nullptr, StrengthDebugColor, InLifeTime);
     }
-#endif // ENABLE_DRAW_DEBUG
+#endif // UE_ENABLE_DEBUG_DRAWING
 }
 
 void GCUtils::CollisionQuery::Strength::Debug::DrawCollisionShapeDebug(const UWorld* InWorld, const FPenetrationSceneCastWithExitHitsUsingStrengthResult& InResult, const float InInitialStrength, const bool bInPersistentLines, const float InLifeTime, const uint8 InDepthPriority, const float InThickness, const FLinearColor& InFullStrengthColor, const FLinearColor& InNoStrengthColor)
 {
-#if ENABLE_DRAW_DEBUG
+#if UE_ENABLE_DEBUG_DRAWING
     TArray<TPair<FVector, float>> LocationsWithStrengths;
 
     LocationsWithStrengths.Emplace(InResult.StrengthSceneCastInfo.StartLocation, InResult.StrengthSceneCastInfo.StartStrength);
@@ -165,22 +165,22 @@ void GCUtils::CollisionQuery::Strength::Debug::DrawCollisionShapeDebug(const UWo
         const FVector ShapeLocation = LocationWithStrength.Key;
         DebugDrawing::DrawDebugCollisionShape(InWorld, ShapeLocation, InResult.StrengthSceneCastInfo.CollisionShapeCasted, InResult.StrengthSceneCastInfo.CollisionShapeCastedRotation, StrengthDebugColor, 16, bInPersistentLines, InLifeTime, InDepthPriority, InThickness);
     }
-#endif // ENABLE_DRAW_DEBUG
+#endif // UE_ENABLE_DEBUG_DRAWING
 }
 
 void GCUtils::CollisionQuery::Strength::Debug::DrawStrengthDebugLine(const UWorld* InWorld, const FRicochetingPenetrationSceneCastWithExitHitsUsingStrengthResult& InResult, const float InInitialStrength, const bool bInPersistentLines, const float InLifeTime, const uint8 InDepthPriority, const float InThickness, const float InSegmentsLength, const float InSegmentsSpacingLength, const FLinearColor& InFullStrengthColor, const FLinearColor& InNoStrengthColor)
 {
-#if ENABLE_DRAW_DEBUG
+#if UE_ENABLE_DEBUG_DRAWING
     for (const FPenetrationSceneCastWithExitHitsUsingStrengthResult& PenetrationSceneCastWithExitHitsUsingStrengthResult : InResult.PenetrationSceneCastWithExitHitsUsingStrengthResults)
     {
         DrawStrengthDebugLine(InWorld, PenetrationSceneCastWithExitHitsUsingStrengthResult, InInitialStrength, bInPersistentLines, InLifeTime, InDepthPriority, InThickness, InSegmentsLength, InSegmentsSpacingLength, InFullStrengthColor, InNoStrengthColor);
     }
-#endif // ENABLE_DRAW_DEBUG
+#endif // UE_ENABLE_DEBUG_DRAWING
 }
 
 void GCUtils::CollisionQuery::Strength::Debug::DrawStrengthDebugText(const UWorld* InWorld, const FRicochetingPenetrationSceneCastWithExitHitsUsingStrengthResult& InResult, const float InInitialStrength, const float InLifeTime, const FLinearColor& InFullStrengthColor, const FLinearColor& InNoStrengthColor)
 {
-#if ENABLE_DRAW_DEBUG
+#if UE_ENABLE_DEBUG_DRAWING
     FVector PreviousRicochetTextOffsetDirection = FVector::ZeroVector;
     for (int32 i = 0; i < InResult.PenetrationSceneCastWithExitHitsUsingStrengthResults.Num(); ++i)
     {
@@ -252,12 +252,12 @@ void GCUtils::CollisionQuery::Strength::Debug::DrawStrengthDebugText(const UWorl
 
         PreviousRicochetTextOffsetDirection = RicochetTextOffsetDirection;
     }
-#endif // ENABLE_DRAW_DEBUG
+#endif // UE_ENABLE_DEBUG_DRAWING
 }
 
 void GCUtils::CollisionQuery::Strength::Debug::DrawCollisionShapeDebug(const UWorld* InWorld, const FRicochetingPenetrationSceneCastWithExitHitsUsingStrengthResult& InResult, const float InInitialStrength, const bool bInPersistentLines, const float InLifeTime, const uint8 InDepthPriority, const float InThickness, const FLinearColor& InFullStrengthColor, const FLinearColor& InNoStrengthColor)
 {
-#if ENABLE_DRAW_DEBUG
+#if UE_ENABLE_DEBUG_DRAWING
     for (const FPenetrationSceneCastWithExitHitsUsingStrengthResult& PenetrationSceneCastWithExitHitsUsingStrengthResult : InResult.PenetrationSceneCastWithExitHitsUsingStrengthResults)
     {
         DrawCollisionShapeDebug(InWorld, PenetrationSceneCastWithExitHitsUsingStrengthResult, InInitialStrength, false, InLifeTime, 0, 0, InFullStrengthColor, InNoStrengthColor);
@@ -274,7 +274,7 @@ void GCUtils::CollisionQuery::Strength::Debug::DrawCollisionShapeDebug(const UWo
             DebugDrawing::DrawDebugCollisionShape(InWorld, ShapeDebugLocation, InResult.StrengthSceneCastInfo.CollisionShapeCasted, InResult.StrengthSceneCastInfo.CollisionShapeCastedRotation, StrengthDebugColor, 16, bInPersistentLines, InLifeTime, InDepthPriority, InThickness);
         }
     }
-#endif // ENABLE_DRAW_DEBUG
+#endif // UE_ENABLE_DEBUG_DRAWING
 }
 
 FLinearColor GCUtils::CollisionQuery::Strength::Debug::GetDebugColorForStrength(const float InStrength, const float InInitialStrength, const FLinearColor& InFullStrengthColor, const FLinearColor& InNoStrengthColor)

@@ -4,56 +4,115 @@
 
 #include "DrawDebugHelpers.h"
 
-void GCUtils::DebugDrawing::DrawDebugCollisionShape(const UWorld* InWorld, const FVector& InCenter, const FCollisionShape& InCollisionShape, const FQuat& InRotation, const FColor& InColor, const int32 InSegments, const bool bInPersistentLines, const float InLifeTime, const uint8 InDepthPriority, const float InThickness)
+#if UE_ENABLE_DEBUG_DRAWING
+void GCUtils::DebugDrawing::DrawDebugCollisionShape(
+    const UWorld* inWorld,
+    const FVector& inCenter,
+    const FCollisionShape& inCollisionShape,
+    const FQuat& inRotation,
+    const FColor& inColor,
+    const int32 inNumSegments,
+    const bool inShouldLinesPersistent,
+    const float inLifetime,
+    const uint8 inDepthPriority,
+    const float inThickness)
 {
-#if ENABLE_DRAW_DEBUG
-    switch (InCollisionShape.ShapeType)
+    switch (inCollisionShape.ShapeType)
     {
-        case ECollisionShape::Box:
+    case ECollisionShape::Line:
         {
-            DrawDebugBox(InWorld, InCenter, InCollisionShape.GetExtent(), InRotation, InColor, bInPersistentLines, InLifeTime, InDepthPriority, InThickness);
+            const float size = inThickness * 10;
+            ::DrawDebugPoint(
+                inWorld,
+                inCenter,
+                size,
+                inColor,
+                inShouldLinesPersistent,
+                inLifetime,
+                inDepthPriority);
             break;
         }
-        case  ECollisionShape::Sphere:
+    case ECollisionShape::Box:
         {
-            DrawDebugSphere(InWorld, InCenter, InCollisionShape.GetSphereRadius(), InSegments, InColor, bInPersistentLines, InLifeTime, InDepthPriority, InThickness);
+            const FVector extent = inCollisionShape.GetExtent();
+            ::DrawDebugBox(
+                inWorld,
+                inCenter,
+                extent,
+                inRotation,
+                inColor,
+                inShouldLinesPersistent,
+                inLifetime,
+                inDepthPriority,
+                inThickness);
             break;
         }
-        case ECollisionShape::Capsule:
+    case  ECollisionShape::Sphere:
         {
-            // NOTE: Segments is not used here because DrawDebugCapsule() hard codes it
-            DrawDebugCapsule(InWorld, InCenter, InCollisionShape.GetCapsuleHalfHeight(), InCollisionShape.GetCapsuleRadius(), InRotation, InColor, bInPersistentLines, InLifeTime, InDepthPriority, InThickness);
+            const float radius = inCollisionShape.GetSphereRadius();
+            ::DrawDebugSphere(
+                inWorld,
+                inCenter,
+                radius,
+                inNumSegments,
+                inColor,
+                inShouldLinesPersistent,
+                inLifetime,
+                inDepthPriority,
+                inThickness);
             break;
         }
-        case ECollisionShape::Line:
+    case ECollisionShape::Capsule:
         {
-            DrawDebugPoint(InWorld, InCenter, InThickness * 10, InColor, bInPersistentLines, InLifeTime, InDepthPriority);
+            const float halfHeight = inCollisionShape.GetCapsuleHalfHeight();
+            const float radius = inCollisionShape.GetCapsuleRadius();
+            // Note: `inNumSegments` isn't used anywhere here because the number of segments is hardcoded by `DrawDebugCapsule()`.
+            ::DrawDebugCapsule(
+                inWorld,
+                inCenter,
+                halfHeight,
+                radius,
+                inRotation,
+                inColor,
+                inShouldLinesPersistent,
+                inLifetime,
+                inDepthPriority,
+                inThickness);
             break;
         }
     }
-#endif // ENABLE_DRAW_DEBUG
 }
 
-void GCUtils::DebugDrawing::DrawDebugLineDotted(const UWorld* InWorld, const FVector& InStart, const FVector& InEnd, const FColor& InColor, const bool bInPersistentLines, const float InLifeTime, const uint8 InDepthPriority, const float InThickness, const float InSegmentsLength, const float InSegmentsSpacingLength)
+void GCUtils::DebugDrawing::DrawDebugLineDotted(
+    const UWorld* inWorld,
+    const FVector& inStart,
+    const FVector& inEnd,
+    const FColor& inColor,
+    const bool inShouldLinesPersistent,
+    const float inLifetime,
+    const uint8 inDepthPriority,
+    const float inThickness,
+    const FVector::FReal inSegmentsLength,
+    const FVector::FReal inSegmentsSpacingLength)
 {
-#if ENABLE_DRAW_DEBUG
-    const FVector Direction = (InEnd - InStart).GetSafeNormal();
-    const float FullLength = FVector::Distance(InStart, InEnd);
-    const float NumberOfLineSegments = FMath::CeilToInt(FullLength / (InSegmentsLength + InSegmentsSpacingLength));
-    for (int32 i = 0; i < NumberOfLineSegments; ++i)
+    const FVector lineDirection = (inEnd - inStart).GetSafeNormal();
+
+    const FVector::FReal lineLength = FVector::Distance(inStart, inEnd);
+    const int32 numSegments = FMath::CeilToInt(lineLength / (inSegmentsLength + inSegmentsSpacingLength));
+
+    for (int32 i = 0; i < numSegments; ++i)
     {
-        float DistanceToLineSegmentStart = (InSegmentsLength + InSegmentsSpacingLength) * i;
-        float DistanceToLineSegmentEnd = DistanceToLineSegmentStart + InSegmentsLength;
+        FVector::FReal distanceToLineSegmentStart = (inSegmentsLength + inSegmentsSpacingLength) * i;
+        FVector::FReal distanceToLineSegmentEnd = distanceToLineSegmentStart + inSegmentsLength;
 
-        if (DistanceToLineSegmentEnd > FullLength)
-        {
-            DistanceToLineSegmentEnd = FullLength;
-        }
+        distanceToLineSegmentEnd = FMath::Min(distanceToLineSegmentEnd, lineLength);
 
-        const FVector LineSegmentStart = InStart + (Direction * DistanceToLineSegmentStart);
-        const FVector LineSegmentEnd = InStart + (Direction * DistanceToLineSegmentEnd);
+        // TODO: We can avoid the need for a normalized `lineDirection` by just using the `inEnd - inStart` position
+        // delta as an offset and scaling it based on `i`.
+        const FVector lineSegmentStart = inStart + (lineDirection * distanceToLineSegmentStart);
+        const FVector lineSegmentEnd = inStart + (lineDirection * distanceToLineSegmentEnd);
 
-        DrawDebugLine(InWorld, LineSegmentStart, LineSegmentEnd, InColor, bInPersistentLines, InLifeTime, InDepthPriority, InThickness);
+        ::DrawDebugLine(inWorld, lineSegmentStart, lineSegmentEnd, inColor, inShouldLinesPersistent, inLifetime, inDepthPriority, inThickness);
     }
-#endif // ENABLE_DRAW_DEBUG
 }
+#endif // UE_ENABLE_DEBUG_DRAWING

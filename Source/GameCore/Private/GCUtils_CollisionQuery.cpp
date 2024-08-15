@@ -76,13 +76,13 @@ bool GCUtils::CollisionQuery::SceneCastMultiWithExitHits(const UWorld* InWorld, 
 
     // BACKWARDS SCENE CAST to get our exit hits
     const FVector BackwardsStart = DetermineBackwardsSceneCastStart(EntranceHitResults, InStart, InEnd, (bHitBlockingHit ? &EntranceHitResults.Last() : nullptr), bOptimizeBackwardsSceneCastLength, Math::GetCollisionShapeBoundingSphereRadius(InCollisionShape));
-#if ENABLE_DRAW_DEBUG
+#if UE_ENABLE_DEBUG_DRAWING
     if (bDrawDebugForBackwardsStart)
     {
         const FVector BackwardsDir = (InStart - BackwardsStart).GetSafeNormal();
         DrawDebugForBackwardsStart(InWorld, InCollisionShape, InRotation, BackwardsStart, BackwardsDir);
     }
-#endif // ENABLE_DRAW_DEBUG
+#endif // UE_ENABLE_DEBUG_DRAWING
     FCollisionQueryParams BackwardsCollisionQueryParams = InCollisionQueryParams;
     BackwardsCollisionQueryParams.bFindInitialOverlaps = false;
 
@@ -182,13 +182,13 @@ FExitAwareHitResult* GCUtils::CollisionQuery::PenetrationSceneCastWithExitHits(c
 
 
     const FVector BackwardsStart = DetermineBackwardsSceneCastStart(EntranceHitResults, InStart, InEnd, ImpenetrableHit, bOptimizeBackwardsSceneCastLength, Math::GetCollisionShapeBoundingSphereRadius(InCollisionShape));
-#if ENABLE_DRAW_DEBUG
+#if UE_ENABLE_DEBUG_DRAWING
     if (bDrawDebugForBackwardsStart)
     {
         const FVector BackwardsDir = (InStart - BackwardsStart).GetSafeNormal();
         DrawDebugForBackwardsStart(InWorld, InCollisionShape, InRotation, BackwardsStart, BackwardsDir);
     }
-#endif // ENABLE_DRAW_DEBUG
+#endif // UE_ENABLE_DEBUG_DRAWING
     FCollisionQueryParams BackwardsCollisionQueryParams = InCollisionQueryParams;
     BackwardsCollisionQueryParams.bFindInitialOverlaps = false;
 
@@ -439,7 +439,7 @@ void GCUtils::CollisionQuery::OrderHitResultsInForwardsDirection(TArray<FExitAwa
 
 void GCUtils::CollisionQuery::DrawDebugForBackwardsStart(const UWorld* InWorld, const FCollisionShape& InCollisionShape, const FQuat& InRotation, const FVector& InBackwardsStart, const FVector& InBackwardsDir)
 {
-#if ENABLE_DRAW_DEBUG
+#if UE_ENABLE_DEBUG_DRAWING
     const FColor DebugColor = FColor::Cyan;
     const float DebugLifetime = 20.f;
 
@@ -452,6 +452,6 @@ void GCUtils::CollisionQuery::DrawDebugForBackwardsStart(const UWorld* InWorld, 
     // Draw backwards arrow
     DrawDebugLine(InWorld, InBackwardsStart, InBackwardsStart + (InBackwardsDir * 20.f), DebugColor, false, DebugLifetime, 0, 1.f);
     DrawDebugCone(InWorld, InBackwardsStart + (InBackwardsDir * 20.f), -InBackwardsDir, 10.f, FMath::DegreesToRadians(10.f), FMath::DegreesToRadians(10.f), 4, DebugColor, false, DebugLifetime, 0, 1.f);
-#endif // ENABLE_DRAW_DEBUG
+#endif // UE_ENABLE_DEBUG_DRAWING
 }
 //  END private functions
