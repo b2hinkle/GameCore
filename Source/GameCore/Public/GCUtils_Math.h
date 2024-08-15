@@ -118,6 +118,18 @@ namespace GCUtils::Math
         const FVector::FReal inMaxRange,
         const FVector& inNewAimPoint);
 
+    template <class T>
+    bool IsVectorInDirectionDegrees(
+        const UE::Math::TVector<T>& a,
+        const UE::Math::TVector<T>& b,
+        const T degAngleTolerance = 15.0);
+
+    template <class T>
+    bool IsVectorInDirectionRadians(
+        const UE::Math::TVector<T>& a,
+        const UE::Math::TVector<T>& b,
+        const T radAngleTolerance = 15.0);
+
     /**
      * @brief Perform linear interpolation on any number of values.
      * @param inValues Array of values to interpolate between.
@@ -141,6 +153,33 @@ template <class T>
 constexpr T GCUtils::Math::GetVectorSizeSquared(const UE::Math::TVector<T>& inVector)
 {
     return FMath::Square(inVector.X) + FMath::Square(inVector.Y) + FMath::Square(inVector.Z);
+}
+
+template <class T>
+bool GCUtils::Math::IsVectorInDirectionDegrees(
+    const UE::Math::TVector<T>& a,
+    const UE::Math::TVector<T>& b,
+    const T degAngleTolerance)
+{
+    return IsVectorInDirectionRadians(a, b, FMath::DegreesToRadians(degAngleTolerance));
+}
+
+template <class T>
+bool GCUtils::Math::IsVectorInDirectionRadians(
+    const UE::Math::TVector<T>& a,
+    const UE::Math::TVector<T>& b,
+    const T radAngleTolerance)
+{
+    const float dot = FVector::DotProduct(a.GetSafeNormal(), b.GetSafeNormal());
+
+    const float radianAngle = FMath::Acos(dot);
+    const bool isNotWithinForwardAngle = radianAngle > radAngleTolerance;
+    if (isNotWithinForwardAngle)
+    {
+        return false;
+    }
+
+    return true;
 }
 
 template <class TValue, class TAlpha>
