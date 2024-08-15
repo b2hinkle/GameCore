@@ -12,7 +12,7 @@ void GCUtils::DebugDrawing::DrawDebugCollisionShape(
     const FQuat& inRotation,
     const FColor& inColor,
     const int32 inNumSegments,
-    const bool inShouldLinesPersistent,
+    const bool inShouldLinesPersist,
     const float inLifetime,
     const uint8 inDepthPriority,
     const float inThickness)
@@ -27,7 +27,7 @@ void GCUtils::DebugDrawing::DrawDebugCollisionShape(
                 inCenter,
                 size,
                 inColor,
-                inShouldLinesPersistent,
+                inShouldLinesPersist,
                 inLifetime,
                 inDepthPriority);
             break;
@@ -41,7 +41,7 @@ void GCUtils::DebugDrawing::DrawDebugCollisionShape(
                 extent,
                 inRotation,
                 inColor,
-                inShouldLinesPersistent,
+                inShouldLinesPersist,
                 inLifetime,
                 inDepthPriority,
                 inThickness);
@@ -56,7 +56,7 @@ void GCUtils::DebugDrawing::DrawDebugCollisionShape(
                 radius,
                 inNumSegments,
                 inColor,
-                inShouldLinesPersistent,
+                inShouldLinesPersist,
                 inLifetime,
                 inDepthPriority,
                 inThickness);
@@ -74,7 +74,7 @@ void GCUtils::DebugDrawing::DrawDebugCollisionShape(
                 radius,
                 inRotation,
                 inColor,
-                inShouldLinesPersistent,
+                inShouldLinesPersist,
                 inLifetime,
                 inDepthPriority,
                 inThickness);
@@ -88,7 +88,7 @@ void GCUtils::DebugDrawing::DrawDebugLineDotted(
     const FVector& inStart,
     const FVector& inEnd,
     const FColor& inColor,
-    const bool inShouldLinesPersistent,
+    const bool inShouldLinesPersist,
     const float inLifetime,
     const uint8 inDepthPriority,
     const float inThickness,
@@ -112,7 +112,151 @@ void GCUtils::DebugDrawing::DrawDebugLineDotted(
         const FVector lineSegmentStart = inStart + (lineDirection * distanceToLineSegmentStart);
         const FVector lineSegmentEnd = inStart + (lineDirection * distanceToLineSegmentEnd);
 
-        ::DrawDebugLine(inWorld, lineSegmentStart, lineSegmentEnd, inColor, inShouldLinesPersistent, inLifetime, inDepthPriority, inThickness);
+        ::DrawDebugLine(
+            inWorld,
+            lineSegmentStart,
+            lineSegmentEnd,
+            inColor,
+            inShouldLinesPersist,
+            inLifetime,
+            inDepthPriority,
+            inThickness);
+    }
+}
+
+void GCUtils::DebugDrawing::DrawDebugArrowPoint(
+    const UWorld* inWorld,
+    const FVector& inPoint,
+    const FVector& inDirection,
+    const FVector::FReal inArrowLength,
+    const FColor& inColor,
+    const bool inShouldLinesPersist,
+    const float inLifetime,
+    const uint8 inDepthPriority,
+    const float inThickness)
+{
+    const FVector start = inPoint;
+    const FVector end = inPoint + (inDirection * inArrowLength);
+    DrawDebugArrowLine(
+        inWorld,
+        start,
+        end,
+        inColor,
+        inShouldLinesPersist,
+        inLifetime,
+        inDepthPriority,
+        inThickness);
+}
+
+void GCUtils::DebugDrawing::DrawDebugArrowPoint(
+    const UWorld* inWorld,
+    const FVector::FReal inArrowheadLength,
+    const FVector::FReal inArrowheadAngleRadians,
+    const FVector& inPoint,
+    const FVector& inDirection,
+    const FVector::FReal inArrowLength,
+    const FColor& inColor,
+    const bool inShouldLinesPersist,
+    const float inLifetime,
+    const uint8 inDepthPriority,
+    const float inThickness)
+{
+    const FVector start = inPoint;
+    const FVector end = inPoint + (inDirection * inArrowLength);
+    DrawDebugArrowLine(
+        inWorld,
+        inArrowheadLength,
+        inArrowheadAngleRadians,
+        start,
+        end,
+        inColor,
+        inShouldLinesPersist,
+        inLifetime,
+        inDepthPriority,
+        inThickness);
+}
+
+void GCUtils::DebugDrawing::DrawDebugArrowLine(
+    const UWorld* inWorld,
+    const FVector& inStart,
+    const FVector& inEnd,
+    const FColor& inColor,
+    const bool inShouldLinesPersist,
+    const float inLifetime,
+    const uint8 inDepthPriority,
+    const float inThickness)
+{
+    const FVector::FReal arrowheadLength = 10.0 * inThickness;
+    constexpr FVector::FReal arrowheadAngleRadians = FMath::DegreesToRadians(10.0);
+    DrawDebugArrowLine(
+        inWorld,
+        arrowheadLength,
+        arrowheadAngleRadians,
+        inStart,
+        inEnd,
+        inColor,
+        inShouldLinesPersist,
+        inLifetime,
+        inDepthPriority,
+        inThickness);
+}
+void GCUtils::DebugDrawing::DrawDebugArrowLine(
+    const UWorld* inWorld,
+    const FVector::FReal inArrowheadLength,
+    const FVector::FReal inArrowheadAngleRadians,
+    const FVector& inStart,
+    const FVector& inEnd,
+    const FColor& inColor,
+    const bool inShouldLinesPersist,
+    const float inLifetime,
+    const uint8 inDepthPriority,
+    const float inThickness)
+{
+    // Draw the line.
+    {
+        ::DrawDebugLine(
+            inWorld,
+            inStart,
+            inEnd,
+            inColor,
+            inShouldLinesPersist,
+            inLifetime,
+            inDepthPriority,
+            inThickness);
+    }
+
+    // Draw a screen-space point at start point.
+    {
+        constexpr float size = 10.f;
+        ::DrawDebugPoint(
+            inWorld,
+            inStart,
+            size,
+            inColor,
+            inShouldLinesPersist,
+            inLifetime,
+            inDepthPriority);
+    }
+
+    const FVector arrowDirection = (inEnd - inStart).GetSafeNormal();
+
+    // Draw an arrowhead at the end point.
+    {
+        const FVector coneDirection = -arrowDirection;
+        constexpr int32 numSides = 4;
+        ::DrawDebugCone(
+            inWorld,
+            inEnd,
+            coneDirection,
+            inArrowheadLength,
+            inArrowheadAngleRadians,
+            inArrowheadAngleRadians,
+            numSides,
+            inColor,
+            inShouldLinesPersist,
+            inLifetime,
+            inDepthPriority,
+            inThickness);
     }
 }
 #endif // UE_ENABLE_DEBUG_DRAWING

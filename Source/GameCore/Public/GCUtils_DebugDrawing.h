@@ -20,7 +20,7 @@ namespace GCUtils::DebugDrawing
         const FQuat& inRotation,
         const FColor& inColor,
         const int32 inNumSegments = 16,
-        const bool inShouldLinesPersistent = false,
+        const bool inShouldLinesPersist = false,
         const float inLifetime = -1.f,
         const uint8 inDepthPriority = 0u,
         const float inThickness = 0.f);
@@ -33,11 +33,69 @@ namespace GCUtils::DebugDrawing
         const FVector& inStart,
         const FVector& inEnd,
         const FColor& inColor,
-        const bool inShouldLinesPersistent = false,
+        const bool inShouldLinesPersist = false,
         const float inLifetime = -1.f,
         const uint8 inDepthPriority = 0u,
         const float inThickness = 0.f,
         const FVector::FReal inSegmentsLength = 10.0,
         const FVector::FReal inSegmentsSpacingLength = 10.0);
+
+    /**
+     * @brief Draw a debug point with an arrowhead pointing in a direction. Overload that
+     *        provides an easy, automatic arrowhead length and angle based on the given thickness.
+     */
+    GAMECORE_API void DrawDebugArrowPoint(
+        const UWorld* inWorld,
+        const FVector& inPoint,
+        const FVector& inDirection,
+        const FVector::FReal inArrowLength,
+        const FColor& inColor,
+        const bool inShouldLinesPersist = false,
+        const float inLifetime = -1.f,
+        const uint8 inDepthPriority = 0u,
+        const float inThickness = 0.f);
+    /**
+     * @brief Draw a debug point with an arrowhead pointing in a direction.
+     */
+    GAMECORE_API void DrawDebugArrowPoint(
+        const UWorld* inWorld,
+        const FVector::FReal inArrowheadLength,
+        const FVector::FReal inArrowheadAngleRadians,
+        const FVector& inPoint,
+        const FVector& inDirection,
+        const FVector::FReal inArrowLength,
+        const FColor& inColor,
+        const bool inShouldLinesPersist = false,
+        const float inLifetime = -1.f,
+        const uint8 inDepthPriority = 0u,
+        const float inThickness = 0.f);
+
+    /**
+     * @brief Draw a debug line with an arrowhead pointing beyond the endpoint. Overload that
+     *        provides an easy, automatic arrowhead length and angle based on the given thickness.
+     */
+    GAMECORE_API void DrawDebugArrowLine(
+        const UWorld* inWorld,
+        const FVector& inStart,
+        const FVector& inEnd,
+        const FColor& inColor,
+        const bool inShouldLinesPersist = false,
+        const float inLifetime = -1.f,
+        const uint8 inDepthPriority = 0u,
+        const float inThickness = 0.f);
+    /**
+     * @brief Draw a debug line with an arrowhead pointing beyond the endpoint.
+     */
+    GAMECORE_API void DrawDebugArrowLine(
+        const UWorld* inWorld,
+        const FVector::FReal inArrowheadLength,
+        const FVector::FReal inArrowheadAngleRadians,
+        const FVector& inStart,
+        const FVector& inEnd,
+        const FColor& inColor,
+        const bool inShouldLinesPersist = false,
+        const float inLifetime = -1.f,
+        const uint8 inDepthPriority = 0u,
+        const float inThickness = 0.f);
 }
 #endif // UE_ENABLE_DEBUG_DRAWING

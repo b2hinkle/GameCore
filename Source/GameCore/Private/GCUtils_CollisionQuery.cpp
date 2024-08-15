@@ -440,18 +440,41 @@ void GCUtils::CollisionQuery::OrderHitResultsInForwardsDirection(TArray<FExitAwa
 void GCUtils::CollisionQuery::DrawDebugForBackwardsStart(const UWorld* InWorld, const FCollisionShape& InCollisionShape, const FQuat& InRotation, const FVector& InBackwardsStart, const FVector& InBackwardsDir)
 {
 #if UE_ENABLE_DEBUG_DRAWING
-    const FColor DebugColor = FColor::Cyan;
-    const float DebugLifetime = 20.f;
+    const FColor& color = FColor::Cyan;
+    constexpr bool shouldLinesPersist = false;
+    constexpr float lifetime = 20.f;
+    constexpr uint8 depthPriority = 0u;
+    constexpr float thickness = 1.f;
 
     if (InCollisionShape.IsLine() == false)
     {
-        // Draw scene cast shape
-        DebugDrawing::DrawDebugCollisionShape(InWorld, InBackwardsStart, InCollisionShape, InRotation, DebugColor, 16, false, DebugLifetime, 0, 1.f);
+        // Draw scene cast shape.
+        constexpr int32 numSegments = 16;
+        DebugDrawing::DrawDebugCollisionShape(
+            InWorld,
+            InBackwardsStart,
+            InCollisionShape,
+            InRotation,
+            color,
+            numSegments,
+            shouldLinesPersist,
+            lifetime,
+            depthPriority,
+            thickness);
     }
 
-    // Draw backwards arrow
-    DrawDebugLine(InWorld, InBackwardsStart, InBackwardsStart + (InBackwardsDir * 20.f), DebugColor, false, DebugLifetime, 0, 1.f);
-    DrawDebugCone(InWorld, InBackwardsStart + (InBackwardsDir * 20.f), -InBackwardsDir, 10.f, FMath::DegreesToRadians(10.f), FMath::DegreesToRadians(10.f), 4, DebugColor, false, DebugLifetime, 0, 1.f);
+    // Draw backwards arrow.
+    constexpr FVector::FReal arrowLength = 20.0;
+    DebugDrawing::DrawDebugArrowPoint(
+        InWorld,
+        InBackwardsStart,
+        InBackwardsDir,
+        arrowLength,
+        color,
+        shouldLinesPersist,
+        lifetime,
+        depthPriority,
+        thickness);
 #endif // UE_ENABLE_DEBUG_DRAWING
 }
 //  END private functions
