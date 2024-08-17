@@ -2,6 +2,7 @@
 
 #include "GCUtils_Asset.h"
 
+#include "CoreMinimal.h"
 #include "Engine/AssetManager.h"
 #include "GCUtils_Log.h"
 
@@ -103,7 +104,7 @@ bool GCUtils::Asset::SoftIsA(const FSoftObjectPath& objectPath, const FSoftObjec
         targetClassPath);
 }
 
-bool GCUtils::Asset::SoftIsChildOf(FSoftObjectPath classPath, const UClass* targetClass)
+bool GCUtils::Asset::SoftIsChildOf(FSoftObjectPath&& classPath, const UClass* targetClass)
 {
     TRACE_CPUPROFILER_EVENT_SCOPE(GCUtils::Asset::SoftIsChildOf(FSoftObjectPath, const UClass*));
 
@@ -187,7 +188,7 @@ bool GCUtils::Asset::SoftIsChildOf(const UClass* classPtr, const FSoftObjectPath
     return classPtr->IsChildOf(resolvedTargetClass);
 }
 
-bool GCUtils::Asset::SoftIsChildOf(FSoftObjectPath classPath, const FSoftObjectPath& targetClassPath)
+bool GCUtils::Asset::SoftIsChildOf(FSoftObjectPath&& classPath, const FSoftObjectPath& targetClassPath)
 {
     TRACE_CPUPROFILER_EVENT_SCOPE(GCUtils::Asset::SoftIsChildOf(FSoftObjectPath, const FSoftObjectPath&));
 

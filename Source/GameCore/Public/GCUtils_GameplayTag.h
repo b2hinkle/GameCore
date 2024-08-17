@@ -17,7 +17,7 @@ namespace GCUtils::GameplayTag
     GAMECORE_API FGameplayTagQuery CombineGameplayTagQueriesAnyExprMatch(
         const FGameplayTagQuery& queryA,
         const FGameplayTagQuery& queryB,
-        FString newQueryUserDescription = FString());
+        FString&& newQueryUserDescription = FString());
 
     /**
      * @brief Combine two gameplay tag queries by an "ALL" expression.
@@ -26,7 +26,7 @@ namespace GCUtils::GameplayTag
     GAMECORE_API FGameplayTagQuery CombineGameplayTagQueriesAllExprMatch(
         const FGameplayTagQuery& queryA,
         const FGameplayTagQuery& queryB,
-        FString newQueryUserDescription = FString());
+        FString&& newQueryUserDescription = FString());
 
     /**
      * @brief Combine two gameplay tag queries by a "NONE" expression.
@@ -35,5 +35,5 @@ namespace GCUtils::GameplayTag
     GAMECORE_API FGameplayTagQuery CombineGameplayTagQueriesNoExprMatch(
         const FGameplayTagQuery& queryA,
         const FGameplayTagQuery& queryB,
-        FString newQueryUserDescription = FString());
+        FString&& newQueryUserDescription = FString());
 }

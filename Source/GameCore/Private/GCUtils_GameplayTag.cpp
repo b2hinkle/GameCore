@@ -2,28 +2,25 @@
 
 #include "GCUtils_GameplayTag.h"
 
-namespace GCUtils::GameplayTag
+namespace
 {
-    template
-        <
-        EGameplayTagQueryExprType QueryExpressionType,
-        class = typename TEnableIf
-            <
-            QueryExpressionType == EGameplayTagQueryExprType::AnyExprMatch
-            || QueryExpressionType == EGameplayTagQueryExprType::AllExprMatch
-            || QueryExpressionType == EGameplayTagQueryExprType::NoExprMatch
-            >::Type
-        >
-    static FGameplayTagQuery CombineGameplayTagQueries(
+    /**
+     * @brief Internal-linkage template implementation.
+     */
+    template <EGameplayTagQueryExprType QueryExpressionType>
+        requires (QueryExpressionType == EGameplayTagQueryExprType::AnyExprMatch
+                || QueryExpressionType == EGameplayTagQueryExprType::AllExprMatch
+                || QueryExpressionType == EGameplayTagQueryExprType::NoExprMatch)
+    FGameplayTagQuery CombineGameplayTagQueries(
         const FGameplayTagQuery& queryA,
         const FGameplayTagQuery& queryB,
-        FString newQueryUserDescription);
+        FString&& newQueryUserDescription);
 }
 
 FGameplayTagQuery GCUtils::GameplayTag::CombineGameplayTagQueriesAnyExprMatch(
     const FGameplayTagQuery& queryA,
     const FGameplayTagQuery& queryB,
-    FString newQueryUserDescription)
+    FString&& newQueryUserDescription)
 {
     return CombineGameplayTagQueries<EGameplayTagQueryExprType::AnyExprMatch>(
         queryA,
@@ -34,7 +31,7 @@ FGameplayTagQuery GCUtils::GameplayTag::CombineGameplayTagQueriesAnyExprMatch(
 FGameplayTagQuery GCUtils::GameplayTag::CombineGameplayTagQueriesAllExprMatch(
     const FGameplayTagQuery& queryA,
     const FGameplayTagQuery& queryB,
-    FString newQueryUserDescription)
+    FString&& newQueryUserDescription)
 {
     return CombineGameplayTagQueries<EGameplayTagQueryExprType::AllExprMatch>(
         queryA,
@@ -45,7 +42,7 @@ FGameplayTagQuery GCUtils::GameplayTag::CombineGameplayTagQueriesAllExprMatch(
 FGameplayTagQuery GCUtils::GameplayTag::CombineGameplayTagQueriesNoExprMatch(
     const FGameplayTagQuery& queryA,
     const FGameplayTagQuery& queryB,
-    FString newQueryUserDescription)
+    FString&& newQueryUserDescription)
 {
     return CombineGameplayTagQueries<EGameplayTagQueryExprType::NoExprMatch>(
         queryA,
@@ -53,40 +50,46 @@ FGameplayTagQuery GCUtils::GameplayTag::CombineGameplayTagQueriesNoExprMatch(
         MoveTemp(newQueryUserDescription));
 }
 
-template <EGameplayTagQueryExprType QueryExpressionType, class>
-FGameplayTagQuery GCUtils::GameplayTag::CombineGameplayTagQueries(
-    const FGameplayTagQuery& queryA,
-    const FGameplayTagQuery& queryB,
-    FString newQueryUserDescription)
+namespace
 {
-    // If one query is empty, return the other. It's important to cover these cases
-    // because doing GetQueryExpr with an empty gameplay tag query would give invalid results.
-
-    if (queryA.IsEmpty())
+    template <EGameplayTagQueryExprType QueryExpressionType>
+        requires (QueryExpressionType == EGameplayTagQueryExprType::AnyExprMatch
+                || QueryExpressionType == EGameplayTagQueryExprType::AllExprMatch
+                || QueryExpressionType == EGameplayTagQueryExprType::NoExprMatch)
+    FGameplayTagQuery CombineGameplayTagQueries(
+        const FGameplayTagQuery& queryA,
+        const FGameplayTagQuery& queryB,
+        FString&& newQueryUserDescription)
     {
-        return queryB;
+        // If one query is empty, return the other. It's important to cover these cases
+        // because doing GetQueryExpr with an empty gameplay tag query would give invalid results.
+
+        if (queryA.IsEmpty())
+        {
+            return queryB;
+        }
+
+        if (queryB.IsEmpty())
+        {
+            return queryA;
+        }
+
+        // Combine the queries into a query expression.
+
+        FGameplayTagQueryExpression queryExpressionA;
+        queryA.GetQueryExpr(queryExpressionA);
+
+        FGameplayTagQueryExpression queryExpressionB;
+        queryB.GetQueryExpr(queryExpressionB);
+
+        FGameplayTagQueryExpression queryExpressionCombined;
+        queryExpressionCombined.ExprType = QueryExpressionType;
+        queryExpressionCombined.AddExpr(queryExpressionA);
+        queryExpressionCombined.AddExpr(queryExpressionB);
+
+        // Build query from expression.
+
+        return FGameplayTagQuery::BuildQuery(queryExpressionCombined,
+            MoveTemp(newQueryUserDescription));
     }
-
-    if (queryB.IsEmpty())
-    {
-        return queryA;
-    }
-
-    // Combine the queries into a query expression.
-
-    FGameplayTagQueryExpression queryExpressionA;
-    queryA.GetQueryExpr(queryExpressionA);
-
-    FGameplayTagQueryExpression queryExpressionB;
-    queryB.GetQueryExpr(queryExpressionB);
-
-    FGameplayTagQueryExpression queryExpressionCombined;
-    queryExpressionCombined.ExprType = QueryExpressionType;
-    queryExpressionCombined.AddExpr(queryExpressionA);
-    queryExpressionCombined.AddExpr(queryExpressionB);
-
-    // Build query from expression.
-
-    return FGameplayTagQuery::BuildQuery(queryExpressionCombined,
-        MoveTemp(newQueryUserDescription));
 }

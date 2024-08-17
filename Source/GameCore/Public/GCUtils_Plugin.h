@@ -2,7 +2,8 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
+#include "Templates/SharedPointer.h"
+#include "Containers/StringFwd.h"
 
 class IPlugin;
 
@@ -13,7 +14,7 @@ class IPlugin;
  */
 namespace GCUtils::Plugin
 {
-    DECLARE_DELEGATE_OneParam(FPluginRefNativeDelegate, TSharedRef<IPlugin>);
+    DECLARE_DELEGATE_OneParam(FPluginRefNativeDelegate, TSharedRef<IPlugin>&&);
 
     /**
      * @brief Set up using content from plugins that "opt in" to us doing so. "Opting in" means
@@ -24,8 +25,8 @@ namespace GCUtils::Plugin
      */
     GAMECORE_API void UseContentFromDependentPlugins(
         const FStringView& inSelfPluginNameString,
-        FPluginRefNativeDelegate inOnPluginAddContentCallback,
-        FPluginRefNativeDelegate inOnPluginRemoveContentCallback);
+        FPluginRefNativeDelegate&& inOnPluginAddContentCallback,
+        FPluginRefNativeDelegate&& inOnPluginRemoveContentCallback);
 
     /**
      * @brief Determine whether a plugin "opts in" to us using their content. Plugins that depend on us "opt in".

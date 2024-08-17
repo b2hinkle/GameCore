@@ -2,7 +2,9 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
+#include "UObject/SoftObjectPath.h"
+#include "UObject/SoftObjectPtr.h"
+#include "Containers/StringView.h"
 
 DECLARE_LOG_CATEGORY_EXTERN(LogGCUtils_Asset, Log, All);
 
@@ -115,7 +117,7 @@ namespace GCUtils::Asset
      * @param classPath Unresolved or unloaded class path.
      */
     template <class TTargetClass>
-    bool SoftIsChildOf(FSoftObjectPath classPath);
+    bool SoftIsChildOf(FSoftObjectPath&& classPath);
 
     /**
      * @brief Determines whether a class is a child of the target class without loading.
@@ -125,7 +127,7 @@ namespace GCUtils::Asset
      * @param classPath Unresolved or unloaded class path.
      * @param targetClass Loaded target class.
      */
-    GAMECORE_API bool SoftIsChildOf(FSoftObjectPath classPath, const UClass* targetClass);
+    GAMECORE_API bool SoftIsChildOf(FSoftObjectPath&& classPath, const UClass* targetClass);
 
     /**
      * @brief Determines whether a class is a child of the target class without loading.
@@ -145,7 +147,7 @@ namespace GCUtils::Asset
      * @param classPath Unresolved or unloaded class path.
      * @param targetClassPath Unresolved or unloaded target class path.
      */
-    GAMECORE_API bool SoftIsChildOf(FSoftObjectPath classPath, const FSoftObjectPath& targetClassPath);
+    GAMECORE_API bool SoftIsChildOf(FSoftObjectPath&& classPath, const FSoftObjectPath& targetClassPath);
 
     /**
      * @brief Get on-disk asset data for an asset that we know isn't loaded and warn if it is in memory.
@@ -267,7 +269,7 @@ bool GCUtils::Asset::SoftIsA(const FSoftObjectPath& objectPath)
 }
 
 template <class TTargetClass>
-bool GCUtils::Asset::SoftIsChildOf(FSoftObjectPath classPath)
+bool GCUtils::Asset::SoftIsChildOf(FSoftObjectPath&& classPath)
 {
     return SoftIsChildOf(MoveTemp(classPath), TTargetClass::StaticClass());
 }

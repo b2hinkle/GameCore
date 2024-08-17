@@ -2,14 +2,15 @@
 
 #include "GCUtils_Plugin.h"
 
+#include "CoreMinimal.h"
 #include "Interfaces/IPluginManager.h"
 #include "PluginDescriptor.h"
 #include "PluginReferenceDescriptor.h"
 
 void GCUtils::Plugin::UseContentFromDependentPlugins(
     const FStringView& inSelfPluginNameString,
-    FPluginRefNativeDelegate inOnPluginAddContentCallback,
-    FPluginRefNativeDelegate inOnPluginRemoveContentCallback)
+    FPluginRefNativeDelegate&& inOnPluginAddContentCallback,
+    FPluginRefNativeDelegate&& inOnPluginRemoveContentCallback)
 {
     // Look for plugins that have content for us to use.
     for (const TSharedRef<IPlugin>& plugin : IPluginManager::Get().GetEnabledPluginsWithContent())
@@ -23,7 +24,7 @@ void GCUtils::Plugin::UseContentFromDependentPlugins(
         if (DoesPluginUseUs(inSelfPluginNameString, plugin))
         {
             // Use this plugin's content.
-            inOnPluginAddContentCallback.ExecuteIfBound(plugin);
+            inOnPluginAddContentCallback.ExecuteIfBound(TSharedRef(plugin));
         }
     }
 
