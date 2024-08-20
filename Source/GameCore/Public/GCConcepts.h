@@ -3,6 +3,9 @@
 #pragma once
 
 #include "type_traits"
+#include "Templates/Casts.h"
+
+class UObject;
 
 namespace GCConcepts
 {
@@ -25,4 +28,16 @@ namespace GCConcepts
      */
     template <class T>
     concept NonLvalueReference = !std::is_lvalue_reference_v<T>;
+
+    template <class T>
+    concept UObjectPointer = std::is_pointer_v<T> && std::is_base_of_v<std::remove_pointer_t<T>, UObject>;
+
+    template <class T>
+    concept UObjectReference = std::is_reference_v<T> && std::is_base_of_v<std::remove_reference_t<T>, UObject>;
+
+    template <class T>
+    concept IInterfacePointer = std::is_pointer_v<T> && TIsIInterface<std::remove_pointer_t<T>>::Value;
+
+    template <class T>
+    concept IInterfaceReference = std::is_reference_v<T> && TIsIInterface<std::remove_reference_t<T>>::Value;
 }
