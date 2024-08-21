@@ -3,9 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Templates/GCIsUObjectOrIInterface.h"
-#include "Templates/GCRemovePtrOrRef.h"
-#include "type_traits"
+#include <type_traits>
 #include "GCConcepts.h"
 
 namespace GCUtils
@@ -33,44 +31,64 @@ namespace GCUtils
      *
      * E.g., you are up-casting.
      */
-    template
-        <
-        class TTo, class TFrom,
-        class = typename TEnableIf
-            <
-            TGCIsUObjectOrIInterface<typename TGCRemovePtrOrRef<TTo>::Type>::Value
-            >::Type,
-        class = typename TEnableIf
-            <
-            //
-            // Note: We remove reference from TFrom first things first to handle case where forwarding reference parameter makes TFrom an lvalue reference.
-            //
-            // E.g., lvalue UObject* argument -> UObject*& parameter.
-            //
-            TGCIsUObjectOrIInterface<typename TRemovePointer<typename TRemoveReference<TFrom>::Type>::Type>::Value
-            >::Type
-        >
-    FORCEINLINE_DEBUGGABLE TTo StaticCastChecked(TFrom&& inObject);
+    template <GCConcepts::UObjectOrIInterfacePointer TToPtr, GCConcepts::UObjectOrIInterfacePointer TFromPtr>
+    FORCEINLINE_DEBUGGABLE TToPtr StaticCastChecked(TFromPtr inObject);
+    /**
+     * If inObject is already guaranteed to be a TTo.
+     *
+     * E.g., you load an asset by class and you are certain the result is a TTo.
+     *
+     * E.g., you are up-casting.
+     */
+    template <GCConcepts::UObjectOrIInterfacePointer TToPtr, GCConcepts::UObjectOrIInterfaceReference TFromRef>
+    FORCEINLINE_DEBUGGABLE TToPtr StaticCastChecked(TFromRef&& inObject);
+    /**
+     * If inObject is already guaranteed to be a TTo.
+     *
+     * E.g., you load an asset by class and you are certain the result is a TTo.
+     *
+     * E.g., you are up-casting.
+     */
+    template <GCConcepts::UObjectOrIInterfaceReference TToRef, GCConcepts::UObjectOrIInterfacePointer TFromPtr>
+    FORCEINLINE_DEBUGGABLE TToRef StaticCastChecked(TFromPtr inObject);
+    /**
+     * If inObject is already guaranteed to be a TTo.
+     *
+     * E.g., you load an asset by class and you are certain the result is a TTo.
+     *
+     * E.g., you are up-casting.
+     */
+    template <GCConcepts::UObjectOrIInterfaceReference TToRef, GCConcepts::UObjectOrIInterfaceReference TFromRef>
+    FORCEINLINE_DEBUGGABLE TToRef StaticCastChecked(TFromRef&& inObject);
 
     /**
      * If static casting isn't an option but inObject is still guaranteed to be a TTo.
      *
      * Necessary for casting to interface classes that aren't part of TFrom's inheritance chain.
      */
-    template
-        <
-        class TTo, class TFrom,
-        class = typename TEnableIf
-            <
-            TGCIsUObjectOrIInterface<typename TGCRemovePtrOrRef<TTo>::Type>::Value
-            >::Type,
-        class = typename TEnableIf
-            <
-            // See StaticCastChecked() comment.
-            TGCIsUObjectOrIInterface<typename TRemovePointer<typename TRemoveReference<TFrom>::Type>::Type>::Value
-            >::Type
-        >
-    FORCEINLINE_DEBUGGABLE TTo ReinterpretCastChecked(TFrom&& inObject);
+    template <GCConcepts::UObjectOrIInterfacePointer TToPtr, GCConcepts::UObjectOrIInterfacePointer TFromPtr>
+    FORCEINLINE_DEBUGGABLE TToPtr ReinterpretCastChecked(TFromPtr inObject);
+    /**
+     * If static casting isn't an option but inObject is still guaranteed to be a TTo.
+     *
+     * Necessary for casting to interface classes that aren't part of TFrom's inheritance chain.
+     */
+    template <GCConcepts::UObjectOrIInterfacePointer TToPtr, GCConcepts::UObjectOrIInterfaceReference TFromRef>
+    FORCEINLINE_DEBUGGABLE TToPtr ReinterpretCastChecked(TFromRef&& inObject);
+    /**
+     * If static casting isn't an option but inObject is still guaranteed to be a TTo.
+     *
+     * Necessary for casting to interface classes that aren't part of TFrom's inheritance chain.
+     */
+    template <GCConcepts::UObjectOrIInterfaceReference TToRef, GCConcepts::UObjectOrIInterfacePointer TFromPtr>
+    FORCEINLINE_DEBUGGABLE TToRef ReinterpretCastChecked(TFromPtr inObject);
+    /**
+     * If static casting isn't an option but inObject is still guaranteed to be a TTo.
+     *
+     * Necessary for casting to interface classes that aren't part of TFrom's inheritance chain.
+     */
+    template <GCConcepts::UObjectOrIInterfaceReference TToRef, GCConcepts::UObjectOrIInterfaceReference TFromRef>
+    FORCEINLINE_DEBUGGABLE TToRef ReinterpretCastChecked(TFromRef&& inObject);
 }
 
 template <GCConcepts::NonLvalueReference T>
@@ -81,52 +99,90 @@ T& GCUtils::Materialize(T&& inTemporary)
     return static_cast<T&>(inTemporary);
 }
 
-template
-    <
-    class TTo, class TFrom,
-    class,
-    class
-    >
-TTo GCUtils::StaticCastChecked(TFrom&& inObject)
+template <GCConcepts::UObjectOrIInterfacePointer TToPtr, GCConcepts::UObjectOrIInterfacePointer TFromPtr>
+TToPtr GCUtils::StaticCastChecked(TFromPtr inObject)
 {
 #if DO_CHECK
-    if constexpr (TIsPointer<TTo>::Value)
+    if (inObject)
     {
-        if (inObject)
-        {
-            check(Cast<typename TRemovePointer<TTo>::Type>(inObject));
-        }
-    }
-    else if constexpr (TIsReferenceType<TTo>::Value)
-    {
-        check(Cast<typename TRemoveReference<TTo>::Type>(&inObject));
+        using FToType = std::remove_pointer_t<TToPtr>;
+        check(Cast<FToType>(inObject));
     }
 #endif // DO_CHECK
 
-    return static_cast<TTo>(Forward<TFrom>(inObject));
+    return static_cast<TToPtr>(inObject);
+}
+template <GCConcepts::UObjectOrIInterfacePointer TToPtr, GCConcepts::UObjectOrIInterfaceReference TFromRef>
+TToPtr GCUtils::StaticCastChecked(TFromRef&& inObject)
+{
+#if DO_CHECK
+    {
+        using FToType = std::remove_pointer_t<TToPtr>;
+        check(Cast<FToType>(&inObject));
+    }
+#endif // DO_CHECK
+
+    return static_cast<TToPtr>(&inObject);
+}
+template <GCConcepts::UObjectOrIInterfaceReference TToRef, GCConcepts::UObjectOrIInterfacePointer TFromPtr>
+TToRef GCUtils::StaticCastChecked(TFromPtr inObject)
+{
+    check(inObject);
+    return StaticCastChecked<TToRef>(*inObject);
+}
+template <GCConcepts::UObjectOrIInterfaceReference TToRef, GCConcepts::UObjectOrIInterfaceReference TFromRef>
+TToRef GCUtils::StaticCastChecked(TFromRef&& inObject)
+{
+#if DO_CHECK
+    {
+        using FToType = std::remove_reference_t<TToRef>;
+        check(Cast<FToType>(&inObject));
+    }
+#endif // DO_CHECK
+
+    return static_cast<TToRef>(Forward<TFromRef>(inObject));
 }
 
-template
-    <
-    class TTo, class TFrom,
-    class,
-    class
-    >
-TTo GCUtils::ReinterpretCastChecked(TFrom&& inObject)
+template <GCConcepts::UObjectOrIInterfacePointer TToPtr, GCConcepts::UObjectOrIInterfacePointer TFromPtr>
+TToPtr GCUtils::ReinterpretCastChecked(TFromPtr inObject)
 {
 #if DO_CHECK
-    if constexpr (TIsPointer<TTo>::Value)
+    if (inObject)
     {
-        if (inObject)
-        {
-            check(Cast<typename TRemovePointer<TTo>::Type>(inObject));
-        }
-    }
-    else if constexpr (TIsReferenceType<TTo>::Value)
-    {
-        check(Cast<typename TRemoveReference<TTo>::Type>(&inObject));
+        using FToType = std::remove_pointer_t<TToPtr>;
+        check(Cast<FToType>(inObject));
     }
 #endif // DO_CHECK
 
-    return reinterpret_cast<TTo>(Forward<TFrom>(inObject));
+    return reinterpret_cast<TToPtr>(inObject);
+}
+template <GCConcepts::UObjectOrIInterfacePointer TToPtr, GCConcepts::UObjectOrIInterfaceReference TFromRef>
+TToPtr GCUtils::ReinterpretCastChecked(TFromRef&& inObject)
+{
+#if DO_CHECK
+    {
+        using FToType = std::remove_pointer_t<TToPtr>;
+        check(Cast<FToType>(&inObject));
+    }
+#endif // DO_CHECK
+
+    return reinterpret_cast<TToPtr>(&inObject);
+}
+template <GCConcepts::UObjectOrIInterfaceReference TToRef, GCConcepts::UObjectOrIInterfacePointer TFromPtr>
+TToRef GCUtils::ReinterpretCastChecked(TFromPtr inObject)
+{
+    check(inObject);
+    return ReinterpretCastChecked<TToRef>(*inObject);
+}
+template <GCConcepts::UObjectOrIInterfaceReference TToRef, GCConcepts::UObjectOrIInterfaceReference TFromRef>
+TToRef GCUtils::ReinterpretCastChecked(TFromRef&& inObject)
+{
+#if DO_CHECK
+    {
+        using FToType = std::remove_reference_t<TToRef>;
+        check(Cast<FToType>(&inObject));
+    }
+#endif // DO_CHECK
+
+    return reinterpret_cast<TToRef>(Forward<TFromRef>(inObject));
 }

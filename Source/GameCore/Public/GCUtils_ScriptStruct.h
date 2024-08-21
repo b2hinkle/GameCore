@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "type_traits"
+#include <type_traits>
 #include "GCConcepts.h"
 #include "Templates/Models.h"
 #include "Concepts/StaticStructProvider.h"
