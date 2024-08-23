@@ -59,12 +59,13 @@ namespace GCUtils::String
     TStringBuilderWithBuffer<TCharType, BufferSize> WriteToStringGeneric(TArgs&&... inArgs);
 
     /**
-     * @brief Makes a prvalue string builder initialized with the given callback.
+     * @brief Create a string builder and initialize it from a callback while still being constructed as a prvalue.
      * @param inInitializationCallback Callback function for initializing the string builder as however needed.
-     * @return String builder constructed in place (copy-elided) and initialized based on the callback.
+     * @return String builder constructed in place (copy/move-elided) and initialized based on the callback.
      */
     template <int32 BufferSize, class TCharType = TCHAR>
-    TStringBuilderWithBuffer<TCharType, BufferSize> MakeStringBuilder(const TStringBuilderCallback<TCharType>& inInitializationCallback);
+    TStringBuilderWithBuffer<TCharType, BufferSize> ConstructStringBuilder(
+        const TStringBuilderCallback<TCharType>& inInitializationCallback);
 
     template <int32 BufferSize = 256, class TCharType = TCHAR>
     TStringBuilderWithBuffer<TCharType, BufferSize> GetUObjectNameSafe(const UObject* inUObject);
@@ -73,7 +74,7 @@ namespace GCUtils::String
     TStringBuilderWithBuffer<TCharType, BufferSize> GetUObjectName(const UObject& inUObject);
 
     /**
-     * @note UObjectBaseUtility::GetPathName() only supports TCHAR at the moment. You will
+     * @note `UObjectBaseUtility::GetPathName()` only supports TCHAR at the moment. You will
      *       get an error if you try using this function with other char types.
      */
     template <int32 BufferSize = 512, class TCharType = TCHAR>
@@ -82,7 +83,7 @@ namespace GCUtils::String
         const UObject* inStopOuter = nullptr);
 
     /**
-     * @note UObjectBaseUtility::GetPathName() only supports TCHAR at the moment. You will
+     * @note `UObjectBaseUtility::GetPathName()` only supports TCHAR at the moment. You will
      *       get an error if you try using this function with other char types.
      */
     template <int32 BufferSize = 512, class TCharType = TCHAR>
@@ -91,7 +92,7 @@ namespace GCUtils::String
         const UObject* inStopOuter = nullptr);
 
     /**
-     * @note UObjectBaseUtility::GetFullName() only supports TCHAR at the moment. You will
+     * @note `UObjectBaseUtility::GetFullName()` only supports TCHAR at the moment. You will
      *       get an error if you try using this function with other char types.
      */
     template <int32 BufferSize = 512, class TCharType = TCHAR>
@@ -101,7 +102,7 @@ namespace GCUtils::String
         EObjectFullNameFlags inFlags = EObjectFullNameFlags::None);
 
     /**
-     * @note UObjectBaseUtility::GetFullName() only supports TCHAR at the moment. You will
+     * @note `UObjectBaseUtility::GetFullName()` only supports TCHAR at the moment. You will
      *       get an error if you try using this function with other char types.
      */
     template <int32 BufferSize = 512, class TCharType = TCHAR>
@@ -109,6 +110,18 @@ namespace GCUtils::String
         const UObject& inUObject,
         const UObject* inStopOuter = nullptr,
         EObjectFullNameFlags inFlags = EObjectFullNameFlags::None);
+
+    /**
+     * @brief Has the same behavior as `AActor::GetActorNameOrLabel()`.
+     */
+    template <int32 BufferSize = 512, class TCharType = TCHAR>
+    TStringBuilderWithBuffer<TCharType, BufferSize> GetActorNameOrLabelSafe(const AActor* inActor);
+
+    /**
+     * @brief Has the same behavior as `AActor::GetActorNameOrLabel()`.
+     */
+    template <int32 BufferSize = 512, class TCharType = TCHAR>
+    TStringBuilderWithBuffer<TCharType, BufferSize> GetActorNameOrLabel(const AActor& inActor);
 
     GAMECORE_API const FStringView GetWorldNetModeString(const UObject* inWorldContextObject);
 
@@ -137,7 +150,8 @@ TStringBuilderWithBuffer<TCharType, BufferSize> GCUtils::String::WriteToStringGe
 }
 
 template <int32 BufferSize, class TCharType>
-TStringBuilderWithBuffer<TCharType, BufferSize> GCUtils::String::MakeStringBuilder(const TStringBuilderCallback<TCharType>& inInitializationCallback)
+TStringBuilderWithBuffer<TCharType, BufferSize> GCUtils::String::ConstructStringBuilder(
+    const TStringBuilderCallback<TCharType>& inInitializationCallback)
 {
     // Note: String builders are not copyable so we must return a prvalue to elide the copy. This is
     // a good idea anyway because we want to be wary of possibly large buffer sizes.
@@ -189,7 +203,7 @@ TStringBuilderWithBuffer<TCharType, BufferSize> GCUtils::String::GetUObjectPathN
     const UObject& inUObject,
     const UObject* inStopOuter)
 {
-    return MakeStringBuilder<BufferSize, TCharType>(
+    return ConstructStringBuilder<BufferSize, TCharType>(
         [&inUObject, inStopOuter](TStringBuilderBase<TCharType>& inStringBuilder) -> void
         {
             inUObject.GetPathName(inStopOuter, inStringBuilder);
@@ -217,10 +231,44 @@ TStringBuilderWithBuffer<TCharType, BufferSize> GCUtils::String::GetUObjectFullN
     const UObject* inStopOuter,
     EObjectFullNameFlags inFlags)
 {
-    return MakeStringBuilder<BufferSize, TCharType>(
+    return ConstructStringBuilder<BufferSize, TCharType>(
         [&inUObject, inStopOuter, inFlags](TStringBuilderBase<TCharType>& inStringBuilder) -> void
         {
             inUObject.GetFullName(inStopOuter, inStringBuilder, inFlags);
+        }
+        );
+}
+
+template <int32 BufferSize, class TCharType>
+TStringBuilderWithBuffer<TCharType, BufferSize> GCUtils::String::GetActorNameOrLabelSafe(const AActor* inActor)
+{
+    if (!inActor)
+    {
+        return WriteToStringGeneric<TCharType, BufferSize>(StringNull);
+    }
+
+    return GetActorNameOrLabel<BufferSize, TCharType>(*inActor);
+}
+
+template <int32 BufferSize, class TCharType>
+TStringBuilderWithBuffer<TCharType, BufferSize> GCUtils::String::GetActorNameOrLabel(const AActor& inActor)
+{
+    return ConstructStringBuilder<BufferSize, TCharType>(
+        [&inActor](TStringBuilderBase<TCharType>& inStringBuilder) -> void
+        {
+#if WITH_EDITORONLY_DATA || (!WITH_EDITOR && ACTOR_HAS_LABELS)
+            const auto& actorLabel = inActor.GetActorLabel();
+            if (actorLabel.IsEmpty() == false)
+            {
+                // Use name if label is empty.
+                inStringBuilder << inActor.GetFName();
+                return;
+            }
+
+            inStringBuilder << actorLabel;
+#else
+            inStringBuilder << inActor.GetFName();
+#endif
         }
         );
 }
