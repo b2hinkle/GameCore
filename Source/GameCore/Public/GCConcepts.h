@@ -33,8 +33,14 @@ namespace GCConcepts
     template <class T>
     concept CharType = static_cast<bool>(TIsCharType<T>::Value);
 
+    template <class T, class TBase>
+    concept PointerToDerivedFrom = std::is_pointer_v<T> && std::derived_from<std::remove_pointer_t<T>, TBase>;
+
+    template <class T, class TBase>
+    concept ReferenceToDerivedFrom = std::is_reference_v<T> && std::derived_from<std::remove_reference_t<T>, TBase>;
+
     template <class T>
-    concept UObjectDerived = std::is_base_of_v<UObject, T>;
+    concept UObjectDerived = std::derived_from<T, UObject>;
 
     template <class T>
     concept IInterface = static_cast<bool>(TIsIInterface<T>::Value);
