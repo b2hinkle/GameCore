@@ -2,13 +2,16 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
-#include "GCUtils.h"
+#include "Misc/StringBuilder.h"
 #include <type_traits>
 #include "GCConcepts.h"
+#include <concepts>
 
 namespace GCUtils::String
 {
+    template <class T, class TCharType>
+    concept StringBuilderAppenderFunctor = GCConcepts::CharType<TCharType> && std::invocable<T, TStringBuilderBase<TCharType>&>;
+
     /**
      * @brief Utility struct to offload implementation of the string builder append operator to
      *        a callback functor.
@@ -18,17 +21,13 @@ namespace GCUtils::String
     template
         <
         GCConcepts::CharType TCharType,
-        class TFunctor,
-        class = typename TEnableIf
-            <
-            TIsInvocable<TFunctor, TStringBuilderBase<TCharType>&>::Value
-            >::Type
+        StringBuilderAppenderFunctor<TCharType> TFunctor
         >
     struct TStringBuilderAppender
     {
     public:
 
-        static_assert(TIsReferenceType<TFunctor>::Value == false, "The type template argument of the functor must not be a reference.");
+        static_assert(std::is_reference_v<TFunctor> == false, "The type template argument of the functor must not be a reference.");
         static_assert(std::is_const_v<TFunctor> == false, "The type template argument of the functor must not be const.");
         static_assert(std::is_volatile_v<TFunctor> == false, "The type template argument of the functor must not be volatile.");
 
@@ -91,15 +90,21 @@ namespace GCUtils::String
         <
         GCConcepts::CharType TCharType,
         class TFunctorRef,
-        // Notice that `TFunctorRef&&` is a forwarding reference. This entails `TFunctorRef` has a reference
+        // Notice that `TFunctorRef&&` is a forwarding reference. This entails `TFunctorRef` may have a reference
         // baked into it and possibly cv-qualifiers as well. We make sure to remove those when passing it in as
         // the `TFunctor` template argument of the `TStringBuilderAppender<>` class.
-        class TFunctor = std::remove_cv_t<std::remove_reference_t<TFunctorRef>>
+        StringBuilderAppenderFunctor<TCharType> TFunctor = std::remove_cv_t<std::remove_reference_t<TFunctorRef>>
         >
-    TStringBuilderAppender<TCharType, TFunctor> ConstructStringBuilderAppender(TFunctorRef&& inCallbackFunctorRef);
+    TStringBuilderAppender<TCharType, TFunctor> ConstructStringBuilderAppender(
+        TFunctorRef&& inCallbackFunctorRef);
 }
 
-template <GCConcepts::CharType TCharType, class TFunctorRef, class TFunctor>
+template
+    <
+    GCConcepts::CharType TCharType,
+    class TFunctorRef,
+    GCUtils::String::StringBuilderAppenderFunctor<TCharType> TFunctor
+    >
 GCUtils::String::TStringBuilderAppender<TCharType, TFunctor> GCUtils::String::ConstructStringBuilderAppender(
     TFunctorRef&& inCallbackFunctorRef)
 {
