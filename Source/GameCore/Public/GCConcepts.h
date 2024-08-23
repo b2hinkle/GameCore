@@ -4,6 +4,7 @@
 
 #include <type_traits>
 #include "Templates/Casts.h"
+#include "Traits/IsCharType.h"
 
 class UObject;
 
@@ -28,6 +29,9 @@ namespace GCConcepts
      */
     template <class T>
     concept NonLvalueReference = !std::is_lvalue_reference_v<T>;
+
+    template <class T>
+    concept CharType = static_cast<bool>(TIsCharType<T>::Value);
 
     template <class T>
     concept UObjectDerived = std::is_base_of_v<UObject, T>;

@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GCUtils.h"
 #include <type_traits>
+#include "GCConcepts.h"
 
 namespace GCUtils::String
 {
@@ -16,7 +17,7 @@ namespace GCUtils::String
      */
     template
         <
-        class TCharType,
+        GCConcepts::CharType TCharType,
         class TFunctor,
         class = typename TEnableIf
             <
@@ -88,7 +89,7 @@ namespace GCUtils::String
      */
     template
         <
-        class TCharType,
+        GCConcepts::CharType TCharType,
         class TFunctorRef,
         // Notice that `TFunctorRef&&` is a forwarding reference. This entails `TFunctorRef` has a reference
         // baked into it and possibly cv-qualifiers as well. We make sure to remove those when passing it in as
@@ -98,7 +99,7 @@ namespace GCUtils::String
     TStringBuilderAppender<TCharType, TFunctor> ConstructStringBuilderAppender(TFunctorRef&& inCallbackFunctorRef);
 }
 
-template <class TCharType, class TFunctorRef, class TFunctor>
+template <GCConcepts::CharType TCharType, class TFunctorRef, class TFunctor>
 GCUtils::String::TStringBuilderAppender<TCharType, TFunctor> GCUtils::String::ConstructStringBuilderAppender(
     TFunctorRef&& inCallbackFunctorRef)
 {

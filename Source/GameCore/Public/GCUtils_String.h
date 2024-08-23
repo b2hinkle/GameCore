@@ -44,7 +44,7 @@ GAMECORE_API const TCHAR* LexToString(ENetRole inNetRole);
 
 namespace GCUtils::String
 {
-    template <class TCharType>
+    template <GCConcepts::CharType TCharType>
     using TStringBuilderCallback = TFunctionRef<void(TStringBuilderBase<TCharType>&)>;
 
     /**
@@ -55,7 +55,7 @@ namespace GCUtils::String
      * @tparam BufferSize The buffer length for the string builder to be created.
      * @param inArgs The arguments to write into the string builder.
      */
-    template <class TCharType, int32 BufferSize, class... TArgs>
+    template <GCConcepts::CharType TCharType, int32 BufferSize, class... TArgs>
     TStringBuilderWithBuffer<TCharType, BufferSize> WriteToStringGeneric(TArgs&&... inArgs);
 
     /**
@@ -63,21 +63,21 @@ namespace GCUtils::String
      * @param inInitializationCallback Callback function for initializing the string builder as however needed.
      * @return String builder constructed in place (copy/move-elided) and initialized based on the callback.
      */
-    template <int32 BufferSize, class TCharType = TCHAR>
+    template <int32 BufferSize, GCConcepts::CharType TCharType = TCHAR>
     TStringBuilderWithBuffer<TCharType, BufferSize> ConstructStringBuilder(
         const TStringBuilderCallback<TCharType>& inInitializationCallback);
 
-    template <int32 BufferSize = 256, class TCharType = TCHAR>
+    template <int32 BufferSize = 256, GCConcepts::CharType TCharType = TCHAR>
     TStringBuilderWithBuffer<TCharType, BufferSize> GetUObjectNameSafe(const UObject* inUObject);
 
-    template <int32 BufferSize = 256, class TCharType = TCHAR>
+    template <int32 BufferSize = 256, GCConcepts::CharType TCharType = TCHAR>
     TStringBuilderWithBuffer<TCharType, BufferSize> GetUObjectName(const UObject& inUObject);
 
     /**
      * @note `UObjectBaseUtility::GetPathName()` only supports TCHAR at the moment. You will
      *       get an error if you try using this function with other char types.
      */
-    template <int32 BufferSize = 512, class TCharType = TCHAR>
+    template <int32 BufferSize = 512, GCConcepts::CharType TCharType = TCHAR>
     TStringBuilderWithBuffer<TCharType, BufferSize> GetUObjectPathNameSafe(
         const UObject* inUObject,
         const UObject* inStopOuter = nullptr);
@@ -86,7 +86,7 @@ namespace GCUtils::String
      * @note `UObjectBaseUtility::GetPathName()` only supports TCHAR at the moment. You will
      *       get an error if you try using this function with other char types.
      */
-    template <int32 BufferSize = 512, class TCharType = TCHAR>
+    template <int32 BufferSize = 512, GCConcepts::CharType TCharType = TCHAR>
     TStringBuilderWithBuffer<TCharType, BufferSize> GetUObjectPathName(
         const UObject& inUObject,
         const UObject* inStopOuter = nullptr);
@@ -95,7 +95,7 @@ namespace GCUtils::String
      * @note `UObjectBaseUtility::GetFullName()` only supports TCHAR at the moment. You will
      *       get an error if you try using this function with other char types.
      */
-    template <int32 BufferSize = 512, class TCharType = TCHAR>
+    template <int32 BufferSize = 512, GCConcepts::CharType TCharType = TCHAR>
     TStringBuilderWithBuffer<TCharType, BufferSize> GetUObjectFullNameSafe(
         const UObject* inUObject,
         const UObject* inStopOuter = nullptr,
@@ -105,7 +105,7 @@ namespace GCUtils::String
      * @note `UObjectBaseUtility::GetFullName()` only supports TCHAR at the moment. You will
      *       get an error if you try using this function with other char types.
      */
-    template <int32 BufferSize = 512, class TCharType = TCHAR>
+    template <int32 BufferSize = 512, GCConcepts::CharType TCharType = TCHAR>
     TStringBuilderWithBuffer<TCharType, BufferSize> GetUObjectFullName(
         const UObject& inUObject,
         const UObject* inStopOuter = nullptr,
@@ -114,13 +114,13 @@ namespace GCUtils::String
     /**
      * @brief Has the same behavior as `AActor::GetActorNameOrLabel()`.
      */
-    template <int32 BufferSize = 512, class TCharType = TCHAR>
+    template <int32 BufferSize = 512, GCConcepts::CharType TCharType = TCHAR>
     TStringBuilderWithBuffer<TCharType, BufferSize> GetActorNameOrLabelSafe(const AActor* inActor);
 
     /**
      * @brief Has the same behavior as `AActor::GetActorNameOrLabel()`.
      */
-    template <int32 BufferSize = 512, class TCharType = TCHAR>
+    template <int32 BufferSize = 512, GCConcepts::CharType TCharType = TCHAR>
     TStringBuilderWithBuffer<TCharType, BufferSize> GetActorNameOrLabel(const AActor& inActor);
 
     GAMECORE_API const FStringView GetWorldNetModeString(const UObject* inWorldContextObject);
@@ -143,13 +143,13 @@ namespace GCUtils::String
     constexpr FStringView StringFalse = PREPROCESSOR_JOIN(GC_STRING_LITERAL_FALSE, _PrivateSV);
 }
 
-template <class TCharType, int32 BufferSize, class... TArgs>
+template <GCConcepts::CharType TCharType, int32 BufferSize, class... TArgs>
 TStringBuilderWithBuffer<TCharType, BufferSize> GCUtils::String::WriteToStringGeneric(TArgs&&... inArgs)
 {
     return TStringBuilderWithBuffer<TCharType, BufferSize>(EInPlace::InPlace, Forward<TArgs...>(inArgs...));
 }
 
-template <int32 BufferSize, class TCharType>
+template <int32 BufferSize, GCConcepts::CharType TCharType>
 TStringBuilderWithBuffer<TCharType, BufferSize> GCUtils::String::ConstructStringBuilder(
     const TStringBuilderCallback<TCharType>& inInitializationCallback)
 {
@@ -166,7 +166,7 @@ TStringBuilderWithBuffer<TCharType, BufferSize> GCUtils::String::ConstructString
         );
 }
 
-template <int32 BufferSize, class TCharType>
+template <int32 BufferSize, GCConcepts::CharType TCharType>
 TStringBuilderWithBuffer<TCharType, BufferSize> GCUtils::String::GetUObjectNameSafe(const UObject* inUObject)
 {
     if (!inUObject)
@@ -177,7 +177,7 @@ TStringBuilderWithBuffer<TCharType, BufferSize> GCUtils::String::GetUObjectNameS
     return GetUObjectName<BufferSize, TCharType>(*inUObject);
 }
 
-template <int32 BufferSize, class TCharType>
+template <int32 BufferSize, GCConcepts::CharType TCharType>
 TStringBuilderWithBuffer<TCharType, BufferSize> GCUtils::String::GetUObjectName(const UObject& inUObject)
 {
     // Avoid `UObjectBaseUtility::GetName()` which does an unnecessary free-store string
@@ -185,7 +185,7 @@ TStringBuilderWithBuffer<TCharType, BufferSize> GCUtils::String::GetUObjectName(
     return WriteToStringGeneric<TCharType, BufferSize>(inUObject.GetFName());
 }
 
-template <int32 BufferSize, class TCharType>
+template <int32 BufferSize, GCConcepts::CharType TCharType>
 TStringBuilderWithBuffer<TCharType, BufferSize> GCUtils::String::GetUObjectPathNameSafe(
     const UObject* inUObject,
     const UObject* inStopOuter)
@@ -198,7 +198,7 @@ TStringBuilderWithBuffer<TCharType, BufferSize> GCUtils::String::GetUObjectPathN
     return GetUObjectPathName<BufferSize, TCharType>(*inUObject, inStopOuter);
 }
 
-template <int32 BufferSize, class TCharType>
+template <int32 BufferSize, GCConcepts::CharType TCharType>
 TStringBuilderWithBuffer<TCharType, BufferSize> GCUtils::String::GetUObjectPathName(
     const UObject& inUObject,
     const UObject* inStopOuter)
@@ -211,7 +211,7 @@ TStringBuilderWithBuffer<TCharType, BufferSize> GCUtils::String::GetUObjectPathN
         );
 }
 
-template <int32 BufferSize, class TCharType>
+template <int32 BufferSize, GCConcepts::CharType TCharType>
 TStringBuilderWithBuffer<TCharType, BufferSize> GCUtils::String::GetUObjectFullNameSafe(
     const UObject* inUObject,
     const UObject* inStopOuter,
@@ -225,7 +225,7 @@ TStringBuilderWithBuffer<TCharType, BufferSize> GCUtils::String::GetUObjectFullN
     return GetUObjectFullName<BufferSize, TCharType>(*inUObject, inStopOuter, inFlags);
 }
 
-template <int32 BufferSize, class TCharType>
+template <int32 BufferSize, GCConcepts::CharType TCharType>
 TStringBuilderWithBuffer<TCharType, BufferSize> GCUtils::String::GetUObjectFullName(
     const UObject& inUObject,
     const UObject* inStopOuter,
@@ -239,7 +239,7 @@ TStringBuilderWithBuffer<TCharType, BufferSize> GCUtils::String::GetUObjectFullN
         );
 }
 
-template <int32 BufferSize, class TCharType>
+template <int32 BufferSize, GCConcepts::CharType TCharType>
 TStringBuilderWithBuffer<TCharType, BufferSize> GCUtils::String::GetActorNameOrLabelSafe(const AActor* inActor)
 {
     if (!inActor)
@@ -250,7 +250,7 @@ TStringBuilderWithBuffer<TCharType, BufferSize> GCUtils::String::GetActorNameOrL
     return GetActorNameOrLabel<BufferSize, TCharType>(*inActor);
 }
 
-template <int32 BufferSize, class TCharType>
+template <int32 BufferSize, GCConcepts::CharType TCharType>
 TStringBuilderWithBuffer<TCharType, BufferSize> GCUtils::String::GetActorNameOrLabel(const AActor& inActor)
 {
     return ConstructStringBuilder<BufferSize, TCharType>(
