@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GCConcepts.h"
 #include "GCUtils.h"
 
 namespace GCUtils::ObjectTraversal
@@ -62,17 +63,9 @@ namespace GCUtils::ObjectTraversal
      * Traverse the UObject outer chain then the AActor owner chain to return the
      * first thing that implements the interface. Including self.
      */
-    template
-        <
-        class TTargetClass,
-        class = typename TEnableIf<TIsIInterface<TTargetClass>::Value>::Type
-        >
+    template <GCConcepts::IInterface TTargetClass>
     const TTargetClass* GetTypedSelfOrOuterOrOwnerActorByInterface(const UObject* inObject);
-    template
-        <
-        class TTargetClass,
-        class = typename TEnableIf<TIsIInterface<TTargetClass>::Value>::Type
-        >
+    template <GCConcepts::IInterface TTargetClass>
     TTargetClass* GetTypedSelfOrOuterOrOwnerActorByInterface(UObject* inObject);
 
     GAMECORE_API const UObject* GetSelfOrOuterOrOwnerActorByInterface(const UObject* inObject, const TSubclassOf<UInterface>& inTargetClass);
@@ -85,11 +78,7 @@ namespace GCUtils::ObjectTraversal
     /**
      * Same as GetSelfOrOuterOrOwnerActorByInterface() but doesn't include self.
      */
-    template
-        <
-        class TTargetClass,
-        class = typename TEnableIf<TIsIInterface<TTargetClass>::Value>::Type
-        >
+    template <GCConcepts::IInterface TTargetClass>
     TTargetClass* GetTypedOuterOrOwnerActorByInterface(const UObject* inObject);
 
     GAMECORE_API UObject* GetOuterOrOwnerActorByInterface(const UObject* inObject, const TSubclassOf<UInterface>& inTargetClass);
@@ -98,9 +87,9 @@ namespace GCUtils::ObjectTraversal
 
     // Begin "self or owner actor" functions.
 
-    template <class TTargetClass>
+    template <GCConcepts::UObjectDerivedOrIInterface TTargetClass>
     const TTargetClass* GetTypedSelfOrOwnerActor(const AActor* inActor);
-    template <class TTargetClass>
+    template <GCConcepts::UObjectDerivedOrIInterface TTargetClass>
     TTargetClass* GetTypedSelfOrOwnerActor(AActor* inActor);
 
     GAMECORE_API const AActor* GetSelfOrOwnerActorByClass(const AActor* inActor, const TSubclassOf<AActor>& inTargetClass);
@@ -113,7 +102,7 @@ namespace GCUtils::ObjectTraversal
 
     // Begin "owner actor" functions.
 
-    template <class TTargetClass>
+    template <GCConcepts::UObjectDerivedOrIInterface TTargetClass>
     TTargetClass* GetTypedOwnerActor(const AActor* inActor);
 
     GAMECORE_API AActor* GetOwnerActorByClass(const AActor* inActor, const TSubclassOf<AActor>& inTargetClass);
@@ -124,9 +113,9 @@ namespace GCUtils::ObjectTraversal
 
     // Begin "self or outer" functions.
 
-    template <class TTargetClass>
+    template <GCConcepts::UObjectDerivedOrIInterface TTargetClass>
     const TTargetClass* GetTypedSelfOrOuter(const UObject* inObject);
-    template <class TTargetClass>
+    template <GCConcepts::UObjectDerivedOrIInterface TTargetClass>
     TTargetClass* GetTypedSelfOrOuter(UObject* inObject);
 
     GAMECORE_API const UObject* GetSelfOrOuterByClass(const UObject* inObject, const TSubclassOf<UObject>& inTargetClass);
@@ -139,7 +128,7 @@ namespace GCUtils::ObjectTraversal
 
     // Begin "outer" functions.
 
-    template <class TTargetClass>
+    template <GCConcepts::UObjectDerivedOrIInterface TTargetClass>
     TTargetClass* GetTypedOuter(const UObject* inObject);
 
     GAMECORE_API UObject* GetOuterByClass(const UObject* inObject, const TSubclassOf<UObject>& inTargetClass);
@@ -149,38 +138,26 @@ namespace GCUtils::ObjectTraversal
     // End "outer" functions.
 }
 
-template
-    <
-    class TTargetClass,
-    class
-    >
+template <GCConcepts::IInterface TTargetClass>
 const TTargetClass* GCUtils::ObjectTraversal::GetTypedSelfOrOuterOrOwnerActorByInterface(const UObject* inObject)
 {
     return GCUtils::ReinterpretCastChecked<const TTargetClass*>(
         GetSelfOrOuterOrOwnerActorByInterface(inObject, TTargetClass::UClassType::StaticClass()));
 }
-template
-    <
-    class TTargetClass,
-    class
-    >
+template <GCConcepts::IInterface TTargetClass>
 TTargetClass* GCUtils::ObjectTraversal::GetTypedSelfOrOuterOrOwnerActorByInterface(UObject* inObject)
 {
     return const_cast<TTargetClass*>(GetTypedSelfOrOuterOrOwnerActorByInterface<TTargetClass>(const_cast<const UObject*>(inObject)));
 }
 
-template
-    <
-    class TTargetClass,
-    class
-    >
+template <GCConcepts::IInterface TTargetClass>
 TTargetClass* GCUtils::ObjectTraversal::GetTypedOuterOrOwnerActorByInterface(const UObject* inObject)
 {
     return GCUtils::ReinterpretCastChecked<TTargetClass*>(
         GetOuterOrOwnerActorByInterface(inObject, TTargetClass::UClassType::StaticClass()));
 }
 
-template <class TTargetClass>
+template <GCConcepts::UObjectDerivedOrIInterface TTargetClass>
 const TTargetClass* GCUtils::ObjectTraversal::GetTypedSelfOrOwnerActor(const AActor* inActor)
 {
     if constexpr (TIsIInterface<TTargetClass>::Value == true)
@@ -194,13 +171,13 @@ const TTargetClass* GCUtils::ObjectTraversal::GetTypedSelfOrOwnerActor(const AAc
             GetSelfOrOwnerActorByClass(inActor, TTargetClass::StaticClass()));
     }
 }
-template <class TTargetClass>
+template <GCConcepts::UObjectDerivedOrIInterface TTargetClass>
 TTargetClass* GCUtils::ObjectTraversal::GetTypedSelfOrOwnerActor(AActor* inActor)
 {
     return const_cast<TTargetClass*>(GetTypedSelfOrOwnerActor<TTargetClass>(const_cast<const AActor*>(inActor)));
 }
 
-template <class TTargetClass>
+template <GCConcepts::UObjectDerivedOrIInterface TTargetClass>
 TTargetClass* GCUtils::ObjectTraversal::GetTypedOwnerActor(const AActor* inActor)
 {
     if constexpr (TIsIInterface<TTargetClass>::Value == true)
@@ -215,7 +192,7 @@ TTargetClass* GCUtils::ObjectTraversal::GetTypedOwnerActor(const AActor* inActor
     }
 }
 
-template <class TTargetClass>
+template <GCConcepts::UObjectDerivedOrIInterface TTargetClass>
 const TTargetClass* GCUtils::ObjectTraversal::GetTypedSelfOrOuter(const UObject* inObject)
 {
     if constexpr (TIsIInterface<TTargetClass>::Value == true)
@@ -229,13 +206,13 @@ const TTargetClass* GCUtils::ObjectTraversal::GetTypedSelfOrOuter(const UObject*
             GetSelfOrOuterByClass(inObject, TTargetClass::StaticClass()));
     }
 }
-template <class TTargetClass>
+template <GCConcepts::UObjectDerivedOrIInterface TTargetClass>
 TTargetClass* GCUtils::ObjectTraversal::GetTypedSelfOrOuter(UObject* inObject)
 {
     return const_cast<TTargetClass*>(GetTypedSelfOrOuter<TTargetClass>(const_cast<const UObject*>(inObject)));
 }
 
-template <class TTargetClass>
+template <GCConcepts::UObjectDerivedOrIInterface TTargetClass>
 TTargetClass* GCUtils::ObjectTraversal::GetTypedOuter(const UObject* inObject)
 {
     if constexpr (TIsIInterface<TTargetClass>::Value == true)
