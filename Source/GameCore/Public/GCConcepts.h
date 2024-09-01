@@ -43,26 +43,26 @@ namespace GCConcepts
     concept UObjectDerived = std::derived_from<T, UObject>;
 
     template <class T>
+    concept PointerToUObjectDerived = PointerToDerivedFrom<T, UObject>;
+
+    template <class T>
+    concept ReferenceToUObjectDerived = ReferenceToDerivedFrom<T, UObject>;
+
+    template <class T>
     concept IInterface = static_cast<bool>(TIsIInterface<T>::Value);
 
     template <class T>
-    concept UObjectOrIInterface = UObjectDerived<T> || IInterface<T>;
+    concept PointerToIInterface = std::is_pointer_v<T> && IInterface<std::remove_pointer_t<T>>;
 
     template <class T>
-    concept UObjectPointer = std::is_pointer_v<T> && UObjectDerived<std::remove_pointer_t<T>>;
+    concept ReferenceToIInterface = std::is_reference_v<T> && IInterface<std::remove_reference_t<T>>;
 
     template <class T>
-    concept UObjectReference = std::is_reference_v<T> && UObjectDerived<std::remove_reference_t<T>>;
+    concept UObjectDerivedOrIInterface = UObjectDerived<T> || IInterface<T>;
 
     template <class T>
-    concept IInterfacePointer = std::is_pointer_v<T> && IInterface<std::remove_pointer_t<T>>;
+    concept PointerToUObjectDerivedOrIInterface = std::is_pointer_v<T> && UObjectDerivedOrIInterface<std::remove_pointer_t<T>>;
 
     template <class T>
-    concept IInterfaceReference = std::is_reference_v<T> && IInterface<std::remove_reference_t<T>>;
-
-    template <class T>
-    concept UObjectOrIInterfacePointer = std::is_pointer_v<T> && UObjectOrIInterface<std::remove_pointer_t<T>>;
-
-    template <class T>
-    concept UObjectOrIInterfaceReference = std::is_reference_v<T> && UObjectOrIInterface<std::remove_reference_t<T>>;
+    concept ReferenceToUObjectDerivedOrIInterface = std::is_reference_v<T> && UObjectDerivedOrIInterface<std::remove_reference_t<T>>;
 }

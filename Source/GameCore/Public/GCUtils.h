@@ -31,7 +31,7 @@ namespace GCUtils
      *
      * E.g., you are up-casting.
      */
-    template <GCConcepts::UObjectOrIInterfacePointer TToPtr, GCConcepts::UObjectOrIInterfacePointer TFromPtr>
+    template <GCConcepts::PointerToUObjectDerivedOrIInterface TToPtr, GCConcepts::PointerToUObjectDerivedOrIInterface TFromPtr>
     FORCEINLINE_DEBUGGABLE TToPtr StaticCastChecked(TFromPtr inObject);
     /**
      * If inObject is already guaranteed to be a TTo.
@@ -40,7 +40,7 @@ namespace GCUtils
      *
      * E.g., you are up-casting.
      */
-    template <GCConcepts::UObjectOrIInterfacePointer TToPtr, GCConcepts::UObjectOrIInterfaceReference TFromRef>
+    template <GCConcepts::PointerToUObjectDerivedOrIInterface TToPtr, GCConcepts::ReferenceToUObjectDerivedOrIInterface TFromRef>
     FORCEINLINE_DEBUGGABLE TToPtr StaticCastChecked(TFromRef&& inObject);
     /**
      * If inObject is already guaranteed to be a TTo.
@@ -49,7 +49,7 @@ namespace GCUtils
      *
      * E.g., you are up-casting.
      */
-    template <GCConcepts::UObjectOrIInterfaceReference TToRef, GCConcepts::UObjectOrIInterfacePointer TFromPtr>
+    template <GCConcepts::ReferenceToUObjectDerivedOrIInterface TToRef, GCConcepts::PointerToUObjectDerivedOrIInterface TFromPtr>
     FORCEINLINE_DEBUGGABLE TToRef StaticCastChecked(TFromPtr inObject);
     /**
      * If inObject is already guaranteed to be a TTo.
@@ -58,7 +58,7 @@ namespace GCUtils
      *
      * E.g., you are up-casting.
      */
-    template <GCConcepts::UObjectOrIInterfaceReference TToRef, GCConcepts::UObjectOrIInterfaceReference TFromRef>
+    template <GCConcepts::ReferenceToUObjectDerivedOrIInterface TToRef, GCConcepts::ReferenceToUObjectDerivedOrIInterface TFromRef>
     FORCEINLINE_DEBUGGABLE TToRef StaticCastChecked(TFromRef&& inObject);
 
     /**
@@ -66,28 +66,28 @@ namespace GCUtils
      *
      * Necessary for casting to interface classes that aren't part of TFrom's inheritance chain.
      */
-    template <GCConcepts::UObjectOrIInterfacePointer TToPtr, GCConcepts::UObjectOrIInterfacePointer TFromPtr>
+    template <GCConcepts::PointerToUObjectDerivedOrIInterface TToPtr, GCConcepts::PointerToUObjectDerivedOrIInterface TFromPtr>
     FORCEINLINE_DEBUGGABLE TToPtr ReinterpretCastChecked(TFromPtr inObject);
     /**
      * If static casting isn't an option but inObject is still guaranteed to be a TTo.
      *
      * Necessary for casting to interface classes that aren't part of TFrom's inheritance chain.
      */
-    template <GCConcepts::UObjectOrIInterfacePointer TToPtr, GCConcepts::UObjectOrIInterfaceReference TFromRef>
+    template <GCConcepts::PointerToUObjectDerivedOrIInterface TToPtr, GCConcepts::ReferenceToUObjectDerivedOrIInterface TFromRef>
     FORCEINLINE_DEBUGGABLE TToPtr ReinterpretCastChecked(TFromRef&& inObject);
     /**
      * If static casting isn't an option but inObject is still guaranteed to be a TTo.
      *
      * Necessary for casting to interface classes that aren't part of TFrom's inheritance chain.
      */
-    template <GCConcepts::UObjectOrIInterfaceReference TToRef, GCConcepts::UObjectOrIInterfacePointer TFromPtr>
+    template <GCConcepts::ReferenceToUObjectDerivedOrIInterface TToRef, GCConcepts::PointerToUObjectDerivedOrIInterface TFromPtr>
     FORCEINLINE_DEBUGGABLE TToRef ReinterpretCastChecked(TFromPtr inObject);
     /**
      * If static casting isn't an option but inObject is still guaranteed to be a TTo.
      *
      * Necessary for casting to interface classes that aren't part of TFrom's inheritance chain.
      */
-    template <GCConcepts::UObjectOrIInterfaceReference TToRef, GCConcepts::UObjectOrIInterfaceReference TFromRef>
+    template <GCConcepts::ReferenceToUObjectDerivedOrIInterface TToRef, GCConcepts::ReferenceToUObjectDerivedOrIInterface TFromRef>
     FORCEINLINE_DEBUGGABLE TToRef ReinterpretCastChecked(TFromRef&& inObject);
 }
 
@@ -99,7 +99,7 @@ T& GCUtils::Materialize(T&& inTemporary)
     return static_cast<T&>(inTemporary);
 }
 
-template <GCConcepts::UObjectOrIInterfacePointer TToPtr, GCConcepts::UObjectOrIInterfacePointer TFromPtr>
+template <GCConcepts::PointerToUObjectDerivedOrIInterface TToPtr, GCConcepts::PointerToUObjectDerivedOrIInterface TFromPtr>
 TToPtr GCUtils::StaticCastChecked(TFromPtr inObject)
 {
 #if DO_CHECK
@@ -112,7 +112,7 @@ TToPtr GCUtils::StaticCastChecked(TFromPtr inObject)
 
     return static_cast<TToPtr>(inObject);
 }
-template <GCConcepts::UObjectOrIInterfacePointer TToPtr, GCConcepts::UObjectOrIInterfaceReference TFromRef>
+template <GCConcepts::PointerToUObjectDerivedOrIInterface TToPtr, GCConcepts::ReferenceToUObjectDerivedOrIInterface TFromRef>
 TToPtr GCUtils::StaticCastChecked(TFromRef&& inObject)
 {
 #if DO_CHECK
@@ -124,13 +124,13 @@ TToPtr GCUtils::StaticCastChecked(TFromRef&& inObject)
 
     return static_cast<TToPtr>(&inObject);
 }
-template <GCConcepts::UObjectOrIInterfaceReference TToRef, GCConcepts::UObjectOrIInterfacePointer TFromPtr>
+template <GCConcepts::ReferenceToUObjectDerivedOrIInterface TToRef, GCConcepts::PointerToUObjectDerivedOrIInterface TFromPtr>
 TToRef GCUtils::StaticCastChecked(TFromPtr inObject)
 {
     check(inObject);
     return StaticCastChecked<TToRef>(*inObject);
 }
-template <GCConcepts::UObjectOrIInterfaceReference TToRef, GCConcepts::UObjectOrIInterfaceReference TFromRef>
+template <GCConcepts::ReferenceToUObjectDerivedOrIInterface TToRef, GCConcepts::ReferenceToUObjectDerivedOrIInterface TFromRef>
 TToRef GCUtils::StaticCastChecked(TFromRef&& inObject)
 {
 #if DO_CHECK
@@ -143,7 +143,7 @@ TToRef GCUtils::StaticCastChecked(TFromRef&& inObject)
     return static_cast<TToRef>(Forward<TFromRef>(inObject));
 }
 
-template <GCConcepts::UObjectOrIInterfacePointer TToPtr, GCConcepts::UObjectOrIInterfacePointer TFromPtr>
+template <GCConcepts::PointerToUObjectDerivedOrIInterface TToPtr, GCConcepts::PointerToUObjectDerivedOrIInterface TFromPtr>
 TToPtr GCUtils::ReinterpretCastChecked(TFromPtr inObject)
 {
 #if DO_CHECK
@@ -156,7 +156,7 @@ TToPtr GCUtils::ReinterpretCastChecked(TFromPtr inObject)
 
     return reinterpret_cast<TToPtr>(inObject);
 }
-template <GCConcepts::UObjectOrIInterfacePointer TToPtr, GCConcepts::UObjectOrIInterfaceReference TFromRef>
+template <GCConcepts::PointerToUObjectDerivedOrIInterface TToPtr, GCConcepts::ReferenceToUObjectDerivedOrIInterface TFromRef>
 TToPtr GCUtils::ReinterpretCastChecked(TFromRef&& inObject)
 {
 #if DO_CHECK
@@ -168,13 +168,13 @@ TToPtr GCUtils::ReinterpretCastChecked(TFromRef&& inObject)
 
     return reinterpret_cast<TToPtr>(&inObject);
 }
-template <GCConcepts::UObjectOrIInterfaceReference TToRef, GCConcepts::UObjectOrIInterfacePointer TFromPtr>
+template <GCConcepts::ReferenceToUObjectDerivedOrIInterface TToRef, GCConcepts::PointerToUObjectDerivedOrIInterface TFromPtr>
 TToRef GCUtils::ReinterpretCastChecked(TFromPtr inObject)
 {
     check(inObject);
     return ReinterpretCastChecked<TToRef>(*inObject);
 }
-template <GCConcepts::UObjectOrIInterfaceReference TToRef, GCConcepts::UObjectOrIInterfaceReference TFromRef>
+template <GCConcepts::ReferenceToUObjectDerivedOrIInterface TToRef, GCConcepts::ReferenceToUObjectDerivedOrIInterface TFromRef>
 TToRef GCUtils::ReinterpretCastChecked(TFromRef&& inObject)
 {
 #if DO_CHECK
