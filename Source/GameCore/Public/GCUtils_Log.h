@@ -76,7 +76,7 @@
  * @brief Extra format string literal used in UObject-context logs. For outputting info about the current context.
  * @note Internal macro! Not intended for use.
  */
-#define GC_PRIVATE_INFO_UOBJECT_FORMAT_STRING_LITERAL TEXT("[Context Object Arg: `%s`]")
+#define GC_PRIVATE_INFO_UOBJECT_FORMAT_STRING_LITERAL TEXT("[Context UObject Arg: `%s`]")
 
 /**
  * @brief Log with a `UObject` for context to output extra info for. Printf style.
@@ -105,9 +105,15 @@
 #define GC_CLOG_STR_UOBJECT(contextUObject, condition, categoryName, verbosity, string) { const auto& refBoundString = string; GC_CLOG_FMT_UOBJECT(contextUObject, condition, categoryName, verbosity, TEXT("%.*s"), ::GetNum(refBoundString), ::GetData(refBoundString)); }
 
 /**
+ * @brief Extra format string literal used in IInterface-context logs. For outputting info about the current context.
+ * @note Internal macro! Not intended for use.
+ */
+#define GC_PRIVATE_INFO_IINTERFACE_FORMAT_STRING_LITERAL TEXT("[Context IInterface Arg: `%s`]")
+
+/**
  * @brief Version of `GC_LOG_FMT_UOBJECT()` for `IInterface`s.
  */
-#define GC_LOG_FMT_IINTERFACE(contextIInterface, categoryName, verbosity, format, ...) GC_LOG_FMT_NO_CONTEXT(categoryName, verbosity, format TEXT(" ") GC_PRIVATE_INFO_UOBJECT_FORMAT_STRING_LITERAL TEXT(" %s"), __VA_ARGS__ __VA_OPT__(,) TEXT(PREPROCESSOR_TO_STRING(contextIInterface)), GCUtils::Log::GetIInterfaceLogInfoString(contextIInterface).ToString())
+#define GC_LOG_FMT_IINTERFACE(contextIInterface, categoryName, verbosity, format, ...) GC_LOG_FMT_NO_CONTEXT(categoryName, verbosity, format TEXT(" ") GC_PRIVATE_INFO_IINTERFACE_FORMAT_STRING_LITERAL TEXT(" %s"), __VA_ARGS__ __VA_OPT__(,) TEXT(PREPROCESSOR_TO_STRING(contextIInterface)), GCUtils::Log::GetIInterfaceLogInfoString(contextIInterface).ToString())
 
 /**
  * @brief Version of `GC_LOG_STR_UOBJECT()` for `IInterface`s.
@@ -117,7 +123,7 @@
 /**
  * @brief Version of `GC_CLOG_FMT_UOBJECT()` for `IInterface`s.
  */
-#define GC_CLOG_FMT_IINTERFACE(contextIInterface, condition, categoryName, verbosity, format, ...) GC_CLOG_FMT_NO_CONTEXT(condition, categoryName, verbosity, format TEXT(" ") GC_PRIVATE_INFO_UOBJECT_FORMAT_STRING_LITERAL TEXT(" %s"), __VA_ARGS__ __VA_OPT__(,) TEXT(PREPROCESSOR_TO_STRING(contextIInterface)), GCUtils::Log::GetIInterfaceLogInfoString(contextIInterface).ToString())
+#define GC_CLOG_FMT_IINTERFACE(contextIInterface, condition, categoryName, verbosity, format, ...) GC_CLOG_FMT_NO_CONTEXT(condition, categoryName, verbosity, format TEXT(" ") GC_PRIVATE_INFO_IINTERFACE_FORMAT_STRING_LITERAL TEXT(" %s"), __VA_ARGS__ __VA_OPT__(,) TEXT(PREPROCESSOR_TO_STRING(contextIInterface)), GCUtils::Log::GetIInterfaceLogInfoString(contextIInterface).ToString())
 
 /**
  * @brief Version of `GC_CLOG_STR_UOBJECT()` for `IInterface`s.
