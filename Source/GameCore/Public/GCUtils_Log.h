@@ -5,6 +5,8 @@
 #include "GCUtils.h"
 #include "GCUtils_String.h"
 #include <source_location>
+#include "GameFramework/Controller.h"
+#include "GameFramework/PlayerState.h"
 
 /**
  * @brief Plain log. Printf style.
@@ -148,16 +150,35 @@ namespace GCUtils::Log
 template <int32 bufferLength>
 TStringBuilder<bufferLength> GCUtils::Log::GetUObjectLogInfoString(const UObject* inUObject)
 {
+    FString(* const getPlayerNameSafe)(const AController*) =
+        [](const AController* controller) -> FString
+        {
+            if (!controller)
+            {
+                return FString(String::StringNull);
+            }
+
+            const APlayerState* playerState = controller->GetPlayerState<APlayerState>();
+            if (!playerState)
+            {
+                return FString(String::StringNull);
+            }
+
+            return playerState->GetPlayerName();
+        };
+
     return WriteToString<bufferLength>(
-        TEXT("[Context Object: "), GCUtils::String::GetUObjectNameSafe(inUObject), TEXT(']'),
+        TEXT("[Object: '"), GCUtils::String::GetUObjectNameSafe(inUObject), TEXT("']"),
         TEXT(' '),
-        TEXT("[Context Object NetMode: "), GCUtils::String::GetWorldNetModeString(inUObject), TEXT(']'),
+        TEXT("[Net Mode: "), GCUtils::String::GetWorldNetModeString(inUObject), TEXT(']'),
         TEXT(' '),
-        TEXT("[Context Object NetRole: "), GCUtils::String::GetObjectLocalRoleString(inUObject), TEXT(']'),
+        TEXT("[Net Role: "), GCUtils::String::GetObjectLocalRoleString(inUObject), TEXT(']'),
         TEXT(' '),
-        TEXT("[Context Object Controller: "), GCUtils::String::GetUObjectNameSafe(GCUtils::GetController(inUObject)), TEXT(']'),
+        TEXT("[Controller: '"), GCUtils::String::GetUObjectNameSafe(GCUtils::GetController(inUObject)), TEXT("']"),
         TEXT(' '),
-        TEXT("[Context Object Controller Is Local: "), GCUtils::String::GetIsControllerLocalString(inUObject), TEXT(']')
+        TEXT("[Is Controller Local: "), GCUtils::String::GetIsControllerLocalString(inUObject), TEXT(']'),
+        TEXT(' '),
+        TEXT("[Player Name: '"), getPlayerNameSafe(GCUtils::GetController(inUObject)), TEXT("']")
     );
 }
 
