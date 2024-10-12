@@ -80,49 +80,49 @@
 
 /**
  * @brief Log with a `UObject` for context to output extra info for. Printf style.
- * @param contextObject The `UObject*` used to output extra info.
+ * @param contextUObject The `UObject*` used to output extra info.
  */
-#define GC_LOG_FMT_UOBJECT(contextObject, categoryName, verbosity, format, ...) GC_LOG_FMT_NO_CONTEXT(categoryName, verbosity, format TEXT(" ") GC_PRIVATE_INFO_UOBJECT_FORMAT_STRING_LITERAL TEXT(" %s"), __VA_ARGS__ __VA_OPT__(,) TEXT(PREPROCESSOR_TO_STRING(contextObject)), GCUtils::Log::GetObjectLogInfoString(contextObject).ToString())
+#define GC_LOG_FMT_UOBJECT(contextUObject, categoryName, verbosity, format, ...) GC_LOG_FMT_NO_CONTEXT(categoryName, verbosity, format TEXT(" ") GC_PRIVATE_INFO_UOBJECT_FORMAT_STRING_LITERAL TEXT(" %s"), __VA_ARGS__ __VA_OPT__(,) TEXT(PREPROCESSOR_TO_STRING(contextUObject)), GCUtils::Log::GetUObjectLogInfoString(contextUObject).ToString())
 
 /**
  * @brief Log with a `UObject` for context to output extra info for. From string.
- * @param contextObject The `UObject*` used to output extra info.
+ * @param contextUObject The `UObject*` used to output extra info.
  * @param string String to output. Overloads of functions `::GetNum()` and `::GetData()` must exist for it.
  */
-#define GC_LOG_STR_UOBJECT(contextObject, categoryName, verbosity, string) { const auto& refBoundString = string; GC_LOG_FMT_UOBJECT(contextObject, categoryName, verbosity, TEXT("%.*s"), ::GetNum(refBoundString), ::GetData(refBoundString)); }
+#define GC_LOG_STR_UOBJECT(contextUObject, categoryName, verbosity, string) { const auto& refBoundString = string; GC_LOG_FMT_UOBJECT(contextUObject, categoryName, verbosity, TEXT("%.*s"), ::GetNum(refBoundString), ::GetData(refBoundString)); }
 
 /**
  * @brief Conditional log with a `UObject` for context to output extra info for. Printf style.
- * @param contextObject The `UObject*` used to output extra info.
+ * @param contextUObject The `UObject*` used to output extra info.
  */
-#define GC_CLOG_FMT_UOBJECT(contextObject, condition, categoryName, verbosity, format, ...) GC_CLOG_FMT_NO_CONTEXT(condition, categoryName, verbosity, format TEXT(" ") GC_PRIVATE_INFO_UOBJECT_FORMAT_STRING_LITERAL TEXT(" %s"), __VA_ARGS__ __VA_OPT__(,) TEXT(PREPROCESSOR_TO_STRING(contextObject)), GCUtils::Log::GetObjectLogInfoString(contextObject).ToString())
+#define GC_CLOG_FMT_UOBJECT(contextUObject, condition, categoryName, verbosity, format, ...) GC_CLOG_FMT_NO_CONTEXT(condition, categoryName, verbosity, format TEXT(" ") GC_PRIVATE_INFO_UOBJECT_FORMAT_STRING_LITERAL TEXT(" %s"), __VA_ARGS__ __VA_OPT__(,) TEXT(PREPROCESSOR_TO_STRING(contextUObject)), GCUtils::Log::GetUObjectLogInfoString(contextUObject).ToString())
 
 /**
  * @brief Conditional log with a `UObject` for context to output extra info for. From string.
- * @param contextObject The `UObject*` used to output extra info.
+ * @param contextUObject The `UObject*` used to output extra info.
  * @param string String to output. Overloads of functions `::GetNum()` and `::GetData()` must exist for it.
  */
-#define GC_CLOG_STR_UOBJECT(contextObject, condition, categoryName, verbosity, string) { const auto& refBoundString = string; GC_CLOG_FMT_UOBJECT(contextObject, condition, categoryName, verbosity, TEXT("%.*s"), ::GetNum(refBoundString), ::GetData(refBoundString)); }
+#define GC_CLOG_STR_UOBJECT(contextUObject, condition, categoryName, verbosity, string) { const auto& refBoundString = string; GC_CLOG_FMT_UOBJECT(contextUObject, condition, categoryName, verbosity, TEXT("%.*s"), ::GetNum(refBoundString), ::GetData(refBoundString)); }
 
 /**
  * @brief Version of `GC_LOG_FMT_UOBJECT()` for `IInterface`s.
  */
-#define GC_LOG_FMT_IINTERFACE(contextInterface, categoryName, verbosity, format, ...) GC_LOG_FMT_UOBJECT(contextInterface->_getUObject(), categoryName, verbosity, format, ...)
+#define GC_LOG_FMT_IINTERFACE(contextIInterface, categoryName, verbosity, format, ...) GC_LOG_FMT_NO_CONTEXT(categoryName, verbosity, format TEXT(" ") GC_PRIVATE_INFO_UOBJECT_FORMAT_STRING_LITERAL TEXT(" %s"), __VA_ARGS__ __VA_OPT__(,) TEXT(PREPROCESSOR_TO_STRING(contextIInterface)), GCUtils::Log::GetIInterfaceLogInfoString(contextIInterface).ToString())
 
 /**
  * @brief Version of `GC_LOG_STR_UOBJECT()` for `IInterface`s.
  */
-#define GC_LOG_STR_IINTERFACE(contextInterface, categoryName, verbosity, string) GC_LOG_STR_UOBJECT(contextInterface->_getUObject(), categoryName, verbosity, string)
+#define GC_LOG_STR_IINTERFACE(contextIInterface, categoryName, verbosity, string) { const auto& refBoundString = string; GC_LOG_FMT_IINTERFACE(contextIInterface, categoryName, verbosity, TEXT("%.*s"), ::GetNum(refBoundString), ::GetData(refBoundString)); }
 
 /**
  * @brief Version of `GC_CLOG_FMT_UOBJECT()` for `IInterface`s.
  */
-#define GC_CLOG_FMT_IINTERFACE(contextInterface, condition, categoryName, verbosity, format, ...) GC_CLOG_FMT_UOBJECT(contextInterface->_getUObject(), condition, categoryName, verbosity, format, ...)
+#define GC_CLOG_FMT_IINTERFACE(contextIInterface, condition, categoryName, verbosity, format, ...) GC_CLOG_FMT_NO_CONTEXT(condition, categoryName, verbosity, format TEXT(" ") GC_PRIVATE_INFO_UOBJECT_FORMAT_STRING_LITERAL TEXT(" %s"), __VA_ARGS__ __VA_OPT__(,) TEXT(PREPROCESSOR_TO_STRING(contextIInterface)), GCUtils::Log::GetIInterfaceLogInfoString(contextIInterface).ToString())
 
 /**
  * @brief Version of `GC_CLOG_STR_UOBJECT()` for `IInterface`s.
  */
-#define GC_CLOG_STR_IINTERFACE(contextInterface, condition, categoryName, verbosity, string) GC_CLOG_STR_UOBJECT(contextInterface->_getUObject(), condition, categoryName, verbosity, string)
+#define GC_CLOG_STR_IINTERFACE(contextIInterface, condition, categoryName, verbosity, string) { const auto& refBoundString = string; GC_CLOG_FMT_IINTERFACE(contextIInterface, condition, categoryName, verbosity, TEXT("%.*s"), ::GetNum(refBoundString), ::GetData(refBoundString)); }
 
 namespace GCUtils::Log
 {
@@ -130,21 +130,34 @@ namespace GCUtils::Log
      * @brief Build a debug string given a `UObject`.
      */
     template <int32 bufferLength = 1024>
-    TStringBuilder<bufferLength> GetObjectLogInfoString(const UObject* object);
+    TStringBuilder<bufferLength> GetUObjectLogInfoString(const UObject* inUObject);
+
+    /**
+     * @brief Build a debug string given an `IInterface`.
+     */
+    template <GCConcepts::PointerToIInterface TIInterfacePtr, int32 bufferLength = 1024>
+    TStringBuilder<bufferLength> GetIInterfaceLogInfoString(const TIInterfacePtr inIInterface);
 }
 
 template <int32 bufferLength>
-TStringBuilder<bufferLength> GCUtils::Log::GetObjectLogInfoString(const UObject* object)
+TStringBuilder<bufferLength> GCUtils::Log::GetUObjectLogInfoString(const UObject* inUObject)
 {
     return WriteToString<bufferLength>(
-        TEXT("[Context Object: "), GCUtils::String::GetUObjectNameSafe(object), TEXT(']'),
+        TEXT("[Context Object: "), GCUtils::String::GetUObjectNameSafe(inUObject), TEXT(']'),
         TEXT(' '),
-        TEXT("[Context Object NetMode: "), GCUtils::String::GetWorldNetModeString(object), TEXT(']'),
+        TEXT("[Context Object NetMode: "), GCUtils::String::GetWorldNetModeString(inUObject), TEXT(']'),
         TEXT(' '),
-        TEXT("[Context Object NetRole: "), GCUtils::String::GetObjectLocalRoleString(object), TEXT(']'),
+        TEXT("[Context Object NetRole: "), GCUtils::String::GetObjectLocalRoleString(inUObject), TEXT(']'),
         TEXT(' '),
-        TEXT("[Context Object Controller: "), GCUtils::String::GetUObjectNameSafe(GCUtils::GetController(object)), TEXT(']'),
+        TEXT("[Context Object Controller: "), GCUtils::String::GetUObjectNameSafe(GCUtils::GetController(inUObject)), TEXT(']'),
         TEXT(' '),
-        TEXT("[Context Object Controller Is Local: "), GCUtils::String::GetIsControllerLocalString(object), TEXT(']')
+        TEXT("[Context Object Controller Is Local: "), GCUtils::String::GetIsControllerLocalString(inUObject), TEXT(']')
     );
+}
+
+template <GCConcepts::PointerToIInterface TIInterfacePtr, int32 bufferLength>
+TStringBuilder<bufferLength> GCUtils::Log::GetIInterfaceLogInfoString(const TIInterfacePtr inIInterface)
+{
+    return GetUObjectLogInfoString(
+        inIInterface ? inIInterface->_getUObject() : nullptr);
 }

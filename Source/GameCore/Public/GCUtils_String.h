@@ -67,6 +67,8 @@ namespace GCUtils::String
     TStringBuilderWithBuffer<TCharType, BufferSize> ConstructStringBuilder(
         const TStringBuilderCallback<TCharType>& inInitializationCallback);
 
+    // ~ UObject functions.
+
     template <int32 BufferSize = 256, GCConcepts::CharType TCharType = TCHAR>
     TStringBuilderWithBuffer<TCharType, BufferSize> GetUObjectNameSafe(const UObject* inUObject);
 
@@ -110,6 +112,56 @@ namespace GCUtils::String
         const UObject& inUObject,
         const UObject* inStopOuter = nullptr,
         EObjectFullNameFlags inFlags = EObjectFullNameFlags::None);
+
+    // ~ UObject functions.
+
+    // ~ IInterface functions.
+
+    template <GCConcepts::PointerToIInterface TIInterfacePtr, int32 BufferSize = 256, GCConcepts::CharType TCharType = TCHAR>
+    TStringBuilderWithBuffer<TCharType, BufferSize> GetIInterfaceNameSafe(const TIInterfacePtr inIInterface);
+
+    template <GCConcepts::ReferenceToIInterface TIInterfaceRef, int32 BufferSize = 256, GCConcepts::CharType TCharType = TCHAR>
+    TStringBuilderWithBuffer<TCharType, BufferSize> GetIInterfaceName(const TIInterfaceRef inIInterface);
+
+    /**
+     * @note `UObjectBaseUtility::GetPathName()` only supports TCHAR at the moment. You will
+     *       get an error if you try using this function with other char types.
+     */
+    template <GCConcepts::PointerToIInterface TIInterfacePtr, int32 BufferSize = 512, GCConcepts::CharType TCharType = TCHAR>
+    TStringBuilderWithBuffer<TCharType, BufferSize> GetIInterfacePathNameSafe(
+        const TIInterfacePtr inIInterface,
+        const UObject* inStopOuter = nullptr);
+
+    /**
+     * @note `UObjectBaseUtility::GetPathName()` only supports TCHAR at the moment. You will
+     *       get an error if you try using this function with other char types.
+     */
+    template <GCConcepts::ReferenceToIInterface TIInterfaceRef, int32 BufferSize = 512, GCConcepts::CharType TCharType = TCHAR>
+    TStringBuilderWithBuffer<TCharType, BufferSize> GetIInterfacePathName(
+        const TIInterfaceRef inIInterface,
+        const UObject* inStopOuter = nullptr);
+
+    /**
+     * @note `UObjectBaseUtility::GetFullName()` only supports TCHAR at the moment. You will
+     *       get an error if you try using this function with other char types.
+     */
+    template <GCConcepts::PointerToIInterface TIInterfacePtr, int32 BufferSize = 512, GCConcepts::CharType TCharType = TCHAR>
+    TStringBuilderWithBuffer<TCharType, BufferSize> GetIInterfaceFullNameSafe(
+        const TIInterfacePtr inIInterface,
+        const UObject* inStopOuter = nullptr,
+        EObjectFullNameFlags inFlags = EObjectFullNameFlags::None);
+
+    /**
+     * @note `UObjectBaseUtility::GetFullName()` only supports TCHAR at the moment. You will
+     *       get an error if you try using this function with other char types.
+     */
+    template <GCConcepts::ReferenceToIInterface TIInterfaceRef, int32 BufferSize = 512, GCConcepts::CharType TCharType = TCHAR>
+    TStringBuilderWithBuffer<TCharType, BufferSize> GetIInterfaceFullName(
+        const TIInterfaceRef inIInterface,
+        const UObject* inStopOuter = nullptr,
+        EObjectFullNameFlags inFlags = EObjectFullNameFlags::None);
+
+    // ~ IInterface functions.
 
     /**
      * @brief Has the same behavior as `AActor::GetActorNameOrLabel()`.
@@ -237,6 +289,67 @@ TStringBuilderWithBuffer<TCharType, BufferSize> GCUtils::String::GetUObjectFullN
             inUObject.GetFullName(inStopOuter, inStringBuilder, inFlags);
         }
         );
+}
+
+template <GCConcepts::PointerToIInterface TIInterfacePtr, int32 BufferSize, GCConcepts::CharType TCharType>
+TStringBuilderWithBuffer<TCharType, BufferSize> GCUtils::String::GetIInterfaceNameSafe(const TIInterfacePtr inIInterface)
+{
+    if (!inIInterface)
+    {
+        return WriteToStringGeneric<TCharType, BufferSize>(StringNull);
+    }
+
+    return GetIInterfaceName(*inIInterface);
+}
+
+template <GCConcepts::ReferenceToIInterface TIInterfaceRef, int32 BufferSize, GCConcepts::CharType TCharType>
+TStringBuilderWithBuffer<TCharType, BufferSize> GCUtils::String::GetIInterfaceName(const TIInterfaceRef inIInterface)
+{
+    return GetUObjectNameSafe(inIInterface._getUObject());
+}
+
+template <GCConcepts::PointerToIInterface TIInterfacePtr, int32 BufferSize, GCConcepts::CharType TCharType>
+TStringBuilderWithBuffer<TCharType, BufferSize> GCUtils::String::GetIInterfacePathNameSafe(
+    const TIInterfacePtr inIInterface,
+    const UObject* inStopOuter)
+{
+    if (!inIInterface)
+    {
+        return WriteToStringGeneric<TCharType, BufferSize>(StringNull);
+    }
+
+    return GetIInterfacePathName(*inIInterface, inStopOuter);
+}
+
+template <GCConcepts::ReferenceToIInterface TIInterfaceRef, int32 BufferSize, GCConcepts::CharType TCharType>
+TStringBuilderWithBuffer<TCharType, BufferSize> GCUtils::String::GetIInterfacePathName(
+    const TIInterfaceRef inIInterface,
+    const UObject* inStopOuter)
+{
+    return GetUObjectPathNameSafe(inIInterface._getUObject(), inStopOuter);
+}
+
+template <GCConcepts::PointerToIInterface TIInterfacePtr, int32 BufferSize, GCConcepts::CharType TCharType>
+TStringBuilderWithBuffer<TCharType, BufferSize> GCUtils::String::GetIInterfaceFullNameSafe(
+    const TIInterfacePtr inIInterface,
+    const UObject* inStopOuter,
+    EObjectFullNameFlags inFlags)
+{
+    if (!inIInterface)
+    {
+        return WriteToStringGeneric<TCharType, BufferSize>(StringNull);
+    }
+
+    return GetIInterfaceFullName(*inIInterface, inStopOuter, inFlags);
+}
+
+template <GCConcepts::ReferenceToIInterface TIInterfaceRef, int32 BufferSize, GCConcepts::CharType TCharType>
+TStringBuilderWithBuffer<TCharType, BufferSize> GCUtils::String::GetIInterfaceFullName(
+    const TIInterfaceRef inIInterface,
+    const UObject* inStopOuter,
+    EObjectFullNameFlags inFlags)
+{
+    return GetUObjectFullNameSafe(inIInterface._getUObject(), inStopOuter, inFlags);
 }
 
 template <int32 BufferSize, GCConcepts::CharType TCharType>
