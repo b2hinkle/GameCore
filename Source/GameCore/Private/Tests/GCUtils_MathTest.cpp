@@ -3,6 +3,8 @@
 #include "Misc/AutomationTest.h"
 #include "GCUtils_Math.h"
 
+#if WITH_AUTOMATION_WORKER
+
 namespace
 {
     IMPLEMENT_SIMPLE_AUTOMATION_TEST(
@@ -89,3 +91,5 @@ namespace
         return isSuccess;
     }
 }
+
+#endif // WITH_AUTOMATION_WORKER
