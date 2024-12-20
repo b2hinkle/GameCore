@@ -10,7 +10,7 @@ namespace
     IMPLEMENT_SIMPLE_AUTOMATION_TEST(
         FAutomationTest_GameCore_GCUtils_Math_GetCollisionShapeBoundingSphereRadius,
         "GameCore.GCUtils.Math.GetCollisionShapeBoundingSphereRadius",
-        EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::SmokeFilter);
+        EAutomationTestFlags_ApplicationContextMask | EAutomationTestFlags::SmokeFilter);
 
     bool FAutomationTest_GameCore_GCUtils_Math_GetCollisionShapeBoundingSphereRadius::RunTest(const FString& parameters)
     {
@@ -24,7 +24,7 @@ namespace
     IMPLEMENT_SIMPLE_AUTOMATION_TEST(
         FAutomationTest_GameCore_GCUtils_Math_ArePointsCollinear,
         "GameCore.GCUtils.Math.ArePointsCollinear",
-        EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::SmokeFilter);
+        EAutomationTestFlags_ApplicationContextMask | EAutomationTestFlags::SmokeFilter);
 
     bool FAutomationTest_GameCore_GCUtils_Math_ArePointsCollinear::RunTest(const FString& parameters)
     {
@@ -46,7 +46,7 @@ namespace
     IMPLEMENT_SIMPLE_AUTOMATION_TEST(
         FAutomationTest_GameCore_GCUtils_Math_DoesPointLieOnTriangle,
         "GameCore.GCUtils.Math.DoesPointLieOnTriangle",
-        EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::SmokeFilter);
+        EAutomationTestFlags_ApplicationContextMask | EAutomationTestFlags::SmokeFilter);
 
     bool FAutomationTest_GameCore_GCUtils_Math_DoesPointLieOnTriangle::RunTest(const FString& parameters)
     {
@@ -66,7 +66,7 @@ namespace
     IMPLEMENT_SIMPLE_AUTOMATION_TEST(
         FAutomationTest_GameCore_GCUtils_Math_LerpMultiple,
         "GameCore.GCUtils.Math.LerpMultiple",
-        EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::SmokeFilter);
+        EAutomationTestFlags_ApplicationContextMask | EAutomationTestFlags::SmokeFilter);
 
     bool FAutomationTest_GameCore_GCUtils_Math_LerpMultiple::RunTest(const FString& parameters)
     {
