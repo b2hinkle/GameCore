@@ -2,23 +2,35 @@
 
 #include "GCPrintToScreen.h"
 
-void GCPrintToScreen(const FGCAddOnScreenDebugMessageArgs& args)
+void GCPrintToScreen(const FGCPrintToScreenArgs& args)
 {
+    if (!GAreScreenMessagesEnabled)
+    {
+        return;
+    }
+
     GEngine->AddOnScreenDebugMessage(
-        args.Key,
-        args.Duration,
-        args.Color,
-        args.Message,
-        args.bNewerOnTop,
-        args.TextScale);
+        args.AddOnScreenDebugMessageArgs.Key,
+        args.AddOnScreenDebugMessageArgs.Duration,
+        args.AddOnScreenDebugMessageArgs.Color,
+        args.AddOnScreenDebugMessageArgs.Message,
+        args.AddOnScreenDebugMessageArgs.bNewerOnTop,
+        args.AddOnScreenDebugMessageArgs.TextScale
+    );
 }
-void GCPrintToScreen(FGCAddOnScreenDebugMessageArgs&& args)
+void GCPrintToScreen(FGCPrintToScreenArgs&& args)
 {
+    if (!GAreScreenMessagesEnabled)
+    {
+        return;
+    }
+
     GEngine->AddOnScreenDebugMessage(
-        args.Key,
-        args.Duration,
-        MoveTemp(args.Color),
-        MoveTemp(args.Message),
-        args.bNewerOnTop,
-        MoveTemp(args.TextScale));
+        args.AddOnScreenDebugMessageArgs.Key,
+        args.AddOnScreenDebugMessageArgs.Duration,
+        MoveTemp(args.AddOnScreenDebugMessageArgs.Color),
+        MoveTemp(args.AddOnScreenDebugMessageArgs.Message),
+        args.AddOnScreenDebugMessageArgs.bNewerOnTop,
+        MoveTemp(args.AddOnScreenDebugMessageArgs.TextScale)
+    );
 }

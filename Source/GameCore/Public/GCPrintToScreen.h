@@ -4,15 +4,15 @@
 
 #include "CoreMinimal.h"
 
-struct FGCAddOnScreenDebugMessageArgs;
+struct FGCPrintToScreenArgs;
 
 // TODO: Document
 /**
  * @brief 
  * @param args 
  */
-GAMECORE_API void GCPrintToScreen(const FGCAddOnScreenDebugMessageArgs& args);
-GAMECORE_API void GCPrintToScreen(FGCAddOnScreenDebugMessageArgs&& args);
+GAMECORE_API void GCPrintToScreen(const FGCPrintToScreenArgs& args);
+GAMECORE_API void GCPrintToScreen(FGCPrintToScreenArgs&& args);
 
 /**
  * @brief Struct containing arguments for UEngine::AddOnScreenDebugMessage.
@@ -39,6 +39,33 @@ public:
 };
 
 /**
+ * @brief Struct containing arguments for our GCPrintToScreen function.
+ */
+struct GAMECORE_API FGCPrintToScreenArgs
+{
+
+public:
+
+    FGCPrintToScreenArgs(FGCAddOnScreenDebugMessageArgs&& addOnScreenDebugMessageArgs)
+        : AddOnScreenDebugMessageArgs(MoveTemp(addOnScreenDebugMessageArgs))
+    {
+    }
+
+    FGCPrintToScreenArgs(FGCAddOnScreenDebugMessageArgs&& addOnScreenDebugMessageArgs, const UObject* worldContextObj)
+        : AddOnScreenDebugMessageArgs(MoveTemp(addOnScreenDebugMessageArgs)),
+        WorldContextObj(worldContextObj)
+    {
+    }
+    
+public:
+
+    FGCAddOnScreenDebugMessageArgs AddOnScreenDebugMessageArgs;
+
+    const UObject* WorldContextObj = nullptr;
+
+};
+
+/**
  * @brief Prints specified string to the screen. This struct uses the Named Parameter Idiom technique to achieve quick and simple calls.
  */
 struct GAMECORE_API FGCPrintToScreen
@@ -46,20 +73,37 @@ struct GAMECORE_API FGCPrintToScreen
 public:
 
     /**
-     * @brief Prints specified string to the screen. Further arguments may be provided through builder functions. E.g. FGCPrintToScreen(TEXT("Hi")).bNewerOnTop(false);
+     * @brief Prints specified string to the screen. Further arguments may be provided through builder functions. E.g. FGCPrintToScreen(TEXT("Hi")).bNewerOnTop(false); 
      * @Note: Temporary lifetime is the intended lifetime for objects of this struct.
      * @param message The message to print.
      */
     FGCPrintToScreen(FString&& message = FGCAddOnScreenDebugMessageArgs::GetMessageDefault())
-        : AddOnScreenDebugMessageArgs({ .Message = MoveTemp(message) })
+        : PrintToScreenArgs(
+            FGCAddOnScreenDebugMessageArgs(MoveTemp(message))
+        )
     {
     }
 
+    /**
+     * @brief Prints specified string to the screen. Further arguments may be provided through builder functions. E.g. FGCPrintToScreen(TEXT("Hi")).bNewerOnTop(false); 
+     * @Note: Temporary lifetime is the intended lifetime for objects of this struct.
+     * @param message The message to print.
+     */
+    FGCPrintToScreen(const UObject* worldContextObj, FString&& message = FGCAddOnScreenDebugMessageArgs::GetMessageDefault())
+        : PrintToScreenArgs(
+            FGCAddOnScreenDebugMessageArgs(MoveTemp(message)),
+            worldContextObj
+        )
+    {
+    }
+
+
+    // No use for this ctr.
     FGCPrintToScreen(const FGCPrintToScreen& other) = delete;
 
     ~FGCPrintToScreen()
     {
-        ::GCPrintToScreen(MoveTemp(AddOnScreenDebugMessageArgs));
+        ::GCPrintToScreen(MoveTemp(PrintToScreenArgs));
     }
 
 
@@ -67,31 +111,31 @@ public: // Builders functions.
 
     FGCPrintToScreen&& Key(const int32 value) &&
     {
-        AddOnScreenDebugMessageArgs.Key = value;
+        PrintToScreenArgs.AddOnScreenDebugMessageArgs.Key = value;
         return MoveTemp(*this);
     }
     FGCPrintToScreen&& Duration(const float value) &&
     {
-        AddOnScreenDebugMessageArgs.Duration = value;
+        PrintToScreenArgs.AddOnScreenDebugMessageArgs.Duration = value;
         return MoveTemp(*this);
     }
     FGCPrintToScreen&& Color(const FColor value) &&
     {
-        AddOnScreenDebugMessageArgs.Color = value;
+        PrintToScreenArgs.AddOnScreenDebugMessageArgs.Color = value;
         return MoveTemp(*this);
     }
     FGCPrintToScreen&& bNewerOnTop(const bool value) &&
     {
-        AddOnScreenDebugMessageArgs.bNewerOnTop = value;
+        PrintToScreenArgs.AddOnScreenDebugMessageArgs.bNewerOnTop = value;
         return MoveTemp(*this);
     }
     FGCPrintToScreen&& TextScale(const FVector2D& value) &&
     {
-        AddOnScreenDebugMessageArgs.TextScale = value;
+        PrintToScreenArgs.AddOnScreenDebugMessageArgs.TextScale = value;
         return MoveTemp(*this);
     }
 
 private: // Arguments
 
-    FGCAddOnScreenDebugMessageArgs AddOnScreenDebugMessageArgs;
+    FGCPrintToScreenArgs PrintToScreenArgs;
 };
