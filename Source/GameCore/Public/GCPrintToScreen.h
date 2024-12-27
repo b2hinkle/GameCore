@@ -6,16 +6,17 @@
 
 struct FGCPrintToScreenArgs;
 
-// TODO: Document
-/**
- * @brief 
- * @param args 
- */
-GAMECORE_API void GCPrintToScreen(const FGCPrintToScreenArgs& args);
-GAMECORE_API void GCPrintToScreen(FGCPrintToScreenArgs&& args);
+GAMECORE_API TStringBuilder<128> GCGetPrintToScreenPrefix(const UObject* worldContextObj);
 
 /**
- * @brief Struct containing arguments for UEngine::AddOnScreenDebugMessage.
+ * @brief Our method for printing to the screen. While this function is useful for manual situations,
+ *        using `FGCPrintToScreen` is the more streamlined choice.
+ * @param args Settings we should use when printing.
+ */
+GAMECORE_API void GCPrintToScreen(const FGCPrintToScreenArgs& args);
+
+/**
+ * @brief Struct containing arguments for `UEngine::AddOnScreenDebugMessage`.
  */
 struct GAMECORE_API FGCAddOnScreenDebugMessageArgs
 {
@@ -39,7 +40,7 @@ public:
 };
 
 /**
- * @brief Struct containing arguments for our GCPrintToScreen function.
+ * @brief Struct containing arguments for our `GCPrintToScreen` function.
  */
 struct GAMECORE_API FGCPrintToScreenArgs
 {
@@ -53,28 +54,32 @@ public:
 
     FGCPrintToScreenArgs(FGCAddOnScreenDebugMessageArgs&& addOnScreenDebugMessageArgs, const UObject* worldContextObj)
         : AddOnScreenDebugMessageArgs(MoveTemp(addOnScreenDebugMessageArgs)),
-        WorldContextObj(worldContextObj)
+        OptionalWorldContextObjWeak(worldContextObj)
     {
     }
     
 public:
 
     FGCAddOnScreenDebugMessageArgs AddOnScreenDebugMessageArgs;
-
-    const UObject* WorldContextObj = nullptr;
+    
+    /**
+     * @brief Optional context object for a more detailed log.
+     */
+    TOptional<TWeakObjectPtr<const UObject>> OptionalWorldContextObjWeak;
 
 };
 
 /**
- * @brief Prints specified string to the screen. This struct uses the Named Parameter Idiom technique to achieve quick and simple calls.
+ * @brief This struct makes use of temporary lifetime for code execution. Combined with the Named Parameter Idiom technique (via function chaining), we can achieve
+ *        quick and simple print to screen calls.
  */
 struct GAMECORE_API FGCPrintToScreen
 {
 public:
 
     /**
-     * @brief Prints specified string to the screen. Further arguments may be provided through builder functions. E.g. FGCPrintToScreen(TEXT("Hi")).bNewerOnTop(false); 
-     * @Note: Temporary lifetime is the intended lifetime for objects of this struct.
+     * @brief Prints specified string to the screen. Further arguments may be provided through builder functions. E.g. `FGCPrintToScreen(TEXT("Hi")).bNewerOnTop(false).Duration(1.f);` 
+     * @Note: Temporary lifetime is the intended lifetime for objects of this type.
      * @param message The message to print.
      */
     FGCPrintToScreen(FString&& message = FGCAddOnScreenDebugMessageArgs::GetMessageDefault())
@@ -83,10 +88,10 @@ public:
         )
     {
     }
-
+    
     /**
-     * @brief Prints specified string to the screen. Further arguments may be provided through builder functions. E.g. FGCPrintToScreen(TEXT("Hi")).bNewerOnTop(false); 
-     * @Note: Temporary lifetime is the intended lifetime for objects of this struct.
+     * @brief Prints specified string to the screen. Further arguments may be provided through builder functions. E.g. `FGCPrintToScreen(TEXT("Hi")).bNewerOnTop(false).Duration(1.f);` 
+     * @Note: Temporary lifetime is the intended lifetime for objects of this type.
      * @param message The message to print.
      */
     FGCPrintToScreen(const UObject* worldContextObj, FString&& message = FGCAddOnScreenDebugMessageArgs::GetMessageDefault())
@@ -96,7 +101,6 @@ public:
         )
     {
     }
-
 
     // No use for this ctr.
     FGCPrintToScreen(const FGCPrintToScreen& other) = delete;
