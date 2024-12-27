@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GCUtils.h"
 #include "Types/GCStringBuilderAppender.h"
+#include <source_location>
 
 /**
  * Makes a string literal out of the given text.
@@ -175,6 +176,16 @@ namespace GCUtils::String
     template <int32 BufferSize = 512, GCConcepts::CharType TCharType = TCHAR>
     TStringBuilderWithBuffer<TCharType, BufferSize> GetActorNameOrLabel(const AActor& inActor);
 
+    /**
+     * @brief Gets the current locaiton in code as a string. Esentially a wrapper of `std::source_location` but geared towards UE's string building workflow.
+     * @tparam BufferSize The amount of characters this string will hold.
+     * @tparam TCharType The character type to use.
+     * @param sourceLocation The location in code to write as a string. Default value will cover mostly every use case.
+     * @return String of the current location in code.
+     */
+    template <int32 BufferSize = 512, GCConcepts::CharType TCharType = TCHAR>
+    TStringBuilderWithBuffer<TCharType, BufferSize> GetFunctionSourceLocation(const std::source_location& sourceLocation = std::source_location::current());
+
     GAMECORE_API const FStringView GetWorldNetModeString(const UObject* inWorldContextObject);
 
     GAMECORE_API const FStringView GetObjectLocalRoleString(const UObject* inActorContextObject);
@@ -188,6 +199,18 @@ namespace GCUtils::String
 
     GAMECORE_API constexpr const FStringView BoolToString(const bool inBool);
 
+    GAMECORE_API constexpr const FStringView BoolToString(const bool inBool);
+    
+    /**
+     * @brief Gets a net mode string describing the current PIE instance. Similar to how the prefix string works from `UKismetSystemLibrary::PrintString`.
+     * @tparam BufferSize The amount of characters this string will hold.
+     * @tparam TCharType The character type to use.
+     * @param world The context world.
+     * @return A string builder of the result PIE instance string.
+     */
+    template <int32 BufferSize = 64, GCConcepts::CharType TCharType = TCHAR>
+    const TStringBuilderWithBuffer<TCharType, BufferSize> GetPlayInEditorInstanceMultiplayerName(const UWorld& world);
+
     constexpr FStringView StringNull = PREPROCESSOR_JOIN(GC_STRING_LITERAL_NULL, _PrivateSV);
 
     constexpr FStringView StringTrue = PREPROCESSOR_JOIN(GC_STRING_LITERAL_TRUE, _PrivateSV);
@@ -198,7 +221,7 @@ namespace GCUtils::String
 template <GCConcepts::CharType TCharType, int32 BufferSize, class... TArgs>
 TStringBuilderWithBuffer<TCharType, BufferSize> GCUtils::String::WriteToStringGeneric(TArgs&&... inArgs)
 {
-    return TStringBuilderWithBuffer<TCharType, BufferSize>(EInPlace::InPlace, Forward<TArgs...>(inArgs...));
+    return TStringBuilderWithBuffer<TCharType, BufferSize>(EInPlace::InPlace, Forward<TArgs>(inArgs)...);
 }
 
 template <int32 BufferSize, GCConcepts::CharType TCharType>
@@ -384,4 +407,30 @@ TStringBuilderWithBuffer<TCharType, BufferSize> GCUtils::String::GetActorNameOrL
 #endif
         }
         );
+}
+
+template <int32 BufferSize, GCConcepts::CharType TCharType>
+TStringBuilderWithBuffer<TCharType, BufferSize> GCUtils::String::GetFunctionSourceLocation(const std::source_location& sourceLocation)
+{
+    return WriteToStringGeneric<TCharType, BufferSize>(sourceLocation.function_name());
+}
+
+template <int32 BufferSize, GCConcepts::CharType TCharType>
+const TStringBuilderWithBuffer<TCharType, BufferSize> GCUtils::String::GetPlayInEditorInstanceMultiplayerName(const UWorld& world)
+{
+    checkf(world.WorldType == EWorldType::PIE, TEXT("Function `%s` only for PIE sessions."), GCUtils::String::GetFunctionSourceLocation().ToString());
+    switch (world.GetNetMode())
+    {
+    case NM_Client:
+        return WriteToStringGeneric<TCharType, BufferSize>(TEXT("Client "), UE::GetPlayInEditorID());
+    case NM_DedicatedServer:
+        return WriteToStringGeneric<TCharType, BufferSize>("Dedicated Server");
+    case NM_ListenServer:
+        return WriteToStringGeneric<TCharType, BufferSize>(TEXT("Listen Server"));
+    case NM_Standalone:
+        return WriteToStringGeneric<TCharType, BufferSize>(TEXT("Standalone"));
+    }
+
+    checkf(0, TEXT("This will never hit."));
+    return WriteToStringGeneric<TCharType, BufferSize>(TEXT(""));
 }

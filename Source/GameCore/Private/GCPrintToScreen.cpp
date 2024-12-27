@@ -2,6 +2,32 @@
 
 #include "GCPrintToScreen.h"
 
+#include "GCUtils_String.h"
+
+TStringBuilder<128> GCGetPrintToScreenPrefix(const UObject* worldContextObj)
+{
+    // TODO: This is more or less a temporary decision for the multiplayer prefix. Ideally we make it the same across all build targets.
+    //       We should also account for split screen.
+
+    if (!worldContextObj)
+    {
+        return WriteToString<128>(TEXT("No world context object: "));
+    }
+
+    const UWorld* world = worldContextObj->GetWorld();
+    if (!world)
+    {
+        return WriteToString<128>(TEXT("No world: "));
+    }
+
+    if (world->WorldType == EWorldType::PIE)
+    {
+        return WriteToString<128>(GCUtils::String::GetPlayInEditorInstanceMultiplayerName(*world), TEXT(": "));
+    }
+
+    return WriteToString<128>(GCUtils::String::GetWorldNetModeString(world), TEXT(": "));
+}
+
 void GCPrintToScreen(const FGCPrintToScreenArgs& args)
 {
     if (!GAreScreenMessagesEnabled)
@@ -9,28 +35,23 @@ void GCPrintToScreen(const FGCPrintToScreenArgs& args)
         return;
     }
 
-    GEngine->AddOnScreenDebugMessage(
-        args.AddOnScreenDebugMessageArgs.Key,
-        args.AddOnScreenDebugMessageArgs.Duration,
-        args.AddOnScreenDebugMessageArgs.Color,
-        args.AddOnScreenDebugMessageArgs.Message,
-        args.AddOnScreenDebugMessageArgs.bNewerOnTop,
-        args.AddOnScreenDebugMessageArgs.TextScale
-    );
-}
-void GCPrintToScreen(FGCPrintToScreenArgs&& args)
-{
-    if (!GAreScreenMessagesEnabled)
+    TStringBuilder<64> message;
+
+    // Prepend the prefix string.
+    if (args.OptionalWorldContextObjWeak.IsSet())
     {
-        return;
+        const TWeakObjectPtr<const UObject>& worldContextObjWeak = args.OptionalWorldContextObjWeak.GetValue();
+        message << GCGetPrintToScreenPrefix(worldContextObjWeak.Get());
     }
+
+    message << args.AddOnScreenDebugMessageArgs.Message;
 
     GEngine->AddOnScreenDebugMessage(
         args.AddOnScreenDebugMessageArgs.Key,
         args.AddOnScreenDebugMessageArgs.Duration,
-        MoveTemp(args.AddOnScreenDebugMessageArgs.Color),
-        MoveTemp(args.AddOnScreenDebugMessageArgs.Message),
+        args.AddOnScreenDebugMessageArgs.Color,
+        message.ToString(),
         args.AddOnScreenDebugMessageArgs.bNewerOnTop,
-        MoveTemp(args.AddOnScreenDebugMessageArgs.TextScale)
+        args.AddOnScreenDebugMessageArgs.TextScale
     );
 }
