@@ -26,6 +26,20 @@ void GCUtils::AssetStreaming::ForEachLoadedAssetBreakable(
 {
     TRACE_CPUPROFILER_EVENT_SCOPE(GCUtils::AssetStreaming::ForEachLoadedAssetBreakable);
 
+    ForEachLoadedAssetBreakable(
+        TSharedRef<const FStreamableHandle>(inStreamableHandle),
+        [&inCallback](UObject* loadedAsset, const int32 loadedAssetIndex, const FStreamableHandle& streamableHandle)
+        {
+            return inCallback(loadedAsset, loadedAssetIndex, const_cast<FStreamableHandle&>(streamableHandle));
+        }
+        );
+}
+void GCUtils::AssetStreaming::ForEachLoadedAssetBreakable(
+    const TSharedRef<const FStreamableHandle>& inStreamableHandle,
+    const FForEachLoadedAssetBreakableConstCallbackFunctionRef& inCallback)
+{
+    TRACE_CPUPROFILER_EVENT_SCOPE(GCUtils::AssetStreaming::ForEachLoadedAssetBreakable);
+
     inStreamableHandle->ForEachLoadedAsset(
         [&inCallback, &inStreamableHandle, iteration = 0, shouldContinue = true](UObject* loadedAsset) mutable
         {
