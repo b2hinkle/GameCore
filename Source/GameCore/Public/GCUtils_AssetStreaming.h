@@ -21,6 +21,9 @@ GAMECORE_API const TCHAR* LexToString(const EAsyncPackageState::Type value);
  */
 namespace GCUtils::AssetStreaming
 {
+    using FForEachLoadedAssetBreakableCallbackFunctionRef =
+        TFunctionRef<bool(UObject* /* loadedAsset */, const int32 /* index */, FStreamableHandle& /* streamableHandle */)>;
+
     /**
      * @brief Load an asset synchronously and assume the load is successful.
      * @todo Use shared ref for the `outStreamableHandle` somehow.
@@ -80,6 +83,15 @@ namespace GCUtils::AssetStreaming
     TSharedPtr<FStreamableHandle> LoadSync(
         FStreamableManager& inStreamableManager,
         TArray<FSoftObjectPath>&& inAssetPaths);
+
+    /**
+     * @brief Iterate on all loaded assets with a callback function and break if returned false.
+     * @note This function provides more information to the callback compared to the
+     *       engine's `FStreamableHandle::ForEachLoadedAsset<>()` function.
+     */
+    GAMECORE_API void ForEachLoadedAssetBreakable(
+        const TSharedRef<FStreamableHandle>& inStreamableHandle,
+        const FForEachLoadedAssetBreakableCallbackFunctionRef& inCallback);
 
     /**
      * @brief Build a string of comma-separated asset paths.

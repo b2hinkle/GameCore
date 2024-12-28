@@ -30,7 +30,7 @@ namespace GCUtils::AssetStreaming::Private
         bool shouldAssumeSuccess
         >
     TArray<UObject*, TAllocator> GetLoadedAssetsGeneralized(
-        const TSharedRef<FStreamableHandle>& streamableHandle);
+        const TSharedRef<FStreamableHandle>& inStreamableHandle);
 
     template
         <
@@ -204,20 +204,15 @@ template
     bool shouldAssumeSuccess
     >
 TArray<UObject*, TAllocator> GCUtils::AssetStreaming::Private::GetLoadedAssetsGeneralized(
-    const TSharedRef<FStreamableHandle>& streamableHandle)
+    const TSharedRef<FStreamableHandle>& inStreamableHandle)
 {
     TRACE_CPUPROFILER_EVENT_SCOPE(GCUtils::AssetStreaming::Private::GetLoadedAssetsGeneralized(const TSharedRef<FStreamableHandle>&));
 
     TArray<UObject*, TAllocator> loadedAssets;
 
-    streamableHandle->ForEachLoadedAsset(
-        [&loadedAssets, &streamableHandle, iteration = 0](UObject* loadedAsset) mutable
+    ForEachLoadedAssetBreakable(inStreamableHandle,
+        [&loadedAssets](UObject* loadedAsset, const int32 index, FStreamableHandle& streamableHandle)
         {
-            ON_SCOPE_EXIT
-            {
-                ++iteration;
-            };
-
 #if !NO_LOGGING || DO_ENSURE
             if (!loadedAsset)
             {
@@ -225,9 +220,9 @@ TArray<UObject*, TAllocator> GCUtils::AssetStreaming::Private::GetLoadedAssetsGe
                     GCUtils::Materialize(TStringBuilder<512>())
                         << TEXT("Loaded asset is null.")
                         TEXT(" ")
-                        TEXT("Request debug name: '") << streamableHandle->GetDebugName() << TEXT("'.")
+                        TEXT("Load request debug name: '") << streamableHandle.GetDebugName() << TEXT("'.")
                         TEXT(" ")
-                        << TEXT("Index: `") << iteration << TEXT("`.");
+                        << TEXT("Index: `") << index << TEXT("`.");
 
                 if constexpr (shouldReportErrors)
                 {
@@ -253,6 +248,7 @@ TArray<UObject*, TAllocator> GCUtils::AssetStreaming::Private::GetLoadedAssetsGe
 #endif // #if !NO_LOGGING || DO_ENSURE
 
             loadedAssets.Emplace(loadedAsset);
+            return true;
         }
         );
 

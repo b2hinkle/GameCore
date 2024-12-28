@@ -19,3 +19,25 @@ const TCHAR* LexToString(const EAsyncPackageState::Type value)
 
     return TEXT("");
 }
+
+void GCUtils::AssetStreaming::ForEachLoadedAssetBreakable(
+    const TSharedRef<FStreamableHandle>& inStreamableHandle,
+    const FForEachLoadedAssetBreakableCallbackFunctionRef& inCallback)
+{
+    TRACE_CPUPROFILER_EVENT_SCOPE(GCUtils::AssetStreaming::ForEachLoadedAssetBreakable);
+
+    inStreamableHandle->ForEachLoadedAsset(
+        [&inCallback, &inStreamableHandle, iteration = 0, shouldContinue = true](UObject* loadedAsset) mutable
+        {
+            if (!shouldContinue)
+            {
+                return;
+            }
+
+            const int32 index = iteration;
+            shouldContinue = inCallback(loadedAsset, index, inStreamableHandle.Get());
+
+            ++iteration;
+        }
+        );
+}
