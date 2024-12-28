@@ -32,37 +32,83 @@ namespace GCConcepts
 
     template <class T>
     concept CharType = static_cast<bool>(TIsCharType<T>::Value);
-
+    
+    /**
+     * @brief Concept is satisfied if T is a pointer type to a TBase-derrived type.
+     * @tparam T The type to test.
+     * @tparam TBase The type which T must derive from.
+     */
     template <class T, class TBase>
-    concept PointerToDerivedFrom = std::is_pointer_v<T> && std::derived_from<std::remove_pointer_t<T>, TBase>;
+    concept PointerToDerived = std::is_pointer_v<T> && std::derived_from<std::remove_pointer_t<T>, TBase>;
 
+    /**
+     * @brief Concept is satisfied if T is a reference type to a TBase-derrived type.
+     * @tparam T The type to test.
+     * @tparam TBase The type which T must derive from.
+     */
     template <class T, class TBase>
-    concept ReferenceToDerivedFrom = std::is_reference_v<T> && std::derived_from<std::remove_reference_t<T>, TBase>;
-
+    concept ReferenceToDerived = std::is_reference_v<T> && std::derived_from<std::remove_reference_t<T>, TBase>;
+    
+    /**
+     * @brief Concept is satisfied if T is a UObject-derrived type.
+     * @tparam T The type to test.
+     */
     template <class T>
     concept UObjectDerived = std::derived_from<T, UObject>;
-
+    
+    /**
+     * @brief Concept is satisfied if T is a pointer type to a UObject-derived type.
+     * @tparam T The type to test.
+     */
     template <class T>
-    concept PointerToUObjectDerived = PointerToDerivedFrom<T, UObject>;
-
+    concept PointerToUObjectDerived = PointerToDerived<T, UObject>;
+    
+    /**
+     * @brief Concept is satisfied if T is a reference type to a UObject-derived type.
+     * @tparam T The type to test.
+     */
     template <class T>
-    concept ReferenceToUObjectDerived = ReferenceToDerivedFrom<T, UObject>;
-
+    concept ReferenceToUObjectDerived = ReferenceToDerived<T, UObject>;
+    
+    /**
+     * @brief Concept is satisfied if T is an IInterface type.
+     * @tparam T The type to test.
+     */
     template <class T>
     concept IInterface = static_cast<bool>(TIsIInterface<T>::Value);
-
+    
+    /**
+     * @brief Concept is satisfied if T is a pointer type to an IInterface type.
+     * @tparam T The type to test.
+     */
     template <class T>
     concept PointerToIInterface = std::is_pointer_v<T> && IInterface<std::remove_pointer_t<T>>;
-
+    
+    /**
+     * @brief Concept is satisfied if T is a reference type to an IInterface type.
+     * @tparam T The type to test.
+     */
     template <class T>
     concept ReferenceToIInterface = std::is_reference_v<T> && IInterface<std::remove_reference_t<T>>;
-
+    
+    /**
+     * @brief Concept is satisfied if T is a UObject-derrived type or an IInterface type.
+     * @tparam T The type to test.
+     */
     template <class T>
     concept UObjectDerivedOrIInterface = UObjectDerived<T> || IInterface<T>;
-
+    
+    /**
+     * @brief Concept is satisfied if T is a pointer type to a UObject-derrived type or an IInterface type.
+     * @tparam T The type to test.
+     */
     template <class T>
     concept PointerToUObjectDerivedOrIInterface = std::is_pointer_v<T> && UObjectDerivedOrIInterface<std::remove_pointer_t<T>>;
-
+    
+    /**
+     * @brief Concept is satisfied if T is a reference type to a UObject-derrived type or an IInterface type.
+     * @tparam T The type to test.
+     */
     template <class T>
     concept ReferenceToUObjectDerivedOrIInterface = std::is_reference_v<T> && UObjectDerivedOrIInterface<std::remove_reference_t<T>>;
 }
