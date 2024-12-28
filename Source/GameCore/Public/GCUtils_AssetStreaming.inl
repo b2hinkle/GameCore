@@ -25,6 +25,15 @@ namespace GCUtils::AssetStreaming::Private
 
     template
         <
+        class TAllocator,
+        bool shouldReportErrors,
+        bool shouldAssumeSuccess
+        >
+    TArray<UObject*, TAllocator> GetLoadedAssetsGeneralized(
+        const TSharedRef<FStreamableHandle>& streamableHandle);
+
+    template
+        <
         bool shouldManageActiveHandle,
         bool shouldReportErrors,
         bool shouldAssumeSuccess
@@ -159,18 +168,12 @@ TArray<UObject*, TAllocator> GCUtils::AssetStreaming::Private::LoadSyncGeneraliz
 {
     TRACE_CPUPROFILER_EVENT_SCOPE(GCUtils::AssetStreaming::Private::LoadSyncGeneralized(FStreamableManager&, TArray<FSoftObjectPath>&&, TSharedPtr<FStreamableHandle>&));
 
-    TArray<UObject*, TAllocator> loadedAssets;
-
-#if !NO_LOGGING || DO_ENSURE
-    FStringBuilderBase&& assetPathsString = MakeStringFromAssetPaths(inAssetPaths);
-#endif // #if !NO_LOGGING || DO_ENSURE
-
 #if !NO_LOGGING || DO_ENSURE
     if (!ensure(!outStreamableHandle))
     {
         GC_LOG_STR_NO_CONTEXT(
             LogGCUtils_AssetStreaming,
-            Error,
+            Warning,
             TEXT("The out parameter has been passed an existing streamable handle. Improper usage of function!")
             );
     }
@@ -186,17 +189,29 @@ TArray<UObject*, TAllocator> GCUtils::AssetStreaming::Private::LoadSyncGeneraliz
     {
         if (!outStreamableHandle)
         {
-            return loadedAssets;
+            return {};
         }
     }
 
     check(outStreamableHandle);
-    outStreamableHandle->ForEachLoadedAsset(
-        [&loadedAssets, iteration = 0
-#if !NO_LOGGING || DO_ENSURE
-        , &assetPathsString
-#endif // #if !NO_LOGGING || DO_ENSURE
-        ](UObject* loadedAsset) mutable
+    return GetLoadedAssetsGeneralized<TAllocator, shouldReportErrors, shouldAssumeSuccess>(outStreamableHandle.ToSharedRef());
+}
+
+template
+    <
+    class TAllocator,
+    bool shouldReportErrors,
+    bool shouldAssumeSuccess
+    >
+TArray<UObject*, TAllocator> GCUtils::AssetStreaming::Private::GetLoadedAssetsGeneralized(
+    const TSharedRef<FStreamableHandle>& streamableHandle)
+{
+    TRACE_CPUPROFILER_EVENT_SCOPE(GCUtils::AssetStreaming::Private::GetLoadedAssetsGeneralized(const TSharedRef<FStreamableHandle>&));
+
+    TArray<UObject*, TAllocator> loadedAssets;
+
+    streamableHandle->ForEachLoadedAsset(
+        [&loadedAssets, &streamableHandle, iteration = 0](UObject* loadedAsset) mutable
         {
             ON_SCOPE_EXIT
             {
@@ -210,7 +225,7 @@ TArray<UObject*, TAllocator> GCUtils::AssetStreaming::Private::LoadSyncGeneraliz
                     GCUtils::Materialize(TStringBuilder<512>())
                         << TEXT("Loaded asset is null.")
                         TEXT(" ")
-                        TEXT("Asset paths: '") << assetPathsString << TEXT("'.")
+                        TEXT("Request debug name: '") << streamableHandle->GetDebugName() << TEXT("'.")
                         TEXT(" ")
                         << TEXT("Index: `") << iteration << TEXT("`.");
 
@@ -232,6 +247,8 @@ TArray<UObject*, TAllocator> GCUtils::AssetStreaming::Private::LoadSyncGeneraliz
                         logString
                         );
                 }
+
+                check(!shouldAssumeSuccess);
             }
 #endif // #if !NO_LOGGING || DO_ENSURE
 

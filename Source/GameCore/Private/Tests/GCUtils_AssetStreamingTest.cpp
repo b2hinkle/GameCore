@@ -25,6 +25,43 @@ namespace
     {
         bool isSuccess = true;
 
+        // Test loading bad asset paths.
+        {
+            using TAllocator = TFixedAllocator<1u>;
+            constexpr bool shouldManageActiveHandle = true;
+            constexpr bool shouldReportErrors = false;
+
+            TArray<FSoftObjectPath> assetPaths;
+            assetPaths.Emplace(
+                FSoftObjectPath(
+                    FTopLevelAssetPath(
+                        FName(TEXT("/Game/kajflkdsjafk/gibberish/yooahd/beem")),
+                        FName(TEXT("boom"))
+                        )
+                    )
+                );
+
+            const int32 numAssetsToLoad = assetPaths.Num();
+
+            TSharedPtr<FStreamableHandle> streamableHandle;
+
+            TArray<UObject*, TAllocator> loadedAssets =
+                GCUtils::AssetStreaming::LoadSync<TAllocator, shouldManageActiveHandle, shouldReportErrors>(
+                    UAssetManager::Get().GetStreamableManager(),
+                    MoveTemp(assetPaths),
+                    streamableHandle);
+
+            isSuccess = TestTrueExpr(streamableHandle.IsValid()) && isSuccess;
+            isSuccess = TestTrueExpr(loadedAssets.Num() == numAssetsToLoad) && isSuccess;
+
+            if (loadedAssets.IsEmpty() == false)
+            {
+                // Since our asset path was gibberish, the loaded asset should be null.
+                isSuccess = TestTrueExpr(loadedAssets[0] == nullptr) && isSuccess;
+            }
+        }
+
+        // Test loading good asset path.
         {
             using TAllocator = TFixedAllocator<1u>;
             constexpr bool shouldManageActiveHandle = true;
@@ -54,6 +91,7 @@ namespace
             isSuccess = TestTrueExpr(loadedAssets.Num() == numAssetsToLoad) && isSuccess;
         }
 
+        // Test "checked" function.
         {
             using TAllocator = TFixedAllocator<1u>;
             constexpr bool shouldManageActiveHandle = true;
