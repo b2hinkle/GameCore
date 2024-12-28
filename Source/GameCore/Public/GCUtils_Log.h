@@ -50,7 +50,7 @@
  * @note Internal macro! Not intended for use.
  * @note Arguments correspond with `GC_PRIVATE_INFO_NO_CONTEXT_FORMAT_STRING_LITERAL`.
  */
-#define GC_PRIVATE_INFO_NO_CONTEXT_FORMAT_ARGS StringCast<TCHAR, 512>(std::source_location::current().function_name()).Get()
+#define GC_PRIVATE_INFO_NO_CONTEXT_FORMAT_ARGS GCUtils::String::GetFunctionSourceLocation().ToString()
 
 /**
  * @brief Log with no extra context to output info for. Printf style.
