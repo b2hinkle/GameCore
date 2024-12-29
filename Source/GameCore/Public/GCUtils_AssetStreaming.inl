@@ -166,6 +166,26 @@ TAsset* GCUtils::AssetStreaming::GetLoadedAsset(
 {
     using TAllocator = TFixedAllocator<1u>;
 
+#if !NO_LOGGING || DO_ENSURE
+    {
+        int32 numLoaded = 0;
+        int32 numRequested = 0;
+        inStreamableHandle->GetLoadedCount(numLoaded, numRequested);
+
+        if (!ensure(numRequested <= 1))
+        {
+            GC_LOG_STR_NO_CONTEXT(
+                LogGCUtils_AssetStreaming,
+                Warning,
+                GCUtils::Materialize(TStringBuilder<512>())
+                    << TEXT("Singular asset function was used for a request of multiple assets. Improper use of function!")
+                    TEXT(" ")
+                    TEXT("Load request debug name: '") << inStreamableHandle->GetDebugName() << TEXT("'.")
+                );
+        }
+    }
+#endif // #if !NO_LOGGING || DO_ENSURE
+
     TArray<TAsset*, TAllocator> loadedAssetArray =
         GetLoadedAssets<TAllocator, shouldReportErrors, TAsset>(
             inStreamableHandle
