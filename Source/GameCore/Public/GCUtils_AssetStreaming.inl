@@ -52,6 +52,17 @@ namespace GCUtils::AssetStreaming::Private
 template <bool shouldManageActiveHandle>
 TSharedRef<FStreamableHandle> GCUtils::AssetStreaming::LoadSyncChecked(
     FStreamableManager& inStreamableManager,
+    FSoftObjectPath&& inAssetPath)
+{
+    TArray<FSoftObjectPath> assetPathArray;
+    assetPathArray.Emplace(MoveTemp(inAssetPath));
+
+    return LoadSyncChecked<shouldManageActiveHandle>(inStreamableManager, MoveTemp(assetPathArray));
+}
+
+template <bool shouldManageActiveHandle>
+TSharedRef<FStreamableHandle> GCUtils::AssetStreaming::LoadSyncChecked(
+    FStreamableManager& inStreamableManager,
     TArray<FSoftObjectPath>&& inAssetPaths)
 {
     constexpr bool shouldReportErrors = true;
@@ -65,6 +76,17 @@ TSharedRef<FStreamableHandle> GCUtils::AssetStreaming::LoadSyncChecked(
 template <bool shouldManageActiveHandle, bool shouldReportErrors>
 TSharedPtr<FStreamableHandle> GCUtils::AssetStreaming::LoadSync(
     FStreamableManager& inStreamableManager,
+    FSoftObjectPath&& inAssetPath)
+{
+    TArray<FSoftObjectPath> assetPathArray;
+    assetPathArray.Emplace(MoveTemp(inAssetPath));
+
+    return LoadSync<shouldManageActiveHandle, shouldReportErrors>(inStreamableManager, MoveTemp(assetPathArray));
+}
+
+template <bool shouldManageActiveHandle, bool shouldReportErrors>
+TSharedPtr<FStreamableHandle> GCUtils::AssetStreaming::LoadSync(
+    FStreamableManager& inStreamableManager,
     TArray<FSoftObjectPath>&& inAssetPaths)
 {
     constexpr bool shouldAssumeSuccess = false;
@@ -72,6 +94,23 @@ TSharedPtr<FStreamableHandle> GCUtils::AssetStreaming::LoadSync(
         inStreamableManager,
         MoveTemp(inAssetPaths)
         );
+}
+
+template
+    <
+    GCConcepts::UObjectDerivedOrIInterface TAsset
+    >
+TAsset& GCUtils::AssetStreaming::GetLoadedAssetChecked(
+    const TSharedRef<FStreamableHandle>& inStreamableHandle)
+{
+    using TAllocator = TFixedAllocator<1u>;
+
+    TArray<std::reference_wrapper<TAsset>, TAllocator> loadedAssetArray =
+        GetLoadedAssetsChecked<TAllocator, TAsset>(
+            inStreamableHandle
+            );
+
+    return loadedAssetArray[0];
 }
 
 template
@@ -115,6 +154,58 @@ TArray<std::reference_wrapper<TAsset>, TAllocator> GCUtils::AssetStreaming::GetL
         );
 
     return loadedAssets;
+}
+
+template
+    <
+    bool shouldReportErrors,
+    GCConcepts::UObjectDerivedOrIInterface TAsset
+    >
+TAsset* GCUtils::AssetStreaming::GetLoadedAsset(
+    const TSharedRef<FStreamableHandle>& inStreamableHandle)
+{
+    using TAllocator = TFixedAllocator<1u>;
+
+    TArray<TAsset*, TAllocator> loadedAssetArray =
+        GetLoadedAssets<TAllocator, shouldReportErrors, TAsset>(
+            inStreamableHandle
+            );
+
+    if (loadedAssetArray.IsEmpty())
+    {
+#if !NO_LOGGING
+        {
+            const FStringBuilderBase& logString =
+                GCUtils::Materialize(TStringBuilder<512>())
+                    << TEXT("Array of loaded assets is empty. Null will be returned.")
+                    TEXT(" ")
+                    TEXT("Load request debug name: '") << inStreamableHandle->GetDebugName() << TEXT("'.");
+
+            if constexpr (shouldReportErrors)
+            {
+                GC_LOG_STR_NO_CONTEXT(
+                    LogGCUtils_AssetStreaming,
+                    Error,
+                    logString
+                    );
+            }
+            else
+            {
+                // Write an informative, non-error log.
+                GC_LOG_STR_NO_CONTEXT(
+                    LogGCUtils_AssetStreaming,
+                    Log,
+                    logString
+                    );
+            }
+        }
+#endif // #if !NO_LOGGING
+
+        ensure(!shouldReportErrors);
+        return nullptr;
+    }
+
+    return loadedAssetArray[0];
 }
 
 template

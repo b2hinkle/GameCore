@@ -52,9 +52,32 @@ namespace
     {
         bool isSuccess = true;
 
+        // Test loading an empty asset path.
+        {
+            constexpr bool shouldManageActiveHandle = true;
+            constexpr bool shouldReportErrors = false;
+
+            FSoftObjectPath assetPath;
+
+            TSharedPtr<FStreamableHandle> streamableHandle =
+                GCUtils::AssetStreaming::LoadSync<shouldManageActiveHandle, shouldReportErrors>(
+                    UAssetManager::Get().GetStreamableManager(),
+                    MoveTemp(assetPath));
+
+            UObject* loadedAsset = nullptr;
+            if (streamableHandle)
+            {
+                loadedAsset =
+                    GCUtils::AssetStreaming::GetLoadedAsset<shouldReportErrors>(
+                        streamableHandle.ToSharedRef());
+            }
+
+            isSuccess = TestTrueExpr(loadedAsset == nullptr) && isSuccess;
+        }
+
         // Test loading bad asset paths.
         {
-            using TAllocator = TFixedAllocator<1u>;
+            using TAllocator = TFixedAllocator<2u>;
             constexpr bool shouldManageActiveHandle = true;
             constexpr bool shouldReportErrors = false;
 
@@ -64,6 +87,14 @@ namespace
                     FTopLevelAssetPath(
                         FName(TEXT("/Game/kajflkdsjafk/gibberish/yooahd/beem")),
                         FName(TEXT("boom"))
+                        )
+                    )
+                );
+            assetPaths.Emplace(
+                FSoftObjectPath(
+                    FTopLevelAssetPath(
+                        FName(TEXT("/Game/kajflkdsjafk/gibberish/fwooo/yoooo")),
+                        FName(TEXT("hey"))
                         )
                     )
                 );
@@ -166,72 +197,55 @@ namespace
 
         // Test loading good asset path.
         {
-            using TAllocator = TFixedAllocator<1u>;
             constexpr bool shouldManageActiveHandle = true;
             constexpr bool shouldReportErrors = true;
 
-            TArray<FSoftObjectPath> assetPaths;
-            assetPaths.Emplace(
+            FSoftObjectPath assetPath =
                 FSoftObjectPath(
                     FTopLevelAssetPath(
                         FName(TestCharacterBPPackagePath),
                         FName(TestCharacterBPCDOName)
                         )
-                    )
-                );
-
-            const int32 numAssetsToLoad = assetPaths.Num();
+                    );
 
             TSharedPtr<FStreamableHandle> streamableHandle =
                 GCUtils::AssetStreaming::LoadSync<shouldManageActiveHandle, shouldReportErrors>(
                     UAssetManager::Get().GetStreamableManager(),
-                    MoveTemp(assetPaths));
+                    MoveTemp(assetPath));
 
             isSuccess = TestTrueExpr(streamableHandle.IsValid()) && isSuccess;
 
-            TArray<APawn*, TAllocator> loadedAssets;
+            APawn* loadedAsset = nullptr;
             if (streamableHandle)
             {
-                loadedAssets =
-                    GCUtils::AssetStreaming::GetLoadedAssets<TAllocator, shouldReportErrors, APawn>(
+                loadedAsset =
+                    GCUtils::AssetStreaming::GetLoadedAsset<shouldReportErrors, APawn>(
                         streamableHandle.ToSharedRef());
             }
 
-            isSuccess = TestTrueExpr(loadedAssets.Num() == numAssetsToLoad) && isSuccess;
-
-            if (loadedAssets.IsEmpty() == false)
-            {
-                isSuccess = TestTrueExpr(loadedAssets[0] != nullptr) && isSuccess;
-            }
+            isSuccess = TestTrueExpr(loadedAsset != nullptr) && isSuccess;
         }
 
         // Test "checked" function.
         {
-            using TAllocator = TFixedAllocator<1u>;
             constexpr bool shouldManageActiveHandle = true;
 
-            TArray<FSoftObjectPath> assetPaths;
-            assetPaths.Emplace(
+            FSoftObjectPath assetPath =
                 FSoftObjectPath(
                     FTopLevelAssetPath(
                         FName(TestCharacterBPPackagePath),
                         FName(TestCharacterBPCDOName)
                         )
-                    )
-                );
-
-            const int32 numAssetsToLoad = assetPaths.Num();
+                    );
 
             TSharedRef<FStreamableHandle> streamableHandle =
                 GCUtils::AssetStreaming::LoadSyncChecked<shouldManageActiveHandle>(
                     UAssetManager::Get().GetStreamableManager(),
-                    MoveTemp(assetPaths));
+                    MoveTemp(assetPath));
 
-            TArray<std::reference_wrapper<INavAgentInterface>, TAllocator> loadedAssets =
-                GCUtils::AssetStreaming::GetLoadedAssetsChecked<TAllocator, INavAgentInterface>(
+            INavAgentInterface& loadedAsset =
+                GCUtils::AssetStreaming::GetLoadedAssetChecked<INavAgentInterface>(
                     streamableHandle);
-
-            isSuccess = TestTrueExpr(loadedAssets.Num() == numAssetsToLoad) && isSuccess;
         }
 
         return isSuccess;

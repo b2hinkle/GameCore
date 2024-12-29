@@ -27,6 +27,14 @@ namespace GCUtils::AssetStreaming
         TFunctionRef<bool(UObject* /* loadedAsset */, const int32 /* index */, const FStreamableHandle& /* streamableHandle */)>;
 
     /**
+     * @brief Load an asset synchronously and assume the load is successful.
+     */
+    template <bool shouldManageActiveHandle = true>
+    TSharedRef<FStreamableHandle> LoadSyncChecked(
+        FStreamableManager& inStreamableManager,
+        FSoftObjectPath&& inAssetPath);
+
+    /**
      * @brief Load assets synchronously and assume the load is successful.
      */
     template <bool shouldManageActiveHandle = true>
@@ -35,12 +43,30 @@ namespace GCUtils::AssetStreaming
         TArray<FSoftObjectPath>&& inAssetPaths);
 
     /**
+     * @brief Load an asset synchronously.
+     */
+    template <bool shouldManageActiveHandle = true, bool shouldReportErrors = true>
+    TSharedPtr<FStreamableHandle> LoadSync(
+        FStreamableManager& inStreamableManager,
+        FSoftObjectPath&& inAssetPath);
+
+    /**
      * @brief Load assets synchronously.
      */
     template <bool shouldManageActiveHandle = true, bool shouldReportErrors = true>
     TSharedPtr<FStreamableHandle> LoadSync(
         FStreamableManager& inStreamableManager,
         TArray<FSoftObjectPath>&& inAssetPaths);
+
+    /**
+     * @brief Get the loaded asset from a streamable handle.
+     */
+    template
+        <
+        GCConcepts::UObjectDerivedOrIInterface TAsset = UObject
+        >
+    TAsset& GetLoadedAssetChecked(
+        const TSharedRef<FStreamableHandle>& inStreamableHandle);
 
     /**
      * @brief Get all loaded assets from a streamable handle.
@@ -54,12 +80,23 @@ namespace GCUtils::AssetStreaming
         const TSharedRef<FStreamableHandle>& inStreamableHandle);
 
     /**
+     * @brief Get the loaded asset from a streamable handle.
+     */
+    template
+        <
+        bool shouldReportErrors,
+        GCConcepts::UObjectDerivedOrIInterface TAsset = UObject
+        >
+    TAsset* GetLoadedAsset(
+        const TSharedRef<FStreamableHandle>& inStreamableHandle);
+
+    /**
      * @brief Get all loaded assets from a streamable handle.
      */
     template
         <
         class TAllocator,
-        bool shouldReportErrors,
+        bool shouldReportErrors = true,
         GCConcepts::UObjectDerivedOrIInterface TAsset = UObject
         >
     TArray<TAsset*, TAllocator> GetLoadedAssets(
