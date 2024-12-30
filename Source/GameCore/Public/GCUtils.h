@@ -25,67 +25,71 @@ namespace GCUtils
     T& Materialize(T&& inTemporary);
 
     /**
-     * If inObject is already guaranteed to be a TTo.
-     *
-     * E.g., you load an asset by class and you are certain the result is a TTo.
-     *
-     * E.g., you are up-casting.
+     * Static cast with runtime check assertions to catch potential undefined behavior.
+     * 
+     * Though static casting provides compile-time safety for some impossible casts (e.g., class hierarchy), some failures
+     * can only be known at runtime. This function provides runtime check assertions for static casts to expose
+     * failures, rather then being silent about it.
      */
     template <GCConcepts::PointerToUObjectDerivedOrIInterface TToPtr, GCConcepts::PointerToUObjectDerivedOrIInterface TFromPtr>
     FORCEINLINE_DEBUGGABLE TToPtr StaticCastChecked(TFromPtr inObject);
     /**
-     * If inObject is already guaranteed to be a TTo.
-     *
-     * E.g., you load an asset by class and you are certain the result is a TTo.
-     *
-     * E.g., you are up-casting.
+     * Static cast with runtime check assertions to catch potential undefined behavior.
+     * 
+     * Though static casting provides compile-time safety for some impossible casts (e.g., class hierarchy), some failures
+     * can only be known at runtime. This function provides runtime check assertions for static casts to expose
+     * failures, rather then being silent about it.
      */
     template <GCConcepts::PointerToUObjectDerivedOrIInterface TToPtr, GCConcepts::ReferenceToUObjectDerivedOrIInterface TFromRef>
     FORCEINLINE_DEBUGGABLE TToPtr StaticCastChecked(TFromRef&& inObject);
     /**
-     * If inObject is already guaranteed to be a TTo.
-     *
-     * E.g., you load an asset by class and you are certain the result is a TTo.
-     *
-     * E.g., you are up-casting.
+     * Static cast with runtime check assertions to catch potential undefined behavior.
+     * 
+     * Though static casting provides compile-time safety for some impossible casts (e.g., class hierarchy), some failures
+     * can only be known at runtime. This function provides runtime check assertions for static casts to expose
+     * failures, rather then being silent about it.
      */
     template <GCConcepts::ReferenceToUObjectDerivedOrIInterface TToRef, GCConcepts::PointerToUObjectDerivedOrIInterface TFromPtr>
     FORCEINLINE_DEBUGGABLE TToRef StaticCastChecked(TFromPtr inObject);
     /**
-     * If inObject is already guaranteed to be a TTo.
-     *
-     * E.g., you load an asset by class and you are certain the result is a TTo.
-     *
-     * E.g., you are up-casting.
+     * Static cast with runtime check assertions to catch potential undefined behavior.
+     * 
+     * Though static casting provides compile-time safety for some impossible casts (e.g., class hierarchy), some failures
+     * can only be known at runtime. This function provides runtime check assertions for static casts to expose
+     * failures, rather then being silent about it.
      */
     template <GCConcepts::ReferenceToUObjectDerivedOrIInterface TToRef, GCConcepts::ReferenceToUObjectDerivedOrIInterface TFromRef>
     FORCEINLINE_DEBUGGABLE TToRef StaticCastChecked(TFromRef&& inObject);
-
+    
     /**
-     * If static casting isn't an option but inObject is still guaranteed to be a TTo.
-     *
-     * Necessary for casting to interface classes that aren't part of TFrom's inheritance chain.
+     * Reinterpret cast with runtime check assertions to catch potential undefined behavior.
+     * 
+     * This function provides runtime check assertions for reinterpret casts to expose
+     * failures, rather then being silent about it.
      */
     template <GCConcepts::PointerToUObjectDerivedOrIInterface TToPtr, GCConcepts::PointerToUObjectDerivedOrIInterface TFromPtr>
     FORCEINLINE_DEBUGGABLE TToPtr ReinterpretCastChecked(TFromPtr inObject);
     /**
-     * If static casting isn't an option but inObject is still guaranteed to be a TTo.
-     *
-     * Necessary for casting to interface classes that aren't part of TFrom's inheritance chain.
+     * Reinterpret cast with runtime check assertions to catch potential undefined behavior.
+     * 
+     * This function provides runtime check assertions for reinterpret casts to expose
+     * failures, rather then being silent about it.
      */
     template <GCConcepts::PointerToUObjectDerivedOrIInterface TToPtr, GCConcepts::ReferenceToUObjectDerivedOrIInterface TFromRef>
     FORCEINLINE_DEBUGGABLE TToPtr ReinterpretCastChecked(TFromRef&& inObject);
     /**
-     * If static casting isn't an option but inObject is still guaranteed to be a TTo.
-     *
-     * Necessary for casting to interface classes that aren't part of TFrom's inheritance chain.
+     * Reinterpret cast with runtime check assertions to catch potential undefined behavior.
+     * 
+     * This function provides runtime check assertions for reinterpret casts to expose
+     * failures, rather then being silent about it.
      */
     template <GCConcepts::ReferenceToUObjectDerivedOrIInterface TToRef, GCConcepts::PointerToUObjectDerivedOrIInterface TFromPtr>
     FORCEINLINE_DEBUGGABLE TToRef ReinterpretCastChecked(TFromPtr inObject);
     /**
-     * If static casting isn't an option but inObject is still guaranteed to be a TTo.
-     *
-     * Necessary for casting to interface classes that aren't part of TFrom's inheritance chain.
+     * Reinterpret cast with runtime check assertions to catch potential undefined behavior.
+     * 
+     * This function provides runtime check assertions for reinterpret casts to expose
+     * failures, rather then being silent about it.
      */
     template <GCConcepts::ReferenceToUObjectDerivedOrIInterface TToRef, GCConcepts::ReferenceToUObjectDerivedOrIInterface TFromRef>
     FORCEINLINE_DEBUGGABLE TToRef ReinterpretCastChecked(TFromRef&& inObject);
