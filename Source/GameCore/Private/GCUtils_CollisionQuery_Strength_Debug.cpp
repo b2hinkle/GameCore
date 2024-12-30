@@ -186,7 +186,7 @@ void GCUtils::CollisionQuery::Strength::Debug::DrawStrengthDebugText(const UWorl
     {
         const FPenetrationSceneCastWithExitHitsUsingStrengthResult& PenetrationSceneCastWithExitHitsUsingStrengthResult = InResult.PenetrationSceneCastWithExitHitsUsingStrengthResults[i];
 
-        FVector RicochetTextOffsetDirection;
+        FVector RicochetTextOffsetDirection = FVector::ZeroVector;
 
         // Collect locations and strengths
         TArray<TPair<FVector, float>> LocationsWithStrengths;

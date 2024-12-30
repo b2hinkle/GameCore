@@ -9,6 +9,11 @@
 DECLARE_LOG_CATEGORY_EXTERN(LogGCUtils_Asset, Log, All);
 
 /**
+ * @brief String-literal alternative to `GCUtils::Asset::BlueprintGeneratedClassPostfixString`.
+ */
+#define GC_BLUEPRINT_GENERATED_CLASS_POSTFIX_STRING_LITERAL TEXT("_C")
+
+/**
  * @brief Utilities for sofly casting paths and more.
  * @remark We pass around class paths as `FSoftObjectPath` because it's the most
  *         supported and simplified form of an asset path. I would love to
@@ -184,7 +189,7 @@ namespace GCUtils::Asset
      * @brief Postfix found at the end of blueprint generated class asset names. The engine
      * provides no constant for this so we have our own here.
      */
-    constexpr FStringView BlueprintGeneratedClassPostfixString = TEXTVIEW("_C");
+    constexpr FStringView BlueprintGeneratedClassPostfixString = PREPROCESSOR_JOIN(GC_BLUEPRINT_GENERATED_CLASS_POSTFIX_STRING_LITERAL, _PrivateSV);
 
     /**
      * @brief Convenient string view of the engine's `DEFAULT_OBJECT_PREFIX` string literal.
