@@ -12,6 +12,8 @@ void GCUtils::Plugin::UseContentFromDependentPlugins(
     FPluginRefNativeDelegate&& inOnPluginAddContentCallback,
     FPluginRefNativeDelegate&& inOnPluginRemoveContentCallback)
 {
+    TRACE_CPUPROFILER_EVENT_SCOPE(GCUtils::Plugin::UseContentFromDependentPlugins);
+
     // Look for plugins that have content for us to use.
     for (const TSharedRef<IPlugin>& plugin : IPluginManager::Get().GetEnabledPluginsWithContent())
     {
