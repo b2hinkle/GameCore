@@ -9,8 +9,8 @@
 class FGameCoreModule : public FDefaultModuleImpl
 {
 public:
-	//  BEGIN IModuleInterface
-	virtual void StartupModule() override;
-	virtual void ShutdownModule() override;
-	//  END IModuleInterface
+    //  BEGIN IModuleInterface
+    virtual void StartupModule() override;
+    virtual void ShutdownModule() override;
+    //  END IModuleInterface
 };
