@@ -22,32 +22,35 @@ DECLARE_LOG_CATEGORY_EXTERN(LogGCUtils_Network, Log, All);
 namespace GCUtils::Network
 {
     /**
-     * @brief Mimics `UWorld::IsNetMode()` but is unconcerned of any pending world travels.
+     * @brief Version of `UWorld::IsNetMode()` but is unconcerned of any pending world travels.
+     * @see `GCUtils::Network::GetNetModeDirect()`.
      * @remark #duplicate-code-engine: Review implementation when upgrading.
      */
-    GAMECORE_API FORCEINLINE_DEBUGGABLE bool IsNetModeRaw(const UWorld& inWorld, const ENetMode inNetMode);
+    GAMECORE_API FORCEINLINE_DEBUGGABLE bool IsNetModeDirect(const UWorld& inWorld, const ENetMode inNetMode);
 
     /**
-     * @brief Mimics `UWorld::GetNetMode()` but is unconcerned of any pending world travels.
+     * @brief Get a net mode that directly represents the given world. This behaves identically
+     *        to `UWorld::GetNetMode()` but is unconcerned of any pending world travels.
      * @remark #duplicate-code-engine: Review implementation when upgrading.
      */
-    GAMECORE_API ENetMode GetNetModeRaw(const UWorld& inWorld);
+    GAMECORE_API ENetMode GetNetModeDirect(const UWorld& inWorld);
 
     /**
-     * @brief Mimics `UWorld::AttemptDeriveFromURL()` but for a particular URL.
+     * @brief Get a net mode that represents the network setup of the given URL. This
+     *        mimics `UWorld::AttemptDeriveFromURL()` but for a particular URL.
      * @remark #duplicate-code-engine: Review implementation when upgrading.
      */
     GAMECORE_API ENetMode GetNetModeAttemptDeriveFromURL(const FURL& inURL);
 
     /**
-     * @brief URL option for listen server.
+     * @brief The URL option for listen server.
      */
     constexpr FStringView URLOptionListen = UE_JOIN(GC_URL_OPTION_LISTEN_STRING_LITERAL, _PrivateSV);
 }
 
-bool GCUtils::Network::IsNetModeRaw(const UWorld& inWorld, const ENetMode inNetMode)
+bool GCUtils::Network::IsNetModeDirect(const UWorld& inWorld, const ENetMode inNetMode)
 {
-    TRACE_CPUPROFILER_EVENT_SCOPE(GCUtils::Network::IsNetModeRaw);
+    TRACE_CPUPROFILER_EVENT_SCOPE(GCUtils::Network::IsNetModeDirect);
 
     // Comment from `UWorld::IsNetMode()`:
     // Editor builds are special because of PIE, which can run a dedicated server without the app running with -server.
@@ -68,5 +71,5 @@ bool GCUtils::Network::IsNetModeRaw(const UWorld& inWorld, const ENetMode inNetM
     }
 #endif // #if !UE_EDITOR
 
-    return GetNetModeRaw(inWorld) == inNetMode;
+    return GetNetModeDirect(inWorld) == inNetMode;
 }

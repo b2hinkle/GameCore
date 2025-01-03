@@ -24,9 +24,9 @@ namespace
 #endif // #if WITH_EDITOR
 }
 
-ENetMode GCUtils::Network::GetNetModeRaw(const UWorld& inWorld)
+ENetMode GCUtils::Network::GetNetModeDirect(const UWorld& inWorld)
 {
-    TRACE_CPUPROFILER_EVENT_SCOPE(GCUtils::Network::GetNetModeRaw);
+    TRACE_CPUPROFILER_EVENT_SCOPE(GCUtils::Network::GetNetModeDirect);
 
     // Comment from `UWorld::GetNetMode()`:
     // IsRunningDedicatedServer() is a compile-time check in optimized non-editor builds.
