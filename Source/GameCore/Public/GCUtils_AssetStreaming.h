@@ -21,10 +21,33 @@ GAMECORE_API const TCHAR* LexToString(const EAsyncPackageState::Type value);
  */
 namespace GCUtils::AssetStreaming
 {
-    using FForEachLoadedAssetBreakableCallbackFunctionRef =
-        TFunctionRef<bool(UObject* /* loadedAsset */, const int32 /* index */, FStreamableHandle& /* streamableHandle */)>;
-    using FForEachLoadedAssetBreakableConstCallbackFunctionRef =
-        TFunctionRef<bool(UObject* /* loadedAsset */, const int32 /* index */, const FStreamableHandle& /* streamableHandle */)>;
+    template
+        <
+        GCConcepts::UObjectDerivedOrIInterface TAsset = UObject
+        >
+    using TForEachLoadedAssetPointerBreakableCallbackFunctionRef =
+        TFunctionRef<bool(TAsset* /* loadedAsset */, const int32 /* index */, FStreamableHandle& /* streamableHandle */)>;
+
+    template
+        <
+        GCConcepts::UObjectDerivedOrIInterface TAsset = UObject
+        >
+    using TForEachLoadedAssetPointerBreakableConstCallbackFunctionRef =
+        TFunctionRef<bool(TAsset* /* loadedAsset */, const int32 /* index */, const FStreamableHandle& /* streamableHandle */)>;
+
+    template
+        <
+        GCConcepts::UObjectDerivedOrIInterface TAsset = UObject
+        >
+    using TForEachLoadedAssetReferenceBreakableCallbackFunctionRef =
+        TFunctionRef<bool(TAsset& /* loadedAsset */, const int32 /* index */, FStreamableHandle& /* streamableHandle */)>;
+
+    template
+        <
+        GCConcepts::UObjectDerivedOrIInterface TAsset = UObject
+        >
+    using TForEachLoadedAssetReferenceBreakableConstCallbackFunctionRef =
+        TFunctionRef<bool(TAsset& /* loadedAsset */, const int32 /* index */, const FStreamableHandle& /* streamableHandle */)>;
 
     /**
      * @brief Load an asset synchronously and assume the load is successful.
@@ -59,7 +82,20 @@ namespace GCUtils::AssetStreaming
         TArray<FSoftObjectPath>&& inAssetPaths);
 
     /**
-     * @brief Get the loaded asset from a streamable handle.
+     * @brief Get all successfully-loaded assets from a streamable handle.
+     */
+    template
+        <
+        bool shouldReportErrors = true,
+        class TAllocator,
+        GCConcepts::UObjectDerivedOrIInterface TAsset = UObject
+        >
+    TArray<std::reference_wrapper<TAsset>, TAllocator> GetSuccessfullyLoadedAssets(
+        const TSharedRef<FStreamableHandle>& inStreamableHandle);
+
+    /**
+     * @brief Get the loaded asset from a streamable handle. The
+     *        asset must be successfully loaded and of the correct type.
      */
     template
         <
@@ -69,7 +105,8 @@ namespace GCUtils::AssetStreaming
         const TSharedRef<FStreamableHandle>& inStreamableHandle);
 
     /**
-     * @brief Get all loaded assets from a streamable handle.
+     * @brief Get all loaded assets from a streamable handle. All
+     *        assets must be successfully loaded and of the correct type.
      */
     template
         <
@@ -84,7 +121,7 @@ namespace GCUtils::AssetStreaming
      */
     template
         <
-        bool shouldReportErrors,
+        bool shouldReportErrors = true,
         GCConcepts::UObjectDerivedOrIInterface TAsset = UObject
         >
     TAsset* GetLoadedAsset(
@@ -103,16 +140,70 @@ namespace GCUtils::AssetStreaming
         const TSharedRef<FStreamableHandle>& inStreamableHandle);
 
     /**
+     * @brief Iterate on all loaded assets with a callback function and break if returned false. Only
+     *        calls the callback for successfully loaded and casted assets.
+     * @note This function provides more information to the callback compared to the
+     *       engine's `FStreamableHandle::ForEachLoadedAsset<>()` function.
+     */
+    template
+        <
+        bool shouldReportErrors = true,
+        GCConcepts::UObjectDerivedOrIInterface TAsset = UObject
+        >
+    void ForEachSuccessfullyLoadedAsset(
+        const TSharedRef<FStreamableHandle>& inStreamableHandle,
+        const TForEachLoadedAssetReferenceBreakableCallbackFunctionRef<TAsset>& inCallback);
+    template
+        <
+        bool shouldReportErrors = true,
+        GCConcepts::UObjectDerivedOrIInterface TAsset = UObject
+        >
+    void ForEachSuccessfullyLoadedAsset(
+        const TSharedRef<const FStreamableHandle>& inStreamableHandle,
+        const TForEachLoadedAssetReferenceBreakableConstCallbackFunctionRef<TAsset>& inCallback);
+
+    /**
+     * @brief Iterate on all loaded assets with a callback function and break if returned false. All
+     *        assets must be successfully loaded and of the correct type.
+     * @note This function provides more information to the callback compared to the
+     *       engine's `FStreamableHandle::ForEachLoadedAsset<>()` function.
+     */
+    template
+        <
+        GCConcepts::UObjectDerivedOrIInterface TAsset = UObject
+        >
+    void ForEachLoadedAssetChecked(
+        const TSharedRef<FStreamableHandle>& inStreamableHandle,
+        const TForEachLoadedAssetReferenceBreakableCallbackFunctionRef<TAsset>& inCallback);
+    template
+        <
+        GCConcepts::UObjectDerivedOrIInterface TAsset = UObject
+        >
+    void ForEachLoadedAssetChecked(
+        const TSharedRef<const FStreamableHandle>& inStreamableHandle,
+        const TForEachLoadedAssetReferenceBreakableConstCallbackFunctionRef<TAsset>& inCallback);
+
+    /**
      * @brief Iterate on all loaded assets with a callback function and break if returned false.
      * @note This function provides more information to the callback compared to the
      *       engine's `FStreamableHandle::ForEachLoadedAsset<>()` function.
      */
-    GAMECORE_API void ForEachLoadedAssetBreakable(
+    template
+        <
+        bool shouldReportErrors = true,
+        GCConcepts::UObjectDerivedOrIInterface TAsset = UObject
+        >
+    void ForEachLoadedAsset(
         const TSharedRef<FStreamableHandle>& inStreamableHandle,
-        const FForEachLoadedAssetBreakableCallbackFunctionRef& inCallback);
-    GAMECORE_API void ForEachLoadedAssetBreakable(
+        const TForEachLoadedAssetPointerBreakableCallbackFunctionRef<TAsset>& inCallback);
+    template
+        <
+        bool shouldReportErrors = true,
+        GCConcepts::UObjectDerivedOrIInterface TAsset = UObject
+        >
+    void ForEachLoadedAsset(
         const TSharedRef<const FStreamableHandle>& inStreamableHandle,
-        const FForEachLoadedAssetBreakableConstCallbackFunctionRef& inCallback);
+        const TForEachLoadedAssetPointerBreakableConstCallbackFunctionRef<TAsset>& inCallback);
 
     /**
      * @brief Build a string of comma-separated asset paths.

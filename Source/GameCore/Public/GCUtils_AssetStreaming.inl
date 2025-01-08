@@ -47,6 +47,17 @@ namespace GCUtils::AssetStreaming::Private
     TSharedPtr<FStreamableHandle> LoadSyncGeneralized(
         FStreamableManager& inStreamableManager,
         TArray<FSoftObjectPath>&& inAssetPaths);
+
+    template
+        <
+        bool shouldReportErrors,
+        bool shouldAssumeSuccess,
+        bool shouldSkipUnsuccessful,
+        GCConcepts::UObjectDerivedOrIInterface TAsset
+        >
+    void ForEachLoadedAssetGeneralized(
+        const TSharedRef<const FStreamableHandle>& inStreamableHandle,
+        const TForEachLoadedAssetPointerBreakableConstCallbackFunctionRef<TAsset>& inCallback);
 }
 
 template <bool shouldManageActiveHandle>
@@ -98,6 +109,30 @@ TSharedPtr<FStreamableHandle> GCUtils::AssetStreaming::LoadSync(
 
 template
     <
+    bool shouldReportErrors,
+    class TAllocator,
+    GCConcepts::UObjectDerivedOrIInterface TAsset
+    >
+TArray<std::reference_wrapper<TAsset>, TAllocator> GCUtils::AssetStreaming::GetSuccessfullyLoadedAssets(
+    const TSharedRef<FStreamableHandle>& inStreamableHandle)
+{
+    TRACE_CPUPROFILER_EVENT_SCOPE(GCUtils::AssetStreaming::GetSuccessfullyLoadedAssets);
+
+    TArray<std::reference_wrapper<TAsset>, TAllocator> loadedAssets;
+
+    ForEachSuccessfullyLoadedAsset<shouldReportErrors, TAsset>(inStreamableHandle,
+        [&loadedAssets](TAsset& loadedAsset, const int32 index, FStreamableHandle& streamableHandle)
+        {
+            loadedAssets.Emplace(loadedAsset);
+            return true;
+        }
+        );
+
+    return loadedAssets;
+}
+
+template
+    <
     GCConcepts::UObjectDerivedOrIInterface TAsset
     >
 TAsset& GCUtils::AssetStreaming::GetLoadedAssetChecked(
@@ -123,32 +158,12 @@ TArray<std::reference_wrapper<TAsset>, TAllocator> GCUtils::AssetStreaming::GetL
 {
     TRACE_CPUPROFILER_EVENT_SCOPE(GCUtils::AssetStreaming::GetLoadedAssetsChecked);
 
-    constexpr bool shouldReportErrors = true;
-    constexpr bool shouldAssumeSuccess = true;
-
     TArray<std::reference_wrapper<TAsset>, TAllocator> loadedAssets;
 
-    ForEachLoadedAssetBreakable(inStreamableHandle,
-        [&loadedAssets](UObject* loadedAsset, const int32 index, FStreamableHandle& streamableHandle)
+    ForEachLoadedAssetChecked<TAsset>(inStreamableHandle,
+        [&loadedAssets](TAsset& loadedAsset, const int32 index, FStreamableHandle& streamableHandle)
         {
-#if !NO_LOGGING || DO_ENSURE || DO_CHECK
-            if (!loadedAsset)
-            {
-                Private::HandleNullLoadedAsset<shouldReportErrors, shouldAssumeSuccess>(streamableHandle, index);
-            }
-            else
-            {
-                if (!Cast<TAsset>(loadedAsset))
-                {
-                    Private::HandleFailedCastOfLoadedAsset<shouldReportErrors, shouldAssumeSuccess, TAsset>(streamableHandle, index, *loadedAsset);
-                }
-            }
-#endif // #if !NO_LOGGING || DO_ENSURE || DO_CHECK
-
-            // TODO: Ideally, this would be a static cast or reinterpret cast depending on whether we're
-            // casting to a UObject or IInterface class.
-            TAsset& loadedAssetCasted = GCUtils::ReinterpretCastChecked<TAsset&>(loadedAsset);
-            loadedAssets.Emplace(loadedAssetCasted);
+            loadedAssets.Emplace(loadedAsset);
             return true;
         }
         );
@@ -243,30 +258,137 @@ TArray<TAsset*, TAllocator> GCUtils::AssetStreaming::GetLoadedAssets(
 
     TArray<TAsset*, TAllocator> loadedAssets;
 
-    ForEachLoadedAssetBreakable(inStreamableHandle,
-        [&loadedAssets](UObject* loadedAsset, const int32 index, FStreamableHandle& streamableHandle)
+    ForEachLoadedAsset<shouldReportErrors, TAsset>(inStreamableHandle,
+        [&loadedAssets](TAsset* loadedAsset, const int32 index, FStreamableHandle& streamableHandle)
         {
-#if !NO_LOGGING || DO_ENSURE || DO_CHECK
-            if (!loadedAsset)
-            {
-                Private::HandleNullLoadedAsset<shouldReportErrors, shouldAssumeSuccess>(streamableHandle, index);
-            }
-            else
-            {
-                if (!Cast<TAsset>(loadedAsset))
-                {
-                    Private::HandleFailedCastOfLoadedAsset<shouldReportErrors, shouldAssumeSuccess, TAsset>(streamableHandle, index, *loadedAsset);
-                }
-            }
-#endif // #if !NO_LOGGING || DO_ENSURE || DO_CHECK
-
-            TAsset* loadedAssetCasted = Cast<TAsset>(loadedAsset);
-            loadedAssets.Emplace(loadedAssetCasted);
+            loadedAssets.Emplace(loadedAsset);
             return true;
         }
         );
 
     return loadedAssets;
+}
+
+template
+    <
+    bool shouldReportErrors,
+    GCConcepts::UObjectDerivedOrIInterface TAsset
+    >
+void GCUtils::AssetStreaming::ForEachSuccessfullyLoadedAsset(
+    const TSharedRef<FStreamableHandle>& inStreamableHandle,
+    const TForEachLoadedAssetReferenceBreakableCallbackFunctionRef<TAsset>& inCallback)
+{
+    TRACE_CPUPROFILER_EVENT_SCOPE(GCUtils::AssetStreaming::ForEachSuccessfullyLoadedAsset);
+
+    ForEachSuccessfullyLoadedAsset<shouldReportErrors, TAsset>(
+        TSharedRef<const FStreamableHandle>(inStreamableHandle),
+        [&inCallback](TAsset& loadedAsset, const int32 index, const FStreamableHandle& streamableHandle)
+        {
+            return inCallback(loadedAsset, index, const_cast<FStreamableHandle&>(streamableHandle));
+        }
+        );
+}
+template
+    <
+    bool shouldReportErrors,
+    GCConcepts::UObjectDerivedOrIInterface TAsset
+    >
+void GCUtils::AssetStreaming::ForEachSuccessfullyLoadedAsset(
+    const TSharedRef<const FStreamableHandle>& inStreamableHandle,
+    const TForEachLoadedAssetReferenceBreakableConstCallbackFunctionRef<TAsset>& inCallback)
+{
+    TRACE_CPUPROFILER_EVENT_SCOPE(GCUtils::AssetStreaming::ForEachSuccessfullyLoadedAsset);
+
+    constexpr bool shouldAssumeSuccess = false;
+    constexpr bool shouldSkipUnsuccessful = true;
+
+    Private::ForEachLoadedAssetGeneralized<shouldReportErrors, shouldAssumeSuccess, shouldSkipUnsuccessful, TAsset>(
+        inStreamableHandle,
+        [&inCallback](TAsset* loadedAsset, const int32 index, const FStreamableHandle& streamableHandle)
+        {
+            return inCallback(*loadedAsset, index, streamableHandle);
+        }
+        );
+}
+
+template
+    <
+    GCConcepts::UObjectDerivedOrIInterface TAsset
+    >
+void GCUtils::AssetStreaming::ForEachLoadedAssetChecked(
+    const TSharedRef<FStreamableHandle>& inStreamableHandle,
+    const TForEachLoadedAssetReferenceBreakableCallbackFunctionRef<TAsset>& inCallback)
+{
+    TRACE_CPUPROFILER_EVENT_SCOPE(GCUtils::AssetStreaming::ForEachLoadedAssetChecked);
+
+    ForEachLoadedAssetChecked<TAsset>(
+        TSharedRef<const FStreamableHandle>(inStreamableHandle),
+        [&inCallback](TAsset& loadedAsset, const int32 index, const FStreamableHandle& streamableHandle)
+        {
+            return inCallback(loadedAsset, index, const_cast<FStreamableHandle&>(streamableHandle));
+        }
+        );
+}
+template
+    <
+    GCConcepts::UObjectDerivedOrIInterface TAsset
+    >
+void GCUtils::AssetStreaming::ForEachLoadedAssetChecked(
+    const TSharedRef<const FStreamableHandle>& inStreamableHandle,
+    const TForEachLoadedAssetReferenceBreakableConstCallbackFunctionRef<TAsset>& inCallback)
+{
+    TRACE_CPUPROFILER_EVENT_SCOPE(GCUtils::AssetStreaming::ForEachLoadedAssetChecked);
+
+    constexpr bool shouldReportErrors = true;
+    constexpr bool shouldAssumeSuccess = true;
+    constexpr bool shouldSkipUnsuccessful = false;
+
+    Private::ForEachLoadedAssetGeneralized<shouldReportErrors, shouldAssumeSuccess, shouldSkipUnsuccessful, TAsset>(
+        inStreamableHandle,
+        [&inCallback](TAsset* loadedAsset, const int32 index, const FStreamableHandle& streamableHandle)
+        {
+            return inCallback(*loadedAsset, index, streamableHandle);
+        }
+        );
+}
+
+template
+    <
+    bool shouldReportErrors,
+    GCConcepts::UObjectDerivedOrIInterface TAsset
+    >
+void GCUtils::AssetStreaming::ForEachLoadedAsset(
+    const TSharedRef<FStreamableHandle>& inStreamableHandle,
+    const TForEachLoadedAssetPointerBreakableCallbackFunctionRef<TAsset>& inCallback)
+{
+    TRACE_CPUPROFILER_EVENT_SCOPE(GCUtils::AssetStreaming::ForEachLoadedAsset);
+
+    ForEachLoadedAsset<shouldReportErrors, TAsset>(
+        TSharedRef<const FStreamableHandle>(inStreamableHandle),
+        [&inCallback](TAsset* loadedAsset, const int32 index, const FStreamableHandle& streamableHandle)
+        {
+            return inCallback(loadedAsset, index, const_cast<FStreamableHandle&>(streamableHandle));
+        }
+        );
+}
+template
+    <
+    bool shouldReportErrors,
+    GCConcepts::UObjectDerivedOrIInterface TAsset
+    >
+void GCUtils::AssetStreaming::ForEachLoadedAsset(
+    const TSharedRef<const FStreamableHandle>& inStreamableHandle,
+    const TForEachLoadedAssetPointerBreakableConstCallbackFunctionRef<TAsset>& inCallback)
+{
+    TRACE_CPUPROFILER_EVENT_SCOPE(GCUtils::AssetStreaming::ForEachLoadedAsset);
+
+    constexpr bool shouldAssumeSuccess = false;
+    constexpr bool shouldSkipUnsuccessful = false;
+
+    Private::ForEachLoadedAssetGeneralized<shouldReportErrors, shouldAssumeSuccess, shouldSkipUnsuccessful>(
+        inStreamableHandle,
+        inCallback
+        );
 }
 
 template <int32 bufferSize, GCConcepts::CharType TCharType>
@@ -532,4 +654,90 @@ TSharedPtr<FStreamableHandle> GCUtils::AssetStreaming::Private::LoadSyncGenerali
 #endif // #if !NO_LOGGING || DO_ENSURE
 
     return streamableHandle;
+}
+
+template
+    <
+    bool shouldReportErrors,
+    bool shouldAssumeSuccess,
+    bool shouldSkipUnsuccessful,
+    GCConcepts::UObjectDerivedOrIInterface TAsset
+    >
+void GCUtils::AssetStreaming::Private::ForEachLoadedAssetGeneralized(
+    const TSharedRef<const FStreamableHandle>& inStreamableHandle,
+    const TForEachLoadedAssetPointerBreakableConstCallbackFunctionRef<TAsset>& inCallback)
+{
+    TRACE_CPUPROFILER_EVENT_SCOPE(GCUtils::AssetStreaming::Private::ForEachLoadedAssetGeneralized);
+
+    inStreamableHandle->ForEachLoadedAsset(
+        [&inCallback, &inStreamableHandle, iteration = 0, shouldContinue = true](UObject* loadedAsset) mutable
+        {
+            if (!shouldContinue)
+            {
+                return;
+            }
+
+            ON_SCOPE_EXIT
+            {
+                ++iteration;
+            };
+
+            const int32 index = iteration;
+
+            if constexpr (shouldSkipUnsuccessful || !NO_LOGGING || DO_ENSURE || DO_CHECK)
+            {
+                if (!loadedAsset)
+                {
+#if !NO_LOGGING || DO_ENSURE || DO_CHECK
+                    {
+                        HandleNullLoadedAsset<shouldReportErrors, shouldAssumeSuccess>(inStreamableHandle.Get(), index);
+                    }
+#endif // #if !NO_LOGGING || DO_ENSURE || DO_CHECK
+
+                    if constexpr (shouldSkipUnsuccessful)
+                    {
+                        return;
+                    }
+                }
+            }
+
+            TAsset* loadedAssetCasted = nullptr;
+
+            if constexpr (shouldAssumeSuccess)
+            {
+                // TODO: Ideally, this would choose betweeen a static cast and reinterpret cast depending on whether we're
+                // casting to a UObject or IInterface class.
+                loadedAssetCasted = GCUtils::ReinterpretCastChecked<TAsset*>(loadedAsset);
+            }
+            else
+            {
+                loadedAssetCasted = Cast<TAsset>(loadedAsset);
+            }
+
+            if constexpr (shouldSkipUnsuccessful || !NO_LOGGING || DO_ENSURE || DO_CHECK)
+            {
+                if (!loadedAssetCasted)
+                {
+#if !NO_LOGGING || DO_ENSURE || DO_CHECK
+                    if (loadedAsset)
+                    {
+                        HandleFailedCastOfLoadedAsset<shouldReportErrors, shouldAssumeSuccess, TAsset>(inStreamableHandle.Get(), index, *loadedAsset);
+                    }
+#endif // #if !NO_LOGGING || DO_ENSURE || DO_CHECK
+
+                    if constexpr (shouldSkipUnsuccessful)
+                    {
+                        return;
+                    }
+                }
+            }
+
+            if constexpr (shouldAssumeSuccess || shouldSkipUnsuccessful)
+            {
+                check(loadedAssetCasted);
+            }
+
+            shouldContinue = inCallback(loadedAssetCasted, index, inStreamableHandle.Get());
+        }
+        );
 }
