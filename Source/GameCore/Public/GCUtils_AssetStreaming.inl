@@ -17,8 +17,8 @@ namespace GCUtils::AssetStreaming::Private
 #if !NO_LOGGING || DO_ENSURE || DO_CHECK
     template
         <
-        bool shouldReportErrors,
-        bool shouldAssumeSuccess
+        bool shouldAssumeSuccess,
+        bool shouldReportErrors
         >
     void HandleNullLoadedAsset(
         const FStreamableHandle& inStreamableHandle,
@@ -28,9 +28,9 @@ namespace GCUtils::AssetStreaming::Private
 #if !NO_LOGGING || DO_ENSURE || DO_CHECK
     template
         <
-        bool shouldReportErrors,
         bool shouldAssumeSuccess,
-        GCConcepts::UObjectDerivedOrIInterface TAsset
+        GCConcepts::UObjectDerivedOrIInterface TAsset,
+        bool shouldReportErrors
         >
     void HandleFailedCastOfLoadedAsset(
         const FStreamableHandle& inStreamableHandle,
@@ -40,9 +40,9 @@ namespace GCUtils::AssetStreaming::Private
 
     template
         <
+        bool shouldAssumeSuccess,
         bool shouldManageActiveHandle,
-        bool shouldReportErrors,
-        bool shouldAssumeSuccess
+        bool shouldReportErrors
         >
     TSharedPtr<FStreamableHandle> LoadSyncGeneralized(
         FStreamableManager& inStreamableManager,
@@ -50,10 +50,10 @@ namespace GCUtils::AssetStreaming::Private
 
     template
         <
-        bool shouldReportErrors,
         bool shouldAssumeSuccess,
         bool shouldSkipUnsuccessful,
-        GCConcepts::UObjectDerivedOrIInterface TAsset
+        GCConcepts::UObjectDerivedOrIInterface TAsset,
+        bool shouldReportErrors
         >
     void ForEachLoadedAssetGeneralized(
         const TSharedRef<const FStreamableHandle>& inStreamableHandle,
@@ -76,9 +76,9 @@ TSharedRef<FStreamableHandle> GCUtils::AssetStreaming::LoadSyncChecked(
     FStreamableManager& inStreamableManager,
     TArray<FSoftObjectPath>&& inAssetPaths)
 {
-    constexpr bool shouldReportErrors = true;
     constexpr bool shouldAssumeSuccess = true;
-    return Private::LoadSyncGeneralized<shouldManageActiveHandle, shouldReportErrors, shouldAssumeSuccess>(
+    constexpr bool shouldReportErrors = true;
+    return Private::LoadSyncGeneralized<shouldAssumeSuccess, shouldManageActiveHandle, shouldReportErrors>(
         inStreamableManager,
         MoveTemp(inAssetPaths)
         ).ToSharedRef();
@@ -101,7 +101,7 @@ TSharedPtr<FStreamableHandle> GCUtils::AssetStreaming::LoadSync(
     TArray<FSoftObjectPath>&& inAssetPaths)
 {
     constexpr bool shouldAssumeSuccess = false;
-    return Private::LoadSyncGeneralized<shouldManageActiveHandle, shouldReportErrors, shouldAssumeSuccess>(
+    return Private::LoadSyncGeneralized<shouldAssumeSuccess, shouldManageActiveHandle, shouldReportErrors>(
         inStreamableManager,
         MoveTemp(inAssetPaths)
         );
@@ -109,9 +109,9 @@ TSharedPtr<FStreamableHandle> GCUtils::AssetStreaming::LoadSync(
 
 template
     <
-    bool shouldReportErrors,
     class TAllocator,
-    GCConcepts::UObjectDerivedOrIInterface TAsset
+    GCConcepts::UObjectDerivedOrIInterface TAsset,
+    bool shouldReportErrors
     >
 TArray<std::reference_wrapper<TAsset>, TAllocator> GCUtils::AssetStreaming::GetSuccessfullyLoadedAssets(
     const TSharedRef<FStreamableHandle>& inStreamableHandle)
@@ -120,7 +120,7 @@ TArray<std::reference_wrapper<TAsset>, TAllocator> GCUtils::AssetStreaming::GetS
 
     TArray<std::reference_wrapper<TAsset>, TAllocator> loadedAssets;
 
-    ForEachSuccessfullyLoadedAsset<shouldReportErrors, TAsset>(inStreamableHandle,
+    ForEachSuccessfullyLoadedAsset<TAsset, shouldReportErrors>(inStreamableHandle,
         [&loadedAssets](TAsset& loadedAsset, const int32 index, FStreamableHandle& streamableHandle)
         {
             loadedAssets.Emplace(loadedAsset);
@@ -173,8 +173,8 @@ TArray<std::reference_wrapper<TAsset>, TAllocator> GCUtils::AssetStreaming::GetL
 
 template
     <
-    bool shouldReportErrors,
-    GCConcepts::UObjectDerivedOrIInterface TAsset
+    GCConcepts::UObjectDerivedOrIInterface TAsset,
+    bool shouldReportErrors
     >
 TAsset* GCUtils::AssetStreaming::GetLoadedAsset(
     const TSharedRef<FStreamableHandle>& inStreamableHandle)
@@ -202,7 +202,7 @@ TAsset* GCUtils::AssetStreaming::GetLoadedAsset(
 #endif // #if !NO_LOGGING || DO_ENSURE
 
     TArray<TAsset*, TAllocator> loadedAssetArray =
-        GetLoadedAssets<TAllocator, shouldReportErrors, TAsset>(
+        GetLoadedAssets<TAllocator, TAsset, shouldReportErrors>(
             inStreamableHandle
             );
 
@@ -246,8 +246,8 @@ TAsset* GCUtils::AssetStreaming::GetLoadedAsset(
 template
     <
     class TAllocator,
-    bool shouldReportErrors,
-    GCConcepts::UObjectDerivedOrIInterface TAsset
+    GCConcepts::UObjectDerivedOrIInterface TAsset,
+    bool shouldReportErrors
     >
 TArray<TAsset*, TAllocator> GCUtils::AssetStreaming::GetLoadedAssets(
     const TSharedRef<FStreamableHandle>& inStreamableHandle)
@@ -258,7 +258,7 @@ TArray<TAsset*, TAllocator> GCUtils::AssetStreaming::GetLoadedAssets(
 
     TArray<TAsset*, TAllocator> loadedAssets;
 
-    ForEachLoadedAsset<shouldReportErrors, TAsset>(inStreamableHandle,
+    ForEachLoadedAsset<TAsset, shouldReportErrors>(inStreamableHandle,
         [&loadedAssets](TAsset* loadedAsset, const int32 index, FStreamableHandle& streamableHandle)
         {
             loadedAssets.Emplace(loadedAsset);
@@ -271,8 +271,8 @@ TArray<TAsset*, TAllocator> GCUtils::AssetStreaming::GetLoadedAssets(
 
 template
     <
-    bool shouldReportErrors,
-    GCConcepts::UObjectDerivedOrIInterface TAsset
+    GCConcepts::UObjectDerivedOrIInterface TAsset,
+    bool shouldReportErrors
     >
 void GCUtils::AssetStreaming::ForEachSuccessfullyLoadedAsset(
     const TSharedRef<FStreamableHandle>& inStreamableHandle,
@@ -280,7 +280,7 @@ void GCUtils::AssetStreaming::ForEachSuccessfullyLoadedAsset(
 {
     TRACE_CPUPROFILER_EVENT_SCOPE(GCUtils::AssetStreaming::ForEachSuccessfullyLoadedAsset);
 
-    ForEachSuccessfullyLoadedAsset<shouldReportErrors, TAsset>(
+    ForEachSuccessfullyLoadedAsset<TAsset, shouldReportErrors>(
         TSharedRef<const FStreamableHandle>(inStreamableHandle),
         [&inCallback](TAsset& loadedAsset, const int32 index, const FStreamableHandle& streamableHandle)
         {
@@ -290,8 +290,8 @@ void GCUtils::AssetStreaming::ForEachSuccessfullyLoadedAsset(
 }
 template
     <
-    bool shouldReportErrors,
-    GCConcepts::UObjectDerivedOrIInterface TAsset
+    GCConcepts::UObjectDerivedOrIInterface TAsset,
+    bool shouldReportErrors
     >
 void GCUtils::AssetStreaming::ForEachSuccessfullyLoadedAsset(
     const TSharedRef<const FStreamableHandle>& inStreamableHandle,
@@ -302,7 +302,7 @@ void GCUtils::AssetStreaming::ForEachSuccessfullyLoadedAsset(
     constexpr bool shouldAssumeSuccess = false;
     constexpr bool shouldSkipUnsuccessful = true;
 
-    Private::ForEachLoadedAssetGeneralized<shouldReportErrors, shouldAssumeSuccess, shouldSkipUnsuccessful, TAsset>(
+    Private::ForEachLoadedAssetGeneralized<shouldAssumeSuccess, shouldSkipUnsuccessful, TAsset, shouldReportErrors>(
         inStreamableHandle,
         [&inCallback](TAsset* loadedAsset, const int32 index, const FStreamableHandle& streamableHandle)
         {
@@ -339,11 +339,11 @@ void GCUtils::AssetStreaming::ForEachLoadedAssetChecked(
 {
     TRACE_CPUPROFILER_EVENT_SCOPE(GCUtils::AssetStreaming::ForEachLoadedAssetChecked);
 
-    constexpr bool shouldReportErrors = true;
     constexpr bool shouldAssumeSuccess = true;
     constexpr bool shouldSkipUnsuccessful = false;
+    constexpr bool shouldReportErrors = true;
 
-    Private::ForEachLoadedAssetGeneralized<shouldReportErrors, shouldAssumeSuccess, shouldSkipUnsuccessful, TAsset>(
+    Private::ForEachLoadedAssetGeneralized<shouldAssumeSuccess, shouldSkipUnsuccessful, TAsset, shouldReportErrors>(
         inStreamableHandle,
         [&inCallback](TAsset* loadedAsset, const int32 index, const FStreamableHandle& streamableHandle)
         {
@@ -354,8 +354,8 @@ void GCUtils::AssetStreaming::ForEachLoadedAssetChecked(
 
 template
     <
-    bool shouldReportErrors,
-    GCConcepts::UObjectDerivedOrIInterface TAsset
+    GCConcepts::UObjectDerivedOrIInterface TAsset,
+    bool shouldReportErrors
     >
 void GCUtils::AssetStreaming::ForEachLoadedAsset(
     const TSharedRef<FStreamableHandle>& inStreamableHandle,
@@ -363,7 +363,7 @@ void GCUtils::AssetStreaming::ForEachLoadedAsset(
 {
     TRACE_CPUPROFILER_EVENT_SCOPE(GCUtils::AssetStreaming::ForEachLoadedAsset);
 
-    ForEachLoadedAsset<shouldReportErrors, TAsset>(
+    ForEachLoadedAsset<TAsset, shouldReportErrors>(
         TSharedRef<const FStreamableHandle>(inStreamableHandle),
         [&inCallback](TAsset* loadedAsset, const int32 index, const FStreamableHandle& streamableHandle)
         {
@@ -373,8 +373,8 @@ void GCUtils::AssetStreaming::ForEachLoadedAsset(
 }
 template
     <
-    bool shouldReportErrors,
-    GCConcepts::UObjectDerivedOrIInterface TAsset
+    GCConcepts::UObjectDerivedOrIInterface TAsset,
+    bool shouldReportErrors
     >
 void GCUtils::AssetStreaming::ForEachLoadedAsset(
     const TSharedRef<const FStreamableHandle>& inStreamableHandle,
@@ -385,7 +385,7 @@ void GCUtils::AssetStreaming::ForEachLoadedAsset(
     constexpr bool shouldAssumeSuccess = false;
     constexpr bool shouldSkipUnsuccessful = false;
 
-    Private::ForEachLoadedAssetGeneralized<shouldReportErrors, shouldAssumeSuccess, shouldSkipUnsuccessful>(
+    Private::ForEachLoadedAssetGeneralized<shouldAssumeSuccess, shouldSkipUnsuccessful, TAsset, shouldReportErrors>(
         inStreamableHandle,
         inCallback
         );
@@ -417,8 +417,8 @@ TStringBuilderWithBuffer<TCharType, bufferSize> GCUtils::AssetStreaming::MakeStr
 #if !NO_LOGGING || DO_ENSURE || DO_CHECK
 template
     <
-    bool shouldReportErrors,
-    bool shouldAssumeSuccess
+    bool shouldAssumeSuccess,
+    bool shouldReportErrors
     >
 void GCUtils::AssetStreaming::Private::HandleNullLoadedAsset(
     const FStreamableHandle& inStreamableHandle, const int32 inLoadedAssetIndex)
@@ -461,9 +461,9 @@ void GCUtils::AssetStreaming::Private::HandleNullLoadedAsset(
 #if !NO_LOGGING || DO_ENSURE || DO_CHECK
 template
     <
-    bool shouldReportErrors,
     bool shouldAssumeSuccess,
-    GCConcepts::UObjectDerivedOrIInterface TAsset
+    GCConcepts::UObjectDerivedOrIInterface TAsset,
+    bool shouldReportErrors
     >
 void GCUtils::AssetStreaming::Private::HandleFailedCastOfLoadedAsset(
     const FStreamableHandle& inStreamableHandle, const int32 inLoadedAssetIndex, const UObject& loadedAsset)
@@ -509,9 +509,9 @@ void GCUtils::AssetStreaming::Private::HandleFailedCastOfLoadedAsset(
 
 template
     <
+    bool shouldAssumeSuccess,
     bool shouldManageActiveHandle,
-    bool shouldReportErrors,
-    bool shouldAssumeSuccess
+    bool shouldReportErrors
     >
 TSharedPtr<FStreamableHandle> GCUtils::AssetStreaming::Private::LoadSyncGeneralized(
     FStreamableManager& inStreamableManager,
@@ -658,10 +658,10 @@ TSharedPtr<FStreamableHandle> GCUtils::AssetStreaming::Private::LoadSyncGenerali
 
 template
     <
-    bool shouldReportErrors,
     bool shouldAssumeSuccess,
     bool shouldSkipUnsuccessful,
-    GCConcepts::UObjectDerivedOrIInterface TAsset
+    GCConcepts::UObjectDerivedOrIInterface TAsset,
+    bool shouldReportErrors
     >
 void GCUtils::AssetStreaming::Private::ForEachLoadedAssetGeneralized(
     const TSharedRef<const FStreamableHandle>& inStreamableHandle,
@@ -690,7 +690,7 @@ void GCUtils::AssetStreaming::Private::ForEachLoadedAssetGeneralized(
                 {
 #if !NO_LOGGING || DO_ENSURE || DO_CHECK
                     {
-                        HandleNullLoadedAsset<shouldReportErrors, shouldAssumeSuccess>(inStreamableHandle.Get(), index);
+                        HandleNullLoadedAsset<shouldAssumeSuccess, shouldReportErrors>(inStreamableHandle.Get(), index);
                     }
 #endif // #if !NO_LOGGING || DO_ENSURE || DO_CHECK
 
@@ -721,7 +721,7 @@ void GCUtils::AssetStreaming::Private::ForEachLoadedAssetGeneralized(
 #if !NO_LOGGING || DO_ENSURE || DO_CHECK
                     if (loadedAsset)
                     {
-                        HandleFailedCastOfLoadedAsset<shouldReportErrors, shouldAssumeSuccess, TAsset>(inStreamableHandle.Get(), index, *loadedAsset);
+                        HandleFailedCastOfLoadedAsset<shouldAssumeSuccess, TAsset, shouldReportErrors>(inStreamableHandle.Get(), index, *loadedAsset);
                     }
 #endif // #if !NO_LOGGING || DO_ENSURE || DO_CHECK
 

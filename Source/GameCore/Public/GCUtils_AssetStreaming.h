@@ -86,9 +86,9 @@ namespace GCUtils::AssetStreaming
      */
     template
         <
-        bool shouldReportErrors = true,
         class TAllocator,
-        GCConcepts::UObjectDerivedOrIInterface TAsset = UObject
+        GCConcepts::UObjectDerivedOrIInterface TAsset = UObject,
+        bool shouldReportErrors = true
         >
     TArray<std::reference_wrapper<TAsset>, TAllocator> GetSuccessfullyLoadedAssets(
         const TSharedRef<FStreamableHandle>& inStreamableHandle);
@@ -121,8 +121,8 @@ namespace GCUtils::AssetStreaming
      */
     template
         <
-        bool shouldReportErrors = true,
-        GCConcepts::UObjectDerivedOrIInterface TAsset = UObject
+        GCConcepts::UObjectDerivedOrIInterface TAsset = UObject,
+        bool shouldReportErrors = true
         >
     TAsset* GetLoadedAsset(
         const TSharedRef<FStreamableHandle>& inStreamableHandle);
@@ -133,8 +133,8 @@ namespace GCUtils::AssetStreaming
     template
         <
         class TAllocator,
-        bool shouldReportErrors = true,
-        GCConcepts::UObjectDerivedOrIInterface TAsset = UObject
+        GCConcepts::UObjectDerivedOrIInterface TAsset = UObject,
+        bool shouldReportErrors = true
         >
     TArray<TAsset*, TAllocator> GetLoadedAssets(
         const TSharedRef<FStreamableHandle>& inStreamableHandle);
@@ -147,16 +147,16 @@ namespace GCUtils::AssetStreaming
      */
     template
         <
-        bool shouldReportErrors = true,
-        GCConcepts::UObjectDerivedOrIInterface TAsset = UObject
+        GCConcepts::UObjectDerivedOrIInterface TAsset = UObject,
+        bool shouldReportErrors = true
         >
     void ForEachSuccessfullyLoadedAsset(
         const TSharedRef<FStreamableHandle>& inStreamableHandle,
         const TForEachLoadedAssetReferenceBreakableCallbackFunctionRef<TAsset>& inCallback);
     template
         <
-        bool shouldReportErrors = true,
-        GCConcepts::UObjectDerivedOrIInterface TAsset = UObject
+        GCConcepts::UObjectDerivedOrIInterface TAsset = UObject,
+        bool shouldReportErrors = true
         >
     void ForEachSuccessfullyLoadedAsset(
         const TSharedRef<const FStreamableHandle>& inStreamableHandle,
@@ -190,16 +190,16 @@ namespace GCUtils::AssetStreaming
      */
     template
         <
-        bool shouldReportErrors = true,
-        GCConcepts::UObjectDerivedOrIInterface TAsset = UObject
+        GCConcepts::UObjectDerivedOrIInterface TAsset = UObject,
+        bool shouldReportErrors = true
         >
     void ForEachLoadedAsset(
         const TSharedRef<FStreamableHandle>& inStreamableHandle,
         const TForEachLoadedAssetPointerBreakableCallbackFunctionRef<TAsset>& inCallback);
     template
         <
-        bool shouldReportErrors = true,
-        GCConcepts::UObjectDerivedOrIInterface TAsset = UObject
+        GCConcepts::UObjectDerivedOrIInterface TAsset = UObject,
+        bool shouldReportErrors = true
         >
     void ForEachLoadedAsset(
         const TSharedRef<const FStreamableHandle>& inStreamableHandle,

@@ -68,7 +68,7 @@ namespace
             if (streamableHandle)
             {
                 loadedAsset =
-                    GCUtils::AssetStreaming::GetLoadedAsset<shouldReportErrors>(
+                    GCUtils::AssetStreaming::GetLoadedAsset<UObject, shouldReportErrors>(
                         streamableHandle.ToSharedRef());
             }
 
@@ -112,7 +112,7 @@ namespace
             if (streamableHandle)
             {
                 loadedAssets =
-                    GCUtils::AssetStreaming::GetLoadedAssets<TAllocator, shouldReportErrors>(
+                    GCUtils::AssetStreaming::GetLoadedAssets<TAllocator, UObject, shouldReportErrors>(
                         streamableHandle.ToSharedRef());
             }
 
@@ -154,7 +154,7 @@ namespace
             if (streamableHandle)
             {
                 loadedAssets =
-                    GCUtils::AssetStreaming::GetLoadedAssets<TAllocator, shouldReportErrors, UClass>(
+                    GCUtils::AssetStreaming::GetLoadedAssets<TAllocator, UClass, shouldReportErrors>(
                         streamableHandle.ToSharedRef());
             }
 
@@ -219,7 +219,7 @@ namespace
             if (streamableHandle)
             {
                 loadedAsset =
-                    GCUtils::AssetStreaming::GetLoadedAsset<shouldReportErrors, APawn>(
+                    GCUtils::AssetStreaming::GetLoadedAsset<APawn, shouldReportErrors>(
                         streamableHandle.ToSharedRef());
             }
 
