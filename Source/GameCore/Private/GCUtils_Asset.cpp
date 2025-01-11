@@ -6,7 +6,7 @@
 #include "Engine/AssetManager.h"
 #include "GCUtils_Log.h"
 
-DEFINE_LOG_CATEGORY(LogGCUtils_Asset);
+DEFINE_LOG_CATEGORY_STATIC(LogGCUtils_Asset, Log, All);
 
 /**
  * @brief Private utilities.

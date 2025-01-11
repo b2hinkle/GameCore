@@ -9,8 +9,6 @@
 class UWorld;
 struct FURL;
 
-DECLARE_LOG_CATEGORY_EXTERN(LogGCUtils_Network, Log, All);
-
 /**
  * @brief String-literal alternative to `GCUtils::Network::URLOptionListen`.
  */

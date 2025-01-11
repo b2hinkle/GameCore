@@ -7,8 +7,6 @@
 
 #include "GCUtils_CollisionQuery_Strength.generated.h"
 
-DECLARE_LOG_CATEGORY_EXTERN(LogGCUtils_CollisionQuery_Strength, Log, All);
-
 /**
  * Aditional hit info required for strength queries
  */

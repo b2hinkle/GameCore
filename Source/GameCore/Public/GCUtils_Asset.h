@@ -6,8 +6,6 @@
 #include "UObject/SoftObjectPtr.h"
 #include "Containers/StringView.h"
 
-DECLARE_LOG_CATEGORY_EXTERN(LogGCUtils_Asset, Log, All);
-
 /**
  * @brief String-literal alternative to `GCUtils::Asset::BlueprintGeneratedClassPostfixString`.
  */

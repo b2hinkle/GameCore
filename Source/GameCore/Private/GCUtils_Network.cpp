@@ -8,7 +8,7 @@
 #include "Engine/NetDriver.h"
 #include "Engine/DemoNetDriver.h"
 
-DEFINE_LOG_CATEGORY(LogGCUtils_Network);
+DEFINE_LOG_CATEGORY_STATIC(LogGCUtils_Network, Log, All);
 
 namespace
 {

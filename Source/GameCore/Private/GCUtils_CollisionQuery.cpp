@@ -8,7 +8,7 @@
 #include "DrawDebugHelpers.h"
 #include "GCUtils_HitResult.h"
 
-DEFINE_LOG_CATEGORY(LogGCUtils_CollisionQuery);
+DEFINE_LOG_CATEGORY_STATIC(LogGCUtils_CollisionQuery, Log, All);
 
 namespace GCUtils::CollisionQuery
 {

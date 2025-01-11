@@ -5,8 +5,6 @@
 #include "CoreMinimal.h"
 #include "GCUtils.h"
 
-DECLARE_LOG_CATEGORY_EXTERN(LogGCUtils_HitResult, Log, All);
-
 /**
  * A collection of helpful functions related to Hit Results.
  * Helpful for getting certain data from Hit Results and more.

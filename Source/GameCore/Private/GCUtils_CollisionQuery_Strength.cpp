@@ -5,7 +5,7 @@
 #include "GCUtils_CollisionQuery.h"
 #include "GCUtils_HitResult.h"
 
-DEFINE_LOG_CATEGORY(LogGCUtils_CollisionQuery_Strength);
+DEFINE_LOG_CATEGORY_STATIC(LogGCUtils_CollisionQuery_Strength, Log, All);
 
 namespace GCUtils::CollisionQuery::Strength
 {

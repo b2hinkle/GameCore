@@ -2,7 +2,7 @@
 
 #include "GCUtils_HitResult.h"
 
-DEFINE_LOG_CATEGORY(LogGCUtils_HitResult);
+DEFINE_LOG_CATEGORY_STATIC(LogGCUtils_HitResult, Log, All);
 
 bool GCUtils::HitResult::AreHitsFromSameTrace(const FHitResult& HitA, const FHitResult& HitB)
 {
