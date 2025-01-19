@@ -392,19 +392,19 @@ TStringBuilderWithBuffer<TCharType, BufferSize> GCUtils::String::GetActorNameOrL
     return ConstructStringBuilder<BufferSize, TCharType>(
         [&inActor](TStringBuilderBase<TCharType>& inStringBuilder) -> void
         {
-#if WITH_EDITORONLY_DATA || (!WITH_EDITOR && ACTOR_HAS_LABELS)
-            const auto& actorLabel = inActor.GetActorLabel();
-            if (actorLabel.IsEmpty() == false)
+#if WITH_EDITORONLY_DATA || ACTOR_HAS_LABELS
+            const FStringView& actorLabelString = inActor.GetActorLabelView();
+            if (actorLabelString.IsEmpty() == false)
             {
                 // Use name if label is empty.
                 inStringBuilder << inActor.GetFName();
                 return;
             }
 
-            inStringBuilder << actorLabel;
-#else
+            inStringBuilder << actorLabelString;
+#else // #if WITH_EDITORONLY_DATA || ACTOR_HAS_LABELS
             inStringBuilder << inActor.GetFName();
-#endif
+#endif // #else // #if WITH_EDITORONLY_DATA || ACTOR_HAS_LABELS
         }
         );
 }
