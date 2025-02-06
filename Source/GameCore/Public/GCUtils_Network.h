@@ -26,6 +26,12 @@ namespace GCUtils::Network
     GAMECORE_API FORCEINLINE_DEBUGGABLE bool IsServerDirect(const UWorld& inWorld);
 
     /**
+     * @brief Determine whether the given world is a client world using its direct net mode.
+     * @see `GCUtils::Network::IsNetModeDirect()`.
+     */
+    GAMECORE_API FORCEINLINE_DEBUGGABLE bool IsClientDirect(const UWorld& inWorld);
+
+    /**
      * @brief Version of `UWorld::IsNetMode()` but is unconcerned of any pending world travels.
      * @see `GCUtils::Network::GetNetModeDirect()`.
      * @remark [duplicate-code-engine]: Review implementation when upgrading.
@@ -54,8 +60,12 @@ namespace GCUtils::Network
 
 bool GCUtils::Network::IsServerDirect(const UWorld& inWorld)
 {
-    const bool isClient = IsNetModeDirect(inWorld, ENetMode::NM_Client);
-    return !isClient;
+    return !IsNetModeDirect(inWorld, ENetMode::NM_Client);
+}
+
+bool GCUtils::Network::IsClientDirect(const UWorld& inWorld)
+{
+    return IsNetModeDirect(inWorld, ENetMode::NM_Client);
 }
 
 bool GCUtils::Network::IsNetModeDirect(const UWorld& inWorld, const ENetMode inNetMode)
