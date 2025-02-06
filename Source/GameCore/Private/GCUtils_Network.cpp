@@ -14,7 +14,7 @@ namespace
 {
 #if WITH_EDITOR
     /**
-     * @brief Internal function to access the private data member `UWorld::PlayInEditorNetMode`.
+     * @brief [inaccessible-access-engine] Call `UWorld::PlayInEditorNetMode`.
      */
     template <ENetMode UWorld::* pointerToWorldNetModeMember = &UWorld::PlayInEditorNetMode>
     ENetMode GetPlayInEditorNetModePrivate(const UWorld& inWorld)
