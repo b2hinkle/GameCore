@@ -20,6 +20,12 @@ struct FURL;
 namespace GCUtils::Network
 {
     /**
+     * @brief Determine whether the given world is a server world using its direct net mode.
+     * @see `GCUtils::Network::IsNetModeDirect()`.
+     */
+    GAMECORE_API FORCEINLINE_DEBUGGABLE bool IsServerDirect(const UWorld& inWorld);
+
+    /**
      * @brief Version of `UWorld::IsNetMode()` but is unconcerned of any pending world travels.
      * @see `GCUtils::Network::GetNetModeDirect()`.
      * @remark [duplicate-code-engine]: Review implementation when upgrading.
@@ -44,6 +50,12 @@ namespace GCUtils::Network
      * @brief The URL option for listen server.
      */
     constexpr FStringView URLOptionListen = UE_JOIN(GC_URL_OPTION_LISTEN_STRING_LITERAL, _PrivateSV);
+}
+
+bool GCUtils::Network::IsServerDirect(const UWorld& inWorld)
+{
+    const bool isClient = IsNetModeDirect(inWorld, ENetMode::NM_Client);
+    return !isClient;
 }
 
 bool GCUtils::Network::IsNetModeDirect(const UWorld& inWorld, const ENetMode inNetMode)
