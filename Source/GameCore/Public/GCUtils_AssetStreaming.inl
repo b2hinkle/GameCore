@@ -705,9 +705,7 @@ void GCUtils::AssetStreaming::Private::ForEachLoadedAssetGeneralized(
 
             if constexpr (shouldAssumeSuccess)
             {
-                // TODO: Ideally, this would choose betweeen a static cast and reinterpret cast depending on whether we're
-                // casting to a UObject or IInterface class.
-                loadedAssetCasted = GCUtils::ReinterpretCastChecked<TAsset*>(loadedAsset);
+                loadedAssetCasted = &GCUtils::CastUObjectChecked<TAsset&>(loadedAsset);
             }
             else
             {

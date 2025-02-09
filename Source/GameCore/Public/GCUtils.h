@@ -24,75 +24,38 @@ namespace GCUtils
     template <GCConcepts::NonLvalueReference T>
     T& Materialize(T&& inTemporary);
 
-    /**
-     * Static cast with runtime check assertions to catch potential undefined behavior.
-     * 
-     * Though static casting provides compile-time safety for some impossible casts (e.g., class hierarchy), some failures
-     * can only be known at runtime. This function provides runtime check assertions for static casts to expose
-     * failures, rather then being silent about it.
-     */
-    template <GCConcepts::PointerToUObjectDerivedOrIInterface TToPtr, GCConcepts::PointerToUObjectDerivedOrIInterface TFromPtr>
-    FORCEINLINE_DEBUGGABLE TToPtr StaticCastChecked(TFromPtr inObject);
-    /**
-     * Static cast with runtime check assertions to catch potential undefined behavior.
-     * 
-     * Though static casting provides compile-time safety for some impossible casts (e.g., class hierarchy), some failures
-     * can only be known at runtime. This function provides runtime check assertions for static casts to expose
-     * failures, rather then being silent about it.
-     */
-    template <GCConcepts::PointerToUObjectDerivedOrIInterface TToPtr, GCConcepts::ReferenceToUObjectDerivedOrIInterface TFromRef>
-    FORCEINLINE_DEBUGGABLE TToPtr StaticCastChecked(TFromRef&& inObject);
-    /**
-     * Static cast with runtime check assertions to catch potential undefined behavior.
-     * 
-     * Though static casting provides compile-time safety for some impossible casts (e.g., class hierarchy), some failures
-     * can only be known at runtime. This function provides runtime check assertions for static casts to expose
-     * failures, rather then being silent about it.
-     */
-    template <GCConcepts::ReferenceToUObjectDerivedOrIInterface TToRef, GCConcepts::PointerToUObjectDerivedOrIInterface TFromPtr>
-    FORCEINLINE_DEBUGGABLE TToRef StaticCastChecked(TFromPtr inObject);
-    /**
-     * Static cast with runtime check assertions to catch potential undefined behavior.
-     * 
-     * Though static casting provides compile-time safety for some impossible casts (e.g., class hierarchy), some failures
-     * can only be known at runtime. This function provides runtime check assertions for static casts to expose
-     * failures, rather then being silent about it.
-     */
-    template <GCConcepts::ReferenceToUObjectDerivedOrIInterface TToRef, GCConcepts::ReferenceToUObjectDerivedOrIInterface TFromRef>
-    FORCEINLINE_DEBUGGABLE TToRef StaticCastChecked(TFromRef&& inObject);
-    
-    /**
-     * Reinterpret cast with runtime check assertions to catch potential undefined behavior.
-     * 
-     * This function provides runtime check assertions for reinterpret casts to expose
-     * failures, rather then being silent about it.
-     */
-    template <GCConcepts::PointerToUObjectDerivedOrIInterface TToPtr, GCConcepts::PointerToUObjectDerivedOrIInterface TFromPtr>
-    FORCEINLINE_DEBUGGABLE TToPtr ReinterpretCastChecked(TFromPtr inObject);
-    /**
-     * Reinterpret cast with runtime check assertions to catch potential undefined behavior.
-     * 
-     * This function provides runtime check assertions for reinterpret casts to expose
-     * failures, rather then being silent about it.
-     */
-    template <GCConcepts::PointerToUObjectDerivedOrIInterface TToPtr, GCConcepts::ReferenceToUObjectDerivedOrIInterface TFromRef>
-    FORCEINLINE_DEBUGGABLE TToPtr ReinterpretCastChecked(TFromRef&& inObject);
-    /**
-     * Reinterpret cast with runtime check assertions to catch potential undefined behavior.
-     * 
-     * This function provides runtime check assertions for reinterpret casts to expose
-     * failures, rather then being silent about it.
-     */
-    template <GCConcepts::ReferenceToUObjectDerivedOrIInterface TToRef, GCConcepts::PointerToUObjectDerivedOrIInterface TFromPtr>
-    FORCEINLINE_DEBUGGABLE TToRef ReinterpretCastChecked(TFromPtr inObject);
-    /**
-     * Reinterpret cast with runtime check assertions to catch potential undefined behavior.
-     * 
-     * This function provides runtime check assertions for reinterpret casts to expose
-     * failures, rather then being silent about it.
-     */
-    template <GCConcepts::ReferenceToUObjectDerivedOrIInterface TToRef, GCConcepts::ReferenceToUObjectDerivedOrIInterface TFromRef>
-    FORCEINLINE_DEBUGGABLE TToRef ReinterpretCastChecked(TFromRef&& inObject);
+    // Overloads for casting from pointer to reference. Null may be returned if null was passed in.
+
+    template <GCConcepts::PointerToIInterface TToPtr, GCConcepts::PointerToIInterface TFromPtr>
+    FORCEINLINE_DEBUGGABLE TToPtr CastUObjectChecked(TFromPtr inObject);
+    template <GCConcepts::PointerToUObjectDerived TToPtr, GCConcepts::PointerToIInterface TFromPtr>
+    FORCEINLINE_DEBUGGABLE TToPtr CastUObjectChecked(TFromPtr inObject);
+    template <GCConcepts::PointerToIInterface TToPtr, GCConcepts::PointerToUObjectDerived TFromPtr>
+    FORCEINLINE_DEBUGGABLE TToPtr CastUObjectChecked(TFromPtr inObject);
+    template <GCConcepts::PointerToUObjectDerived TToPtr, GCConcepts::PointerToUObjectDerived TFromPtr>
+    FORCEINLINE_DEBUGGABLE TToPtr CastUObjectChecked(TFromPtr inObject);
+
+    // Overloads for casting from pointer to reference. Null must not be passed in.
+
+    template <GCConcepts::ReferenceToIInterface TToRef, GCConcepts::PointerToIInterface TFromPtr>
+    FORCEINLINE_DEBUGGABLE TToRef CastUObjectChecked(TFromPtr inObject);
+    template <GCConcepts::ReferenceToUObjectDerived TToRef, GCConcepts::PointerToIInterface TFromPtr>
+    FORCEINLINE_DEBUGGABLE TToRef CastUObjectChecked(TFromPtr inObject);
+    template <GCConcepts::ReferenceToIInterface TToRef, GCConcepts::PointerToUObjectDerived TFromPtr>
+    FORCEINLINE_DEBUGGABLE TToRef CastUObjectChecked(TFromPtr inObject);
+    template <GCConcepts::ReferenceToUObjectDerived TToRef, GCConcepts::PointerToUObjectDerived TFromPtr>
+    FORCEINLINE_DEBUGGABLE TToRef CastUObjectChecked(TFromPtr inObject);
+
+    // Overloads for casting from reference to reference.
+
+    template <GCConcepts::ReferenceToIInterface TToRef, GCConcepts::ReferenceToIInterface TFromRef>
+    FORCEINLINE_DEBUGGABLE TToRef CastUObjectChecked(TFromRef& inObject);
+    template <GCConcepts::ReferenceToUObjectDerived TToRef, GCConcepts::ReferenceToIInterface TFromRef>
+    FORCEINLINE_DEBUGGABLE TToRef CastUObjectChecked(TFromRef& inObject);
+    template <GCConcepts::ReferenceToIInterface TToRef, GCConcepts::ReferenceToUObjectDerived TFromRef>
+    FORCEINLINE_DEBUGGABLE TToRef CastUObjectChecked(TFromRef& inObject);
+    template <GCConcepts::ReferenceToUObjectDerived TToRef, GCConcepts::ReferenceToUObjectDerived TFromRef>
+    FORCEINLINE_DEBUGGABLE TToRef CastUObjectChecked(TFromRef& inObject);
 }
 
 template <GCConcepts::NonLvalueReference T>
@@ -103,90 +66,159 @@ T& GCUtils::Materialize(T&& inTemporary)
     return static_cast<T&>(inTemporary);
 }
 
-template <GCConcepts::PointerToUObjectDerivedOrIInterface TToPtr, GCConcepts::PointerToUObjectDerivedOrIInterface TFromPtr>
-TToPtr GCUtils::StaticCastChecked(TFromPtr inObject)
+template <GCConcepts::PointerToIInterface TToPtr, GCConcepts::PointerToIInterface TFromPtr>
+TToPtr GCUtils::CastUObjectChecked(TFromPtr inObject)
 {
-#if DO_CHECK
-    if (inObject)
+    if (!inObject)
     {
-        using FToType = std::remove_pointer_t<TToPtr>;
-        check(Cast<FToType>(inObject));
+        return nullptr;
     }
-#endif // DO_CHECK
 
-    return static_cast<TToPtr>(inObject);
-}
-template <GCConcepts::PointerToUObjectDerivedOrIInterface TToPtr, GCConcepts::ReferenceToUObjectDerivedOrIInterface TFromRef>
-TToPtr GCUtils::StaticCastChecked(TFromRef&& inObject)
-{
-#if DO_CHECK
-    {
-        using FToType = std::remove_pointer_t<TToPtr>;
-        check(Cast<FToType>(&inObject));
-    }
-#endif // DO_CHECK
+    using FFromType = std::remove_pointer_t<TFromPtr>;
+    using FToType = std::remove_pointer_t<TToPtr>;
 
-    return static_cast<TToPtr>(&inObject);
-}
-template <GCConcepts::ReferenceToUObjectDerivedOrIInterface TToRef, GCConcepts::PointerToUObjectDerivedOrIInterface TFromPtr>
-TToRef GCUtils::StaticCastChecked(TFromPtr inObject)
-{
     check(inObject);
-    return StaticCastChecked<TToRef>(*inObject);
+    return &CastUObjectChecked<FToType&, FFromType&>(*inObject);
 }
-template <GCConcepts::ReferenceToUObjectDerivedOrIInterface TToRef, GCConcepts::ReferenceToUObjectDerivedOrIInterface TFromRef>
-TToRef GCUtils::StaticCastChecked(TFromRef&& inObject)
+template <GCConcepts::PointerToUObjectDerived TToPtr, GCConcepts::PointerToIInterface TFromPtr>
+TToPtr GCUtils::CastUObjectChecked(TFromPtr inObject)
+{
+    if (!inObject)
+    {
+        return nullptr;
+    }
+
+    using FFromType = std::remove_pointer_t<TFromPtr>;
+    using FToType = std::remove_pointer_t<TToPtr>;
+
+    check(inObject);
+    return &CastUObjectChecked<FToType&, FFromType&>(*inObject);
+}
+template <GCConcepts::PointerToIInterface TToPtr, GCConcepts::PointerToUObjectDerived TFromPtr>
+TToPtr GCUtils::CastUObjectChecked(TFromPtr inObject)
+{
+    if (!inObject)
+    {
+        return nullptr;
+    }
+
+    using FFromType = std::remove_pointer_t<TFromPtr>;
+    using FToType = std::remove_pointer_t<TToPtr>;
+
+    check(inObject);
+    return &CastUObjectChecked<FToType&, FFromType&>(*inObject);
+}
+template <GCConcepts::PointerToUObjectDerived TToPtr, GCConcepts::PointerToUObjectDerived TFromPtr>
+TToPtr GCUtils::CastUObjectChecked(TFromPtr inObject)
+{
+    if (!inObject)
+    {
+        return nullptr;
+    }
+
+    using FFromType = std::remove_pointer_t<TFromPtr>;
+    using FToType = std::remove_pointer_t<TToPtr>;
+
+    check(inObject);
+    return &CastUObjectChecked<FToType&, FFromType&>(*inObject);
+}
+
+template <GCConcepts::ReferenceToIInterface TToRef, GCConcepts::PointerToIInterface TFromPtr>
+TToRef GCUtils::CastUObjectChecked(TFromPtr inObject)
+{
+    using FFromType = std::remove_pointer_t<TFromPtr>;
+
+    check(inObject);
+    return CastUObjectChecked<TToRef, FFromType&>(*inObject);
+}
+template <GCConcepts::ReferenceToUObjectDerived TToRef, GCConcepts::PointerToIInterface TFromPtr>
+TToRef GCUtils::CastUObjectChecked(TFromPtr inObject)
+{
+    using FFromType = std::remove_pointer_t<TFromPtr>;
+
+    check(inObject);
+    return CastUObjectChecked<TToRef, FFromType&>(*inObject);
+}
+template <GCConcepts::ReferenceToIInterface TToRef, GCConcepts::PointerToUObjectDerived TFromPtr>
+TToRef GCUtils::CastUObjectChecked(TFromPtr inObject)
+{
+    using FFromType = std::remove_pointer_t<TFromPtr>;
+
+    check(inObject);
+    return CastUObjectChecked<TToRef, FFromType&>(*inObject);
+}
+template <GCConcepts::ReferenceToUObjectDerived TToRef, GCConcepts::PointerToUObjectDerived TFromPtr>
+TToRef GCUtils::CastUObjectChecked(TFromPtr inObject)
+{
+    using FFromType = std::remove_pointer_t<TFromPtr>;
+
+    check(inObject);
+    return CastUObjectChecked<TToRef, FFromType&>(*inObject);
+}
+
+template <GCConcepts::ReferenceToIInterface TToRef, GCConcepts::ReferenceToIInterface TFromRef>
+TToRef GCUtils::CastUObjectChecked(TFromRef& inObject)
 {
 #if DO_CHECK
     {
         using FToType = std::remove_reference_t<TToRef>;
         check(Cast<FToType>(&inObject));
     }
-#endif // DO_CHECK
+#endif // #if DO_CHECK
 
-    return static_cast<TToRef>(Forward<TFromRef>(inObject));
-}
+    UObject* implementerObject = inObject._getUObject();
+    check(implementerObject);
 
-template <GCConcepts::PointerToUObjectDerivedOrIInterface TToPtr, GCConcepts::PointerToUObjectDerivedOrIInterface TFromPtr>
-TToPtr GCUtils::ReinterpretCastChecked(TFromPtr inObject)
-{
-#if DO_CHECK
-    if (inObject)
-    {
-        using FToType = std::remove_pointer_t<TToPtr>;
-        check(Cast<FToType>(inObject));
-    }
-#endif // DO_CHECK
-
-    return reinterpret_cast<TToPtr>(inObject);
+    return CastUObjectChecked<TToRef, UObject&>(*implementerObject);
 }
-template <GCConcepts::PointerToUObjectDerivedOrIInterface TToPtr, GCConcepts::ReferenceToUObjectDerivedOrIInterface TFromRef>
-TToPtr GCUtils::ReinterpretCastChecked(TFromRef&& inObject)
-{
-#if DO_CHECK
-    {
-        using FToType = std::remove_pointer_t<TToPtr>;
-        check(Cast<FToType>(&inObject));
-    }
-#endif // DO_CHECK
-
-    return reinterpret_cast<TToPtr>(&inObject);
-}
-template <GCConcepts::ReferenceToUObjectDerivedOrIInterface TToRef, GCConcepts::PointerToUObjectDerivedOrIInterface TFromPtr>
-TToRef GCUtils::ReinterpretCastChecked(TFromPtr inObject)
-{
-    check(inObject);
-    return ReinterpretCastChecked<TToRef>(*inObject);
-}
-template <GCConcepts::ReferenceToUObjectDerivedOrIInterface TToRef, GCConcepts::ReferenceToUObjectDerivedOrIInterface TFromRef>
-TToRef GCUtils::ReinterpretCastChecked(TFromRef&& inObject)
+template <GCConcepts::ReferenceToUObjectDerived TToRef, GCConcepts::ReferenceToIInterface TFromRef>
+TToRef GCUtils::CastUObjectChecked(TFromRef& inObject)
 {
 #if DO_CHECK
     {
         using FToType = std::remove_reference_t<TToRef>;
         check(Cast<FToType>(&inObject));
     }
-#endif // DO_CHECK
+#endif // #if DO_CHECK
 
-    return reinterpret_cast<TToRef>(Forward<TFromRef>(inObject));
+    UObject* implementerObject = inObject._getUObject();
+    check(implementerObject);
+
+    return CastUObjectChecked<TToRef, UObject&>(*implementerObject);
+}
+template <GCConcepts::ReferenceToIInterface TToRef, GCConcepts::ReferenceToUObjectDerived TFromRef>
+TToRef GCUtils::CastUObjectChecked(TFromRef& inObject)
+{
+    using FToType = std::remove_reference_t<TToRef>;
+    using FFromType = std::remove_reference_t<TFromRef>;
+
+#if DO_CHECK
+    {
+        check(Cast<FToType>(&inObject));
+    }
+#endif // #if DO_CHECK
+
+    // A conditionally const void pointer type based on the qualifiers of `FFromType`.
+    using FVoidPointerToInterface = std::conditional_t<std::is_const_v<FFromType>, const void*, void*>;
+
+    // Get the address of the interface on the object.
+    FVoidPointerToInterface toAddress = Forward<TFromRef>(inObject).GetNativeInterfaceAddress(FToType::UClassType::StaticClass());
+    check(toAddress);
+
+    FToType& toInterface = *reinterpret_cast<FToType*>(toAddress);
+    return Forward<TToRef>(toInterface);
+}
+template <GCConcepts::ReferenceToUObjectDerived TToRef, GCConcepts::ReferenceToUObjectDerived TFromRef>
+TToRef GCUtils::CastUObjectChecked(TFromRef& inObject)
+{
+    using FToType = std::remove_reference_t<TToRef>;
+
+#if DO_CHECK
+    {
+        check(Cast<FToType>(&inObject));
+    }
+#endif // #if DO_CHECK
+
+    FToType& toObject = static_cast<FToType&>(Forward<TFromRef>(inObject));
+    return Forward<TToRef>(toObject);
 }
