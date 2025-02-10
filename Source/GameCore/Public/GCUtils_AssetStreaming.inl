@@ -10,6 +10,7 @@
 #include "GCUtils_String.h"
 #include "GCConcepts.h"
 #include "GCUtils.h"
+#include "GCUtils_UObjectSystem.h"
 #include "Templates/GCGetUClassType.h"
 
 namespace GCUtils::AssetStreaming::Private
@@ -705,7 +706,7 @@ void GCUtils::AssetStreaming::Private::ForEachLoadedAssetGeneralized(
 
             if constexpr (shouldAssumeSuccess)
             {
-                loadedAssetCasted = &GCUtils::CastUObjectChecked<TAsset&>(loadedAsset);
+                loadedAssetCasted = &GCUtils::UObjectSystem::CastChecked<TAsset&>(loadedAsset);
             }
             else
             {
