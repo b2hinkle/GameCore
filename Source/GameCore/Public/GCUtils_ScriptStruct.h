@@ -58,10 +58,12 @@ namespace GCUtils::ScriptStruct
     template <PointerToGettableStaticScriptStruct TTo, PointerToGettableRuntimeScriptStruct TFrom>
     FORCEINLINE_DEBUGGABLE TTo Cast(TFrom inValue);
     /**
-     * @brief Dynamic cast function for USTRUCTs - from pointer to pointer. Returns null if cast fails based on type information.
+     * @brief Dynamic cast function for USTRUCTs - from reference to pointer. Returns null if cast fails based on type information.
+     * @note The from value must be an lvalue.
      */
     template <PointerToGettableStaticScriptStruct TTo, ReferenceToGettableRuntimeScriptStruct TFrom>
-    FORCEINLINE_DEBUGGABLE TTo Cast(TFrom&& inValue);
+        requires (std::is_reference_v<TFrom> == false)
+    FORCEINLINE_DEBUGGABLE TTo Cast(TFrom& inValue);
 
     /**
      * @brief Check-asserted dynamic cast function for USTRUCTs - from pointer to pointer. Null may be returned if null was passed in.
@@ -157,7 +159,8 @@ TTo GCUtils::ScriptStruct::Cast(TFrom inValue)
     return CastScriptStruct<TTo>(*inValue);
 }
 template <GCUtils::ScriptStruct::PointerToGettableStaticScriptStruct TTo, GCUtils::ScriptStruct::ReferenceToGettableRuntimeScriptStruct TFrom>
-TTo GCUtils::ScriptStruct::Cast(TFrom&& inValue)
+    requires (std::is_reference_v<TFrom> == false)
+TTo GCUtils::ScriptStruct::Cast(TFrom& inValue)
 {
     using FToStruct = std::remove_pointer_t<TTo>;
     using FFromStruct = std::remove_reference_t<TFrom>;
@@ -259,6 +262,7 @@ UScriptStruct* GCUtils::ScriptStruct::GetScriptStructStatic()
 template <GCUtils::ScriptStruct::GettableStaticScriptStruct T>
 UScriptStruct& GCUtils::ScriptStruct::GetScriptStructStaticChecked()
 {
-    check(GetScriptStructStatic<T>());
-    return *GetScriptStructStatic<T>();
+    UScriptStruct* scriptStruct = GetScriptStructStatic<T>();
+    check(scriptStruct);
+    return *scriptStruct;
 }
