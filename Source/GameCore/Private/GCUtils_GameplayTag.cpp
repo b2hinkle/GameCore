@@ -50,6 +50,27 @@ FGameplayTagQuery GCUtils::GameplayTag::CombineGameplayTagQueriesNoExprMatch(
         MoveTemp(newQueryUserDescription));
 }
 
+void GCUtils::GameplayTag::PerformTagTreeTraversalPostorder(
+    const TMap<FGameplayTag, FGameplayTagContainer>& tagTree,
+    const FGameplayTag& currentNode,
+    const FTagTreeTraversalCallbackRef& visitCallback)
+{
+    TRACE_CPUPROFILER_EVENT_SCOPE(GCUtils::GameplayTag::PerformTagTreeTraversalPostorder);
+
+    if (const FGameplayTagContainer* childNodes = tagTree.Find(currentNode))
+    {
+        for (const FGameplayTag& childNode : *childNodes)
+        {
+            checkf(childNode != currentNode, TEXT("Node connected to itself! The provided tag tree will cause a stack overflow!"));
+
+            PerformTagTreeTraversalPostorder(tagTree, childNode, visitCallback);
+            visitCallback(childNode);
+        }
+    }
+
+    visitCallback(currentNode);
+}
+
 namespace
 {
     template <EGameplayTagQueryExprType QueryExpressionType>
