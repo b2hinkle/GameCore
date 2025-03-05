@@ -130,10 +130,14 @@ struct GAMECORE_API FRicochetingPenetrationSceneCastWithExitHitsUsingStrengthRes
 };
 
 /**
- *    A collection of specialized scene casts that rely on strength to keep it traveling. These are given an initial strength and lose strength from provided strength nerfs. The scene cast is stopped the moment its strength runs out.
+ *    A collection of specialized scene casts that rely on strength to keep it traveling. These are given an
+ *    initial strength and lose strength from provided strength nerfs. The scene cast ends the
+ *    moment its strength runs out.
  *
  *    Penetrations - Penetrations nerf the strength via the per cm nerf stack - adding to it on entrance and removing from it on exit.
  *    Ricochets - Ricochets nerf the strength in a one-off fashion.
+ * 
+ *    TODO: We should revisit this system to implement it via the mix-in approach. This way we can have any combination of query features.
  */
 namespace GCUtils::CollisionQuery::Strength
 {
