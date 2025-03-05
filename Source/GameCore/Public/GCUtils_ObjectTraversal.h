@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GCConcepts.h"
-#include "GCUtils.h"
+#include "GCUtils_UObjectSystem.h"
 
 namespace GCUtils::ObjectTraversal
 {
@@ -141,7 +141,7 @@ namespace GCUtils::ObjectTraversal
 template <GCConcepts::IInterface TTargetClass>
 const TTargetClass* GCUtils::ObjectTraversal::GetTypedSelfOrOuterOrOwnerActorByInterface(const UObject* inObject)
 {
-    return GCUtils::ReinterpretCastChecked<const TTargetClass*>(
+    return GCUtils::UObjectSystem::CastChecked<const TTargetClass*>(
         GetSelfOrOuterOrOwnerActorByInterface(inObject, TTargetClass::UClassType::StaticClass()));
 }
 template <GCConcepts::IInterface TTargetClass>
@@ -153,7 +153,7 @@ TTargetClass* GCUtils::ObjectTraversal::GetTypedSelfOrOuterOrOwnerActorByInterfa
 template <GCConcepts::IInterface TTargetClass>
 TTargetClass* GCUtils::ObjectTraversal::GetTypedOuterOrOwnerActorByInterface(const UObject* inObject)
 {
-    return GCUtils::ReinterpretCastChecked<TTargetClass*>(
+    return GCUtils::UObjectSystem::CastChecked<TTargetClass*>(
         GetOuterOrOwnerActorByInterface(inObject, TTargetClass::UClassType::StaticClass()));
 }
 
@@ -162,12 +162,12 @@ const TTargetClass* GCUtils::ObjectTraversal::GetTypedSelfOrOwnerActor(const AAc
 {
     if constexpr (TIsIInterface<TTargetClass>::Value == true)
     {
-        return GCUtils::ReinterpretCastChecked<const TTargetClass*>(
+        return GCUtils::UObjectSystem::CastChecked<const TTargetClass*>(
             GetSelfOrOwnerActorByInterface(inActor, TTargetClass::UClassType::StaticClass()));
     }
     else
     {
-        return GCUtils::StaticCastChecked<const TTargetClass*>(
+        return GCUtils::UObjectSystem::CastChecked<const TTargetClass*>(
             GetSelfOrOwnerActorByClass(inActor, TTargetClass::StaticClass()));
     }
 }
@@ -182,12 +182,12 @@ TTargetClass* GCUtils::ObjectTraversal::GetTypedOwnerActor(const AActor* inActor
 {
     if constexpr (TIsIInterface<TTargetClass>::Value == true)
     {
-        return GCUtils::ReinterpretCastChecked<TTargetClass*>(
+        return GCUtils::UObjectSystem::CastChecked<TTargetClass*>(
             GetOwnerActorByInterface(inActor, TTargetClass::UClassType::StaticClass()));
     }
     else
     {
-        return GCUtils::StaticCastChecked<TTargetClass*>(
+        return GCUtils::UObjectSystem::CastChecked<TTargetClass*>(
             GetOwnerActorByClass(inActor, TTargetClass::StaticClass()));
     }
 }
@@ -197,12 +197,12 @@ const TTargetClass* GCUtils::ObjectTraversal::GetTypedSelfOrOuter(const UObject*
 {
     if constexpr (TIsIInterface<TTargetClass>::Value == true)
     {
-        return GCUtils::ReinterpretCastChecked<const TTargetClass*>(
+        return GCUtils::UObjectSystem::CastChecked<const TTargetClass*>(
             GetSelfOrOuterByInterface(inObject, TTargetClass::UClassType::StaticClass()));
     }
     else
     {
-        return GCUtils::StaticCastChecked<const TTargetClass*>(
+        return GCUtils::UObjectSystem::CastChecked<const TTargetClass*>(
             GetSelfOrOuterByClass(inObject, TTargetClass::StaticClass()));
     }
 }
@@ -217,12 +217,12 @@ TTargetClass* GCUtils::ObjectTraversal::GetTypedOuter(const UObject* inObject)
 {
     if constexpr (TIsIInterface<TTargetClass>::Value == true)
     {
-        return GCUtils::ReinterpretCastChecked<TTargetClass*>(
+        return GCUtils::UObjectSystem::CastChecked<TTargetClass*>(
             GetOuterByInterface(inObject, TTargetClass::UClassType::StaticClass()));
     }
     else
     {
-        return GCUtils::StaticCastChecked<TTargetClass*>(
+        return GCUtils::UObjectSystem::CastChecked<TTargetClass*>(
             GetOuterByClass(inObject, TTargetClass::StaticClass()));
     }
 }

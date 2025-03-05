@@ -14,12 +14,12 @@ namespace
 {
 #if WITH_EDITOR
     /**
-     * @brief Internal function to access the private data member `UWorld::PlayInEditorNetMode`.
+     * @brief [inaccessible-access-engine] Get `UWorld::PlayInEditorNetMode`.
      */
-    template <ENetMode UWorld::* pointerToWorldNetModeMember = &UWorld::PlayInEditorNetMode>
-    ENetMode GetPlayInEditorNetModePrivate(const UWorld& inWorld)
+    template <ENetMode UWorld::* pointerToMember = &UWorld::PlayInEditorNetMode>
+    ENetMode GetPlayInEditorNetModeInternal(const UWorld& inWorld)
     {
-        return inWorld.*pointerToWorldNetModeMember;
+        return inWorld.*pointerToMember;
     }
 #endif // #if WITH_EDITOR
 }
@@ -63,7 +63,7 @@ ENetMode GCUtils::Network::GetNetModeDirect(const UWorld& inWorld)
 #if WITH_EDITOR
     if (inWorld.IsPlayInEditor())
     {
-        const ENetMode playInEditorNetMode = GetPlayInEditorNetModePrivate(inWorld);
+        const ENetMode playInEditorNetMode = GetPlayInEditorNetModeInternal(inWorld);
 
         if (urlNetMode == ENetMode::NM_Standalone || playInEditorNetMode == ENetMode::NM_DedicatedServer)
         {
