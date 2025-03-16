@@ -21,7 +21,7 @@ struct GAMECORE_API FGCFloatPropertyWrapper : public FGCPropertyWrapperBase
 protected:
     /** The actual value of this float property */
     UPROPERTY(EditAnywhere, BlueprintReadOnly)
-        float Value;
+    float Value;
 };
 
 template <>
@@ -46,7 +46,7 @@ struct GAMECORE_API FGCInt32PropertyWrapper : public FGCPropertyWrapperBase
 
 protected:
     UPROPERTY(EditAnywhere, BlueprintReadOnly)
-        int32 Value;
+    int32 Value;
 };
 
 template <>
