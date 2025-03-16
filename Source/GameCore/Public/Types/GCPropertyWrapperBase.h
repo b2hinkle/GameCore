@@ -59,15 +59,15 @@ public:
 protected:
     /** The pointer to our outer - used for push model's marking net dirty */
     UPROPERTY(Transient)
-        TWeakObjectPtr<UObject> Outer;
+    TWeakObjectPtr<UObject> Outer;
 
     /** The pointer to the FProperty on our outer's UClass */
     UPROPERTY(Transient)
-        TFieldPath<FProperty> SelfPropertyPointer;
+    TFieldPath<FProperty> SelfPropertyPointer;
 
     /** The pointer to the Value FProperty in subclasses. Having FProperty is nice because it allows us to implement Serialize() and NetSerialize() generically */
     UPROPERTY(Transient)
-        TFieldPath<FProperty> ValueProperty;
+    TFieldPath<FProperty> ValueProperty;
 };
 
 
