@@ -14,16 +14,16 @@ namespace GCUtils::DebugDrawing
      * @brief Draw a debug shape to represent the passed in `FCollisionShape`.
      */
     GAMECORE_API void DrawDebugCollisionShape(
-        const UWorld* inWorld,
-        const FVector& inCenter,
-        const FCollisionShape& inCollisionShape,
-        const FQuat& inRotation,
-        const FColor& inColor,
-        const int32 inNumSegments = 16,
-        const bool inShouldLinesPersist = false,
-        const float inLifetime = -1.f,
-        const uint8 inDepthPriority = 0u,
-        const float inThickness = 0.f);
+        const UWorld& world,
+        const FVector& center,
+        const FCollisionShape& collisionShape,
+        const FQuat& rotation,
+        const FColor& color,
+        const int32 numSegments = 16,
+        const bool shouldLinesPersist = false,
+        const float lifetime = -1.f,
+        const uint8 depthPriority = 0u,
+        const float thickness = 0.f);
 
     /**
      * @brief Draw a debug line formed by many smaller, spaced segments to appear as a dotted line.

@@ -6,81 +6,49 @@
 
 #if UE_ENABLE_DEBUG_DRAWING
 void GCUtils::DebugDrawing::DrawDebugCollisionShape(
-    const UWorld* inWorld,
-    const FVector& inCenter,
-    const FCollisionShape& inCollisionShape,
-    const FQuat& inRotation,
-    const FColor& inColor,
-    const int32 inNumSegments,
-    const bool inShouldLinesPersist,
-    const float inLifetime,
-    const uint8 inDepthPriority,
-    const float inThickness)
+    const UWorld& world,
+    const FVector& center,
+    const FCollisionShape& collisionShape,
+    const FQuat& rotation,
+    const FColor& color,
+    const int32 numSegments,
+    const bool shouldLinesPersist,
+    const float lifetime,
+    const uint8 depthPriority,
+    const float thickness)
 {
-    switch (inCollisionShape.ShapeType)
-    {
-    case ECollisionShape::Line:
-        {
-            const float size = inThickness * 10;
-            ::DrawDebugPoint(
-                inWorld,
-                inCenter,
-                size,
-                inColor,
-                inShouldLinesPersist,
-                inLifetime,
-                inDepthPriority);
-            break;
-        }
-    case ECollisionShape::Box:
-        {
-            const FVector extent = inCollisionShape.GetExtent();
-            ::DrawDebugBox(
-                inWorld,
-                inCenter,
-                extent,
-                inRotation,
-                inColor,
-                inShouldLinesPersist,
-                inLifetime,
-                inDepthPriority,
-                inThickness);
-            break;
-        }
-    case  ECollisionShape::Sphere:
-        {
-            const float radius = inCollisionShape.GetSphereRadius();
-            ::DrawDebugSphere(
-                inWorld,
-                inCenter,
-                radius,
-                inNumSegments,
-                inColor,
-                inShouldLinesPersist,
-                inLifetime,
-                inDepthPriority,
-                inThickness);
-            break;
-        }
-    case ECollisionShape::Capsule:
-        {
-            const float halfHeight = inCollisionShape.GetCapsuleHalfHeight();
-            const float radius = inCollisionShape.GetCapsuleRadius();
-            // Note: `inNumSegments` isn't used anywhere here because the number of segments is hardcoded by `DrawDebugCapsule()`.
-            ::DrawDebugCapsule(
-                inWorld,
-                inCenter,
-                halfHeight,
-                radius,
-                inRotation,
-                inColor,
-                inShouldLinesPersist,
-                inLifetime,
-                inDepthPriority,
-                inThickness);
-            break;
-        }
-    }
+	switch (collisionShape.ShapeType)
+	{
+	case ECollisionShape::Line:
+	{
+		const float size = thickness * 10;
+		::DrawDebugPoint(&world, center, size, color, shouldLinesPersist, lifetime,depthPriority);
+		break;
+	}
+	case ECollisionShape::Box:
+	{
+		const FVector extent = collisionShape.GetExtent();
+		::DrawDebugBox(&world, center, extent, rotation, color, shouldLinesPersist, lifetime, depthPriority, thickness);
+		break;
+	}
+	case  ECollisionShape::Sphere:
+	{
+		const float radius = collisionShape.GetSphereRadius();
+		::DrawDebugSphere(&world, center, radius, numSegments, color, shouldLinesPersist, lifetime, depthPriority, thickness);
+		break;
+	}
+	case ECollisionShape::Capsule:
+	{
+		const float halfHeight = collisionShape.GetCapsuleHalfHeight();
+		const float radius = collisionShape.GetCapsuleRadius();
+		::DrawDebugCapsule(&world, center, halfHeight, radius, rotation, color, shouldLinesPersist, lifetime,  depthPriority, thickness);
+		break;
+	}
+	default:
+	{
+		ensureMsgf(0, TEXT("This will never hit"));
+		break;
+	}
 }
 
 void GCUtils::DebugDrawing::DrawDebugLineDotted(
