@@ -7,9 +7,8 @@
 #if UE_ENABLE_DEBUG_DRAWING
 void GCUtils::DebugDrawing::DrawDebugCollisionShape(
     const UWorld& world,
-    const FVector& center,
     const FCollisionShape& collisionShape,
-    const FQuat& rotation,
+    const FTransform& transform,
     const FColor& color,
     const int32 numSegments,
     const bool shouldLinesPersist,
@@ -17,38 +16,47 @@ void GCUtils::DebugDrawing::DrawDebugCollisionShape(
     const uint8 depthPriority,
     const float thickness)
 {
-	switch (collisionShape.ShapeType)
-	{
-	case ECollisionShape::Line:
-	{
-		const float size = thickness * 10;
-		::DrawDebugPoint(&world, center, size, color, shouldLinesPersist, lifetime,depthPriority);
-		break;
-	}
-	case ECollisionShape::Box:
-	{
-		const FVector extent = collisionShape.GetExtent();
-		::DrawDebugBox(&world, center, extent, rotation, color, shouldLinesPersist, lifetime, depthPriority, thickness);
-		break;
-	}
-	case  ECollisionShape::Sphere:
-	{
-		const float radius = collisionShape.GetSphereRadius();
-		::DrawDebugSphere(&world, center, radius, numSegments, color, shouldLinesPersist, lifetime, depthPriority, thickness);
-		break;
-	}
-	case ECollisionShape::Capsule:
-	{
-		const float halfHeight = collisionShape.GetCapsuleHalfHeight();
-		const float radius = collisionShape.GetCapsuleRadius();
-		::DrawDebugCapsule(&world, center, halfHeight, radius, rotation, color, shouldLinesPersist, lifetime,  depthPriority, thickness);
-		break;
-	}
-	default:
-	{
-		ensureMsgf(0, TEXT("This will never hit"));
-		break;
-	}
+    switch (collisionShape.ShapeType)
+    {
+    case ECollisionShape::Line:
+    {
+        const float size = thickness * 10;
+        ::DrawDebugPoint(&world, transform.GetLocation(), size, color, shouldLinesPersist, lifetime, depthPriority);
+        break;
+    }
+    case ECollisionShape::Box:
+    {
+        const FVector extentScaled = collisionShape.GetExtent() * .5f * transform.GetScale3D();
+        ::DrawDebugBox(&world, transform.GetLocation(), extentScaled, transform.GetRotation(), color, shouldLinesPersist, lifetime, depthPriority, thickness);
+        break;
+    }
+    case  ECollisionShape::Sphere:
+    {
+        const float radiusScaled = collisionShape.GetSphereRadius() * transform.GetScale3D().GetMin();
+        ::DrawDebugSphere(&world, transform.GetLocation(), radiusScaled, numSegments, color, shouldLinesPersist, lifetime, depthPriority, thickness);
+        break;
+    }
+    case ECollisionShape::Capsule:
+    {
+        FVector capsuleAxisWorld = transform.GetRotation().GetUpVector();
+
+        // Find out the scale in the capsule's direction.
+        const float capsuleAxisScale = FVector::DotProduct(transform.GetScale3D(), capsuleAxisWorld.GetAbs());
+
+        // Adjust the capsule's half height by the scale in this the capsule's direction.
+        const float halfHeightScaled = collisionShape.GetCapsuleHalfHeight() * capsuleAxisScale;
+
+        const float radiusScaled = collisionShape.GetCapsuleRadius() * transform.GetScale3D().GetMin();
+
+        ::DrawDebugCapsule(&world, transform.GetLocation(), halfHeightScaled, radiusScaled, transform.GetRotation(), color, shouldLinesPersist, lifetime,  depthPriority, thickness);
+        break;
+    }
+    default:
+    {
+        ensureMsgf(0, TEXT("This will never hit"));
+        break;
+    }
+    }
 }
 
 void GCUtils::DebugDrawing::DrawDebugLineDotted(

@@ -15,9 +15,8 @@ namespace GCUtils::DebugDrawing
      */
     GAMECORE_API void DrawDebugCollisionShape(
         const UWorld& world,
-        const FVector& center,
         const FCollisionShape& collisionShape,
-        const FQuat& rotation,
+        const FTransform& transform,
         const FColor& color,
         const int32 numSegments = 16,
         const bool shouldLinesPersist = false,
