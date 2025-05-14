@@ -70,8 +70,8 @@ public:
 };
 
 /**
- * @brief This struct makes use of temporary lifetime for code execution. Combined with the Named Parameter Idiom technique (via function chaining), we can achieve
- *        quick and simple print to screen calls.
+ * @brief This struct combines multiple patterns to achieve quick and simple print to screen calls. It combines RAII with the Named Parameter Idiom technique (for function chaining).
+ * @Note: Temporary lifetime is the intended lifetime for objects of this type, and instantiations are intended to conveniently feel similar to function calls.
  */
 struct GAMECORE_API FGCPrintToScreen
 {
