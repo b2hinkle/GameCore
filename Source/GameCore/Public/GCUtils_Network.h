@@ -33,21 +33,21 @@ namespace GCUtils::Network
     /**
      * @brief Version of `UWorld::IsNetMode()` but is unconcerned of any pending world travels.
      * @see `GCUtils::Network::GetNetModeDirect()`.
-     * @remark [duplicate-code-engine]: Review implementation when upgrading.
+     * @remark [duplicate_code[engine]]: Review implementation when upgrading.
      */
     GAMECORE_API FORCEINLINE_DEBUGGABLE bool IsNetModeDirect(const UWorld& inWorld, const ENetMode inNetMode);
 
     /**
      * @brief Get a net mode that directly represents the given world. This behaves identically
      *        to `UWorld::GetNetMode()` but is unconcerned of any pending world travels.
-     * @remark [duplicate-code-engine]: Review implementation when upgrading.
+     * @remark [duplicate_code[engine]]: Review implementation when upgrading.
      */
     GAMECORE_API ENetMode GetNetModeDirect(const UWorld& inWorld);
 
     /**
      * @brief Get a net mode that represents the network setup of the given URL. This
      *        mimics `UWorld::AttemptDeriveFromURL()` but for a particular URL.
-     * @remark [duplicate-code-engine]: Review implementation when upgrading.
+     * @remark [duplicate_code[engine]]: Review implementation when upgrading.
      */
     GAMECORE_API ENetMode GetNetModeAttemptDeriveFromURL(const FURL& inURL);
 
