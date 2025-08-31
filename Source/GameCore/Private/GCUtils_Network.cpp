@@ -14,7 +14,7 @@ namespace
 {
 #if WITH_EDITOR
     /**
-     * @brief [inaccessible-access-engine] Get `UWorld::PlayInEditorNetMode`.
+     * @brief [workaround.inaccessible_access[engine]] Get `UWorld::PlayInEditorNetMode`.
      */
     template <ENetMode UWorld::* pointerToMember = &UWorld::PlayInEditorNetMode>
     ENetMode GetPlayInEditorNetModeInternal(const UWorld& inWorld)
