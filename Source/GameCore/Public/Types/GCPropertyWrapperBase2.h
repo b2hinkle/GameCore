@@ -24,7 +24,7 @@ using TGCPropertyWrapperValueTypeTrait_T = typename TGCPropertyWrapperValueTypeT
  * Property wrapper implementation.
  */
 template <class TWrapperType>
-struct GAMECORE_API TGCPropertyWrapperBase2
+struct TGCPropertyWrapperBase2
 {
 
 private:
